@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getUltimeOperazioni(macchina) {
         const url = macchina 
-            ? `http://localhost:3000/ultime-operazioni/${macchina}`
-            : 'http://localhost:3000/ultime-operazioni';
+            ? `http://93.36.217.35:3000/ultime-operazioni/${macchina}`
+            : 'http://93.36.217.35:3000/ultime-operazioni';
         
         fetch(url)
             .then(response => response.json())
