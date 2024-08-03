@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipoSpecificoMolaSelect = document.getElementById('tipoSpecificoMola');
     const latoBiselloSelect = document.getElementById('latoBisello');
     const fornitoreBiselloSelect = document.getElementById('fornitoreBisello');
+    const tipoSpecificoBiselloSelect = document.getElementById('tipoSpecificoBisello');
     const dettagliMola = document.getElementById('dettagliMola');
     const dettagliBisello = document.getElementById('dettagliBisello');
     const form = document.getElementById('operationForm');
@@ -24,6 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipiMola = {
         'Surface': ['RK0 Benny 1', 'RK0 Benny 2', 'RK2 Benny 3', 'Saetta 1', 'Saetta 2'],
         'Tecnodiamant': ['TD0', 'TD1', 'TD2', 'MM0', 'MM1']
+    };
+
+    const tipiBisello = {
+        'Surface': ['TTT3', 'TTT2'],
+        'Tecnodiamant': ['Diamant1', 'Diamant2']
     };
 
     function getTurnoCorrente() {
@@ -61,6 +67,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelect(tipoSpecificoMolaSelect, tipi);
     }
 
+    function updateTipiBisello() {
+        const fornitore = fornitoreBiselloSelect.value;
+        const tipi = tipiBisello[fornitore] || [];
+        updateSelect(tipoSpecificoBiselloSelect, tipi);
+    }
+
     function toggleDetailsVisibility() {
         const isCambioMola = tipoOperazioneSelect.value === 'cambioMola';
         const isCambioBisello = tipoOperazioneSelect.value === 'cambioBisello';
@@ -74,10 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         latoBiselloSelect.required = isCambioBisello;
         fornitoreBiselloSelect.required = isCambioBisello;
+        tipoSpecificoBiselloSelect.required = isCambioBisello;
         
         if (isCambioMola) {
             updatePosizioneMola();
             updateTipiMola();
+        } else if (isCambioBisello) {
+            updateTipiBisello();
         }
     }
 
@@ -96,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${op.tipoSpecifico}</td>
                 <td>${op.operatore}</td>
                 <td>${op.turno}</td>
+                <td>${op.modulo}</td>
             </tr>
         `).join('');
 
@@ -110,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th>Tipo Specifico</th>
                         <th>Operatore</th>
                         <th>Turno</th>
+                        <th>Modulo</th>
                     </tr>
                 </thead>
                 <tbody>${tableRows}</tbody>
@@ -118,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function inviaOperazione(nuovaOperazione) {
-        console.log('Dati inviati al server:', nuovaOperazione); // Log per verificare i dati
+        console.log('Dati inviati al server:', nuovaOperazione);
         fetch('http://localhost:3000/registra-operazione', {
             method: 'POST',
             headers: {
@@ -137,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(result => {
             showNotification('Operazione registrata con successo!', 'success');
-            getUltimeOperazioni();
+            getUltimeOperazioni(nuovaOperazione.macchina);
         })
         .catch(error => {
             console.error('Errore durante la registrazione dell\'operazione:', error);
@@ -145,8 +162,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function getUltimeOperazioni() {
-        fetch('http://localhost:3000/ultime-operazioni')
+    function getUltimeOperazioni(macchina) {
+        const url = macchina 
+            ? `http://localhost:3000/ultime-operazioni/${macchina}`
+            : 'http://localhost:3000/ultime-operazioni';
+        
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 console.log('Dati ricevuti dal server:', data);
@@ -160,8 +181,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     moduloSelect.addEventListener('change', updatePosizioneMola);
     tipoMolaSelect.addEventListener('change', updateTipiMola);
+    fornitoreBiselloSelect.addEventListener('change', updateTipiBisello);
     tipoOperazioneSelect.addEventListener('change', toggleDetailsVisibility);
-    macchinaSelect.addEventListener('change', () => populateUltimeMole(macchinaSelect.value));
+    macchinaSelect.addEventListener('change', function() {
+        if (this.value) {
+            getUltimeOperazioni(this.value);
+        }
+    });
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -190,14 +216,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             posizione = posizioneMolaSelect.value;
-            tipoSpecifico = tipoSpecificoMolaSelect.value;
+            tipoSpecifico = `${tipoMolaSelect.value} - ${tipoSpecificoMolaSelect.value}`;
         } else if (tipo === 'cambioBisello') {
-            if (!latoBiselloSelect.value || !fornitoreBiselloSelect.value) {
+            if (!latoBiselloSelect.value || !fornitoreBiselloSelect.value || !tipoSpecificoBiselloSelect.value) {
                 showNotification('Compilare tutti i campi per il cambio bisello.', 'error');
                 return;
             }
             posizione = latoBiselloSelect.value;
-            tipoSpecifico = fornitoreBiselloSelect.value;
+            tipoSpecifico = `${fornitoreBiselloSelect.value} - ${tipoSpecificoBiselloSelect.value}`;
         }
 
         const nuovaOperazione = {
@@ -210,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modulo: moduloSelect.value
         };
 
-        console.log('Dati dell\'operazione:', nuovaOperazione); // Per debug
+        console.log('Dati dell\'operazione:', nuovaOperazione);
         inviaOperazione(nuovaOperazione);
     });
 
@@ -218,7 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
     turnoSelect.value = getTurnoCorrente();
 
     // Popola la tabella delle ultime operazioni all'avvio
-    getUltimeOperazioni();
+    if (macchinaSelect.value) {
+        getUltimeOperazioni(macchinaSelect.value);
+    } else {
+        getUltimeOperazioni();
+    }
 
     // Inizializza la visibilità dei dettagli
     toggleDetailsVisibility();

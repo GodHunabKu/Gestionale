@@ -48,8 +48,8 @@
                         <label for="tipoOperazione">Tipo Operazione:</label>
                         <select id="tipoOperazione" required>
                             <option value="">Seleziona operazione</option>
-                            <option value="cambioMola">Cambio Mola</option>
-                            <option value="cambioBisello">Cambio Bisello</option>
+                            <option value="cambioMola">Mola</option>
+                            <option value="cambioBisello">Bisello</option>
                         </select>
                     </div>
 
@@ -57,22 +57,20 @@
                         <label for="modulo">Modulo:</label>
                         <select id="modulo" required>
                             <option value="">Seleziona modulo</option>
-                            <option value="primoModulo">Primo Modulo</option>
-                            <option value="secondoModulo">Secondo Modulo</option>
+                            <option value="primoModulo">Primo</option>
+                            <option value="secondoModulo">Secondo</option>
                         </select>
                     </div>
 
                     <div id="dettagliMola" style="display:none;">
                         <div class="form-group">
                             <label for="posizioneMola">Posizione Mola:</label>
-                            <select id="posizioneMola" required>
-                                <option value="">Seleziona posizione</option>
-                            </select>
+                            <select id="posizioneMola"></select>
                         </div>
 
                         <div class="form-group">
                             <label for="tipoMola">Fornitore Mola:</label>
-                            <select id="tipoMola" required>
+                            <select id="tipoMola">
                                 <option value="">Seleziona fornitore</option>
                                 <option value="Surface">Surface</option>
                                 <option value="Tecnodiamant">Tecnodiamant</option>
@@ -81,30 +79,34 @@
 
                         <div class="form-group">
                             <label for="tipoSpecificoMola">Tipo Specifico Mola:</label>
-                            <select id="tipoSpecificoMola" required>
-                                <option value="">Seleziona tipo specifico</option>
-                            </select>
+                            <select id="tipoSpecificoMola"></select>
                         </div>
                     </div>
 
-					<div id="dettagliBisello" style="display:none;">
-						<div class="form-group">
-							<label for="latoBisello">Lato Bisello:</label>
-							<select id="latoBisello" name="latoBisello">
-								<option value="">Seleziona lato</option>
-								<option value="Lato Operatore (Destra)">Lato Operatore (Destra)</option>
-								<option value="Lato Non Operatore (Sinistra)">Lato Non Operatore (Sinistra)</option>
-							</select>
-						</div>
-					<div class="form-group">
-						<label for="fornitoreBisello">Fornitore Bisello:</label>
-						<select id="fornitoreBisello" name="fornitoreBisello">
-							<option value="">Seleziona fornitore</option>
-							<option value="Tecnodiamant">Tecnodiamant</option>
-							<option value="Surface">Surface</option>
-						</select>
-					</div>
-				</div>
+                    <div id="dettagliBisello" style="display:none;">
+                        <div class="form-group">
+                            <label for="latoBisello">Lato Bisello:</label>
+                            <select id="latoBisello">
+                                <option value="">Seleziona lato</option>
+                                <option value="Lato Operatore (Destra)">Lato Operatore (Destra)</option>
+                                <option value="Lato Non Operatore (Sinistra)">Lato Non Operatore (Sinistra)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fornitoreBisello">Fornitore Bisello:</label>
+                            <select id="fornitoreBisello">
+                                <option value="">Seleziona fornitore</option>
+                                <option value="Tecnodiamant">Tecnodiamant</option>
+                                <option value="Surface">Surface</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipoSpecificoBisello">Tipo Specifico Bisello:</label>
+                            <select id="tipoSpecificoBisello"></select>
+                        </div>
+                    </div>
 
                     <button type="submit">Registra Operazione</button>
                 </form>
