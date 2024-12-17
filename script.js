@@ -37,6 +37,7 @@ function refreshAllStats() {
         showLoadingOverlay();
         const history = getHistory();
         updateStatistics(history);
+        updateGrindingStats(); // Aggiungi questa linea
         updateTopOperators(history);
         
         const weeklyData = calculateWeeklyData(history);
@@ -82,6 +83,13 @@ function setupEventListeners() {
     document.getElementById('module')?.addEventListener('change', validatePosition);
     document.getElementById('position')?.addEventListener('input', validatePosition);
     document.getElementById('failureReason')?.addEventListener('change', toggleOtherReason);
+	document.getElementById('username').addEventListener('input', toggleGrindingMachineSelect);
+	
+	
+	const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+        usernameInput.addEventListener('input', toggleGrindingMachineSelect);
+    }
     
     // Import/Export events
     document.getElementById('exportCSV')?.addEventListener('click', handleExport);
@@ -277,21 +285,22 @@ function createHistoryRow(entry, isRecent = false) {
     const canDelete = currentUser?.role === 'supervisor' || 
                      (entry.operator === currentUser?.username && timeSinceCreation <= DELETE_TIMEOUT);
 
+    // Formatta la visualizzazione della rettifica
+    const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
+
     let html = `
         <td>${entry.operator}</td>
-        <td>${entry.module}</td>
+        <td>${rettificaDisplay}</td>
         <td>${entry.position}</td>
         <td>${entry.grindingType}</td>
         <td>${entry.shift}</td>
         <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
     `;
 
-    // Aggiungi la colonna motivo solo se non è una vista recente
     if (!isRecent) {
         html += `<td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>`;
     }
 
-    // Aggiungi il bottone elimina se l'utente ha i permessi
     html += `
         <td>
             ${canDelete ? `
@@ -303,13 +312,47 @@ function createHistoryRow(entry, isRecent = false) {
     `;
 
     row.innerHTML = html;
-
-    // Aggiungi classe per righe non modificabili
     if (!canDelete) {
         row.classList.add('disabled-row');
     }
-
     return row;
+}
+
+function updateTableHeaders() {
+    // Update login page table header
+    const loginTableHeader = `
+        <tr>
+            <th>Operatore</th>
+            <th>Rettifica</th>
+            <th>Posizione</th>
+            <th>Tipo Mola</th>
+            <th>Turno</th>
+            <th>Data e Ora</th>
+        </tr>
+    `;
+
+    // Update supervisor view table header
+    const supervisorTableHeader = `
+        <tr>
+            <th>Operatore</th>
+            <th>Rettifica</th>
+            <th>Posizione</th>
+            <th>Tipo Mola</th>
+            <th>Turno</th>
+            <th>Data e Ora</th>
+            <th>Motivo</th>
+            <th>Azioni</th>
+        </tr>
+    `;
+
+    // Aggiorna gli headers delle tabelle
+    document.querySelectorAll('.table thead').forEach(thead => {
+        if (thead.closest('#historyTable')) {
+            thead.innerHTML = supervisorTableHeader;
+        } else {
+            thead.innerHTML = loginTableHeader;
+        }
+    });
 }
 // Sincronizzazione tra schede
 function handleStorageChange(e) {
@@ -335,11 +378,22 @@ function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
+    const grindingMachine = document.getElementById('grindingMachine').value;
 
     const user = window.users.find(u => u.username === username && u.password === password);
     
     if (user) {
-        currentUser = user;
+        currentUser = {
+            ...user,
+            grindingMachine: user.role === 'supervisor' ? null : grindingMachine
+        };
+
+        // Verifica se l'utente è un operatore e ha selezionato una rettifica
+        if (user.role === 'operator' && !grindingMachine) {
+            showNotification('Seleziona una rettifica', 'error');
+            return;
+        }
+        
         showAppropriateView();
         showNotification(`Benvenuto ${username}!`, 'success');
         resetInactivityTimer();
@@ -382,7 +436,11 @@ function showAppropriateView() {
     } else {
         document.getElementById('supervisorView').style.display = 'block';
         document.getElementById('operatorView').style.display = 'none';
-        initializeSupervisorDashboard();
+        try {
+            initializeSupervisorDashboard();
+        } catch (error) {
+            console.warn('Errore nell\'inizializzazione dashboard supervisor:', error);
+        }
     }
 
     determineShift();
@@ -444,6 +502,7 @@ function handleToolSubmit(e) {
         ...formData,
         id: Date.now().toString(),
         operator: currentUser.username,
+        grindingMachine: currentUser.grindingMachine, // Assicurati che la rettifica sia sempre inclusa
         timestamp: new Date().toISOString()
     };
 
@@ -475,15 +534,16 @@ function getFormData() {
 }
 
 function validatePosition() {
-    const module = document.getElementById('module').value;
+    const grindingMachine = currentUser.grindingMachine;
     const position = parseInt(document.getElementById('position').value);
-    const maxPosition = module === 'Modulo 1' ? 24 : module === 'Modulo 2' ? 18 : 0;
+    const maxPosition = MACHINE_POSITIONS[grindingMachine];
     const feedback = document.getElementById('positionFeedback');
     const input = document.getElementById('position');
 
     const isValid = position >= 1 && position <= maxPosition;
     input.classList.toggle('is-invalid', !isValid);
     feedback.style.display = isValid ? 'none' : 'block';
+    feedback.textContent = `Posizione non valida per la rettifica ${grindingMachine} (max: ${maxPosition})`;
     return isValid;
 }
 
@@ -554,33 +614,57 @@ function loadRecentHistoryOnLogin() {
 // Dashboard Supervisore
 function initializeSupervisorDashboard() {
     updateStatistics();
+    updateGrindingStats(); // Aggiungi questa linea
     setupCharts();
     populateFilters();
     updateTopOperators();
 }
 
 function updateStatistics() {
-    const history = getHistory();
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Statistiche del giorno
-    const todayChanges = history.filter(h => h.timestamp.startsWith(today)).length;
-    document.getElementById('todayChanges').textContent = todayChanges;
+    if (!currentUser || currentUser.role !== 'supervisor') return;
 
-    // Statistiche della settimana
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
-    const weekChanges = history.filter(h => new Date(h.timestamp) >= weekStart).length;
-    document.getElementById('weekChanges').textContent = weekChanges;
+    try {
+        const history = getHistory();
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Statistiche del giorno
+        const todayChangesElement = document.getElementById('todayChanges');
+        if (todayChangesElement) {
+            const todayChanges = history.filter(h => h.timestamp.startsWith(today)).length;
+            todayChangesElement.textContent = todayChanges;
+        }
 
-    // Mole difettose
-    const defectiveCount = history.filter(h => h.failureReason === 'Difetto').length;
-    document.getElementById('defectiveCount').textContent = defectiveCount;
-
-    // Media giornaliera
-    const dailyAverage = Math.round(weekChanges / 7);
-    document.getElementById('dailyAverage').textContent = dailyAverage;
+        // Statistiche per rettifica
+        GRINDING_MACHINES.dry.machines.concat(GRINDING_MACHINES.wet.machines).forEach(machine => {
+            const statsElement = document.getElementById(`stats-machine-${machine}`);
+            if (statsElement) {
+                const machineHistory = history.filter(h => h.grindingMachine === machine);
+                const stats = {
+                    total: machineHistory.length,
+                    today: machineHistory.filter(h => h.timestamp.startsWith(today)).length,
+                    defective: machineHistory.filter(h => h.failureReason === 'Difetto').length
+                };
+                
+                statsElement.innerHTML = `
+                    <h5>Rettifica ${machine}</h5>
+                    <p>Totale: ${stats.total}</p>
+                    <p>Oggi: ${stats.today}</p>
+                    <p>Difetti: ${stats.defective}</p>
+                `;
+            }
+        });
+    } catch (error) {
+        console.warn('Errore nell\'aggiornamento delle statistiche:', error);
+    }
 }
+
+// Inizializza tutto quando il documento è pronto
+document.addEventListener('DOMContentLoaded', () => {
+    updateTableHeaders();
+    if (currentUser?.role === 'supervisor') {
+        updateStatistics();
+    }
+});
 
 // Gestione efficiente dei grafici
 function setupCharts() {
@@ -742,6 +826,24 @@ function calculateTypeData(history) {
 
 // Gestione filtri
 function populateFilters() {
+    // Popola il select delle rettifiche
+    const rettificaSelect = document.getElementById('filterGrindingMachine');
+    if (rettificaSelect) {
+        // Combina tutte le rettifiche disponibili
+        const allMachines = [
+            ...GRINDING_MACHINES.dry.machines,
+            ...GRINDING_MACHINES.wet.machines
+        ].sort((a, b) => parseInt(a) - parseInt(b));
+
+        // Crea le opzioni
+        rettificaSelect.innerHTML = `
+            <option value="">Tutte</option>
+            ${allMachines.map(machine => `
+                <option value="${machine}">Rettifica ${machine}</option>
+            `).join('')}
+        `;
+    }
+
     // Ottieni solo gli utenti con ruolo "operator" da window.users
     const operators = window.users
         .filter(user => user.role === 'operator')
@@ -754,13 +856,37 @@ function populateFilters() {
             operators.map(op => `<option value="${op}">${op}</option>`).join('');
     }
 
-    // Popola i tipi di mola dallo storico (questo rimane invariato)
+    // Popola i tipi di mola dallo storico
     const history = getHistory();
     const types = [...new Set(history.map(h => h.grindingType))];
     const typeSelect = document.getElementById('filterGrindingType');
     if (typeSelect) {
         typeSelect.innerHTML = '<option value="">Tutti</option>' + 
             types.map(type => `<option value="${type}">${type}</option>`).join('');
+    }
+
+    // Aggiungi gli event listener per la validazione della posizione
+    const rettificaFilterSelect = document.getElementById('filterGrindingMachine');
+    const positionFilterInput = document.getElementById('filterPosition');
+    
+    if (rettificaFilterSelect && positionFilterInput) {
+        rettificaFilterSelect.addEventListener('change', () => {
+            const selectedRettifica = rettificaFilterSelect.value;
+            if (selectedRettifica) {
+                positionFilterInput.max = MACHINE_POSITIONS[selectedRettifica];
+            }
+        });
+
+        positionFilterInput.addEventListener('input', () => {
+            const selectedRettifica = rettificaFilterSelect.value;
+            if (selectedRettifica) {
+                const maxPosition = MACHINE_POSITIONS[selectedRettifica];
+                const currentValue = parseInt(positionFilterInput.value);
+                if (currentValue > maxPosition) {
+                    positionFilterInput.value = maxPosition;
+                }
+            }
+        });
     }
 }
 
@@ -792,7 +918,9 @@ function filterHistory(history, filters) {
         return (!filters.dateStart || entryDate >= filters.dateStart) &&
                (!filters.dateEnd || entryDate <= filters.dateEnd) &&
                (!filters.operator || entry.operator === filters.operator) &&
-               (!filters.grindingType || entry.grindingType === filters.grindingType);
+               (!filters.grindingType || entry.grindingType === filters.grindingType) &&
+               (!filters.grindingMachine || entry.grindingMachine === filters.grindingMachine) &&
+               (!filters.position || parseInt(entry.position) === parseInt(filters.position));
     });
 }
 
@@ -801,13 +929,26 @@ function handleFilterApply() {
         dateStart: document.getElementById('filterDateStart')?.value,
         dateEnd: document.getElementById('filterDateEnd')?.value,
         operator: document.getElementById('filterOperator')?.value,
-        grindingType: document.getElementById('filterGrindingType')?.value
+        grindingType: document.getElementById('filterGrindingType')?.value,
+        grindingMachine: document.getElementById('filterGrindingMachine')?.value,
+        position: document.getElementById('filterPosition')?.value
     };
 
     const history = getHistory();
     const filteredHistory = filterHistory(history, filters);
     updateHistoryTable(filteredHistory);
-    document.querySelector('.filters-section')?.classList.add('filters-active');
+}
+
+function updateGrindingTypeOptions() {
+    const grindingType = document.getElementById('grindingType');
+    if (!grindingType) return;
+
+    const machine = currentUser.grindingMachine;
+    const isWet = GRINDING_MACHINES.wet.machines.includes(machine);
+    const wheels = isWet ? GRINDING_MACHINES.wet.wheels : GRINDING_MACHINES.dry.wheels;
+
+    grindingType.innerHTML = '<option value="">Seleziona Tipo</option>' +
+        wheels.map(wheel => `<option value="${wheel}">${wheel}</option>`).join('');
 }
 
 function resetFilters() {
@@ -945,21 +1086,15 @@ async function sendBackupEmail(csv, date) {
 
 // Funzione helper per generare CSV
 function generateCSV(history) {
-    const headers = ['Operatore', 'Modulo', 'Posizione', 'Tipo Mola', 'Turno', 'Data e Ora', 'Motivo', 'Dettagli'];
+    const headers = ['Operatore', 'Rettifica', 'Posizione', 'Tipo Mola', 'Turno', 'Data e Ora', 'Motivo', 'Dettagli'];
     
     const rows = history.map(entry => {
         const date = new Date(entry.timestamp);
-        const formattedDate = date.toLocaleString('it-IT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).replace(',', '');
+        const formattedDate = date.toLocaleString('it-IT').replace(',', '');
 
         return [
             entry.operator,
-            entry.module,
+            entry.grindingMachine,
             entry.position,
             entry.grindingType,
             entry.shift,
@@ -967,12 +1102,6 @@ function generateCSV(history) {
             entry.failureReason,
             entry.otherReason || ''
         ].map(cell => `"${cell}"`).join(',');
-    });
-    
-    rows.sort((a, b) => {
-        const dateA = new Date(a.split(',')[5].replace(/"/g, ''));
-        const dateB = new Date(b.split(',')[5].replace(/"/g, ''));
-        return dateB - dateA;
     });
     
     return [headers.join(','), ...rows].join('\n');
@@ -1227,10 +1356,22 @@ function handleFileRead(e) {
         }
 
         const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
-        const expectedHeaders = ['Operatore', 'Modulo', 'Posizione', 'Tipo Mola', 'Turno', 'Data e Ora', 'Motivo', 'Dettagli'];
+        const expectedHeaders = [
+            'Operatore',
+            'Rettifica',
+            'Posizione',
+            'Tipo Mola',
+            'Turno',
+            'Data e Ora',
+            'Motivo',
+            'Dettagli'
+        ];
+        
+        console.log('Headers trovati:', headers);
+        console.log('Headers attesi:', expectedHeaders);
         
         if (!areHeadersValid(headers, expectedHeaders)) {
-            throw new Error('Headers CSV non validi');
+            throw new Error('Headers CSV non validi. Attesi: ' + expectedHeaders.join(', '));
         }
 
         const importedData = parseCSVRows(rows.slice(1));
@@ -1251,16 +1392,39 @@ function handleFileRead(e) {
 
 function processImportedData(importedData) {
     const existingData = getHistory();
+    
+    // Funzione per normalizzare il timestamp rimuovendo i secondi
+    const normalizeTimestamp = (timestamp) => {
+        const date = new Date(timestamp);
+        date.setSeconds(0);
+        return date.getTime();
+    };
+
+    // Funzione per creare una chiave univoca per ogni record
+    const createUniqueKey = (entry) => {
+        const timestamp = normalizeTimestamp(entry.timestamp);
+        return `${entry.operator}-${entry.grindingMachine}-${entry.position}-${timestamp}`;
+    };
+
+    // Crea un map degli elementi esistenti per ricerca veloce
+    const existingKeys = new Set(existingData.map(createUniqueKey));
+
+    // Filtra solo i dati veramente nuovi
     const uniqueData = importedData.filter(imported => {
-        return !existingData.some(existing => 
-            existing.timestamp === imported.timestamp && 
-            existing.position === imported.position &&
-            existing.module === imported.module
-        );
+        const key = createUniqueKey(imported);
+        return !existingKeys.has(key);
     });
 
-    const mergedData = [...uniqueData, ...existingData];
-    mergedData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Se non ci sono nuovi dati, termina qui
+    if (uniqueData.length === 0) {
+        showNotification('Nessun nuovo record da importare', 'warning');
+        return;
+    }
+
+    // Unisci i dati e ordina per timestamp decrescente
+    const mergedData = [...uniqueData, ...existingData].sort((a, b) => 
+        new Date(b.timestamp) - new Date(a.timestamp)
+    );
 
     if (saveHistory(mergedData)) {
         loadHistory();
@@ -1269,7 +1433,7 @@ function processImportedData(importedData) {
             refreshAllStats();
         }
         document.getElementById('importCSV').value = '';
-        showNotification(`Importazione completata: ${uniqueData.length} record importati`, 'success');
+        showNotification(`Importazione completata: ${uniqueData.length} nuovi record importati`, 'success');
     }
 }
 
@@ -1281,15 +1445,18 @@ function parseCSVRows(rows) {
             const values = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
                 ?.map(value => value.replace(/^"(.*)"$/, '$1').trim());
 
-            if (!values || values.length < 6) continue;
+            if (!values || values.length < 8) continue;
 
             const dateStr = values[5];
             const timestamp = parseItalianDate(dateStr);
 
+            // Assicurati che la rettifica sia nel formato corretto
+            const grindingMachine = values[1].replace(/[^0-9]/g, ''); // Estrae solo il numero
+
             importedData.push({
                 id: `import_${Date.now()}_${i}`,
                 operator: values[0],
-                module: values[1],
+                grindingMachine: grindingMachine,
                 position: values[2],
                 grindingType: values[3],
                 shift: values[4],
@@ -1304,6 +1471,71 @@ function parseCSVRows(rows) {
     }
     
     return importedData;
+}
+
+function updateGrindingStats() {
+    const history = getHistory();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Template per una singola rettifica
+    function createMachineStatsTemplate(machineId, stats) {
+        return `
+            <div class="machine-stat">
+                <div class="machine-title">
+                    <span class="title">Rettifica ${machineId}</span>
+                    <span class="badge ${stats.type === 'Secco' ? 'bg-warning' : 'bg-info'}">${stats.type}</span>
+                </div>
+                <div class="machine-stats">
+                    <div class="stat-box">
+                        <span class="stat-value">${stats.total}</span>
+                        <span class="stat-label">Totale</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">${stats.today}</span>
+                        <span class="stat-label">Oggi</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">${stats.defects}</span>
+                        <span class="stat-label">Difetti</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Popola rettifiche a secco
+    const dryMachinesContainer = document.getElementById('dry-machines');
+    if (dryMachinesContainer) {
+        let dryMachinesHTML = '';
+        [0, 3, 4, 5].forEach(machineId => {
+            const machineHistory = history.filter(h => h.grindingMachine === machineId.toString());
+            const stats = {
+                type: 'Secco',
+                total: machineHistory.length,
+                today: machineHistory.filter(h => h.timestamp.startsWith(today)).length,
+                defects: machineHistory.filter(h => h.failureReason === 'Difetto').length
+            };
+            dryMachinesHTML += createMachineStatsTemplate(machineId, stats);
+        });
+        dryMachinesContainer.innerHTML = dryMachinesHTML;
+    }
+
+    // Popola rettifiche a umido
+    const wetMachinesContainer = document.getElementById('wet-machines');
+    if (wetMachinesContainer) {
+        let wetMachinesHTML = '';
+        [1, 2].forEach(machineId => {
+            const machineHistory = history.filter(h => h.grindingMachine === machineId.toString());
+            const stats = {
+                type: 'Umido',
+                total: machineHistory.length,
+                today: machineHistory.filter(h => h.timestamp.startsWith(today)).length,
+                defects: machineHistory.filter(h => h.failureReason === 'Difetto').length
+            };
+            wetMachinesHTML += createMachineStatsTemplate(machineId, stats);
+        });
+        wetMachinesContainer.innerHTML = wetMachinesHTML;
+    }
 }
 
 
@@ -1348,9 +1580,22 @@ function parseItalianDate(dateStr) {
 
 // Funzioni di supporto per l'import
 function areHeadersValid(actual, expected) {
-    return expected.every(header => 
-        actual.some(h => h.toLowerCase().includes(header.toLowerCase()))
+    const actualLower = actual.map(h => h.toLowerCase().trim());
+    const expectedLower = expected.map(h => h.toLowerCase().trim());
+    
+    // Debug log
+    console.log('Header attuali (lowercase):', actualLower);
+    console.log('Header attesi (lowercase):', expectedLower);
+    
+    const missingHeaders = expectedLower.filter(header => 
+        !actualLower.some(h => h === header)
     );
+    
+    if (missingHeaders.length > 0) {
+        console.log('Header mancanti:', missingHeaders);
+    }
+    
+    return missingHeaders.length === 0;
 }
 
 function parseItalianDate(dateStr) {
@@ -1411,6 +1656,26 @@ function migrateData(fromVersion, toVersion) {
         console.error('Errore nella migrazione dei dati:', error);
         showNotification('Errore nella migrazione dei dati', 'error');
     }
+}
+
+function toggleGrindingMachineSelect() {
+    const username = document.getElementById('username').value.trim();
+    const grindingMachineContainer = document.getElementById('grindingMachineContainer');
+    const grindingMachineSelect = document.getElementById('grindingMachine');
+    
+    if (grindingMachineContainer && grindingMachineSelect) {
+        if (isAdmin(username)) {
+            grindingMachineContainer.style.display = 'none';
+            grindingMachineSelect.required = false;
+        } else {
+            grindingMachineContainer.style.display = 'block';
+            grindingMachineSelect.required = true;
+        }
+    }
+}
+
+function isAdmin(username) {
+    return username.toLowerCase() === 'aragona';
 }
 
 // Export delle funzioni globali
