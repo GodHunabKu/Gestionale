@@ -297,10 +297,12 @@ function createHistoryRow(entry, isRecent = false) {
         <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
     `;
 
+    // Aggiungi la colonna motivo solo se non è una vista recente
     if (!isRecent) {
         html += `<td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>`;
     }
 
+    // Aggiungi sempre la colonna azioni
     html += `
         <td>
             ${canDelete ? `
@@ -328,6 +330,7 @@ function updateTableHeaders() {
             <th>Tipo Mola</th>
             <th>Turno</th>
             <th>Data e Ora</th>
+			<th>Cancella</th>
         </tr>
     `;
 
@@ -858,7 +861,7 @@ function populateFilters() {
 
     // Popola i tipi di mola dallo storico
     const history = getHistory();
-    const types = [...new Set(history.map(h => h.grindingType))];
+    const types = [...new Set(history.map(h => h.grindingType))].sort();
     const typeSelect = document.getElementById('filterGrindingType');
     if (typeSelect) {
         typeSelect.innerHTML = '<option value="">Tutti</option>' + 
@@ -952,13 +955,13 @@ function updateGrindingTypeOptions() {
 }
 
 function resetFilters() {
-    ['filterDateStart', 'filterDateEnd', 'filterOperator', 'filterGrindingType'].forEach(id => {
+    ['filterDateStart', 'filterDateEnd', 'filterOperator', 'filterGrindingType', 
+     'filterGrindingMachine', 'filterPosition'].forEach(id => {
         const element = document.getElementById(id);
         if (element) element.value = '';
     });
     
     loadHistory();
-    document.querySelector('.filters-section')?.classList.remove('filters-active');
     showNotification('Filtri resettati', 'success');
 }
 
