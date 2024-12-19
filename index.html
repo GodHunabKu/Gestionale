@@ -23,6 +23,14 @@
             </a>
             <div class="d-flex align-items-center">
                 <span id="currentTime" class="text-light me-3"></span>
+				<span id="currentGrindingMachine" class="text-light me-3 p-2 bg-primary rounded">
+					<i class="fas fa-cog me-2"></i>
+					<span id="grindingMachineText"></span>
+				</span>
+				<span id="currentMachine" class="text-light me-3 px-3 py-1 bg-primary-dark rounded" style="display: none;">
+					<i class="fas fa-cog me-2"></i>
+					<span id="machineText"></span>
+				</span>
                 <button id="logoutButton" class="btn btn-outline-light">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
@@ -76,7 +84,6 @@
                                                 <th>Posizione</th>
                                                 <th>Tipo Mola</th>
                                                 <th>Turno</th>
-                                                <th>Data e Ora</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>

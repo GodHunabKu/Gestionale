@@ -80,16 +80,12 @@ function setupEventListeners() {
     document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
     document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
     document.getElementById('toolForm')?.addEventListener('submit', handleToolSubmit);
-    document.getElementById('module')?.addEventListener('change', validatePosition);
-    document.getElementById('position')?.addEventListener('input', validatePosition);
+    document.getElementById('module')?.addEventListener('change', function() {
+        updateGrindingTypeAndPosition();
+        validatePosition();
+    });
     document.getElementById('failureReason')?.addEventListener('change', toggleOtherReason);
-	document.getElementById('username').addEventListener('input', toggleGrindingMachineSelect);
-	
-	
-	const usernameInput = document.getElementById('username');
-    if (usernameInput) {
-        usernameInput.addEventListener('input', toggleGrindingMachineSelect);
-    }
+    document.getElementById('username')?.addEventListener('input', toggleGrindingMachineSelect);
     
     // Import/Export events
     document.getElementById('exportCSV')?.addEventListener('click', handleExport);
@@ -281,10 +277,12 @@ function migrateData(fromVersion, toVersion) {
 // Funzione per creare le righe della tabella storico
 function createHistoryRow(entry, isRecent = false) {
     const row = document.createElement('tr');
-    const timeSinceCreation = Date.now() - new Date(entry.timestamp).getTime();
-    const canDelete = currentUser?.role === 'supervisor' || 
-                     (entry.operator === currentUser?.username && timeSinceCreation <= DELETE_TIMEOUT);
-
+    const now = new Date();
+    const entryDate = new Date(entry.timestamp);
+    const timeSinceCreation = now - entryDate;
+    const isWetMachine = GRINDING_MACHINES.wet.machines.includes(entry.grindingMachine);
+    const isWithinDeleteTime = timeSinceCreation <= 5 * 60 * 1000; // 5 minuti
+    
     // Formatta la visualizzazione della rettifica
     const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
 
@@ -297,27 +295,95 @@ function createHistoryRow(entry, isRecent = false) {
         <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
     `;
 
-    // Aggiungi la colonna motivo solo se non è una vista recente
     if (!isRecent) {
+        // Aggiungi la colonna motivo per lo storico completo
         html += `<td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>`;
-    }
-
-    // Aggiungi sempre la colonna azioni
-    html += `
-        <td>
-            ${canDelete ? `
-                <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
+        
+        // Gestione delle azioni
+        html += '<td>';
+        if (currentUser.role === 'supervisor') {
+            html += `
+                <button class="btn btn-sm btn-danger me-2" onclick="handleDelete('${entry.id}')">
                     <i class="fas fa-trash"></i>
-                </button>
-            ` : ''}
-        </td>
-    `;
+                </button>`;
+            
+            if (entry.looseScrew) {
+                html += `
+                    <i class="fas fa-exclamation-triangle text-warning" 
+                       style="cursor: help;" 
+                       title="Segnalato da ${entry.reportedBy}"></i>`;
+            }
+        } else if (currentUser.role === 'operator') {
+            if (isWithinDeleteTime && entry.operator === currentUser.username) {
+                html += `
+                    <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>`;
+            } else if (isWetMachine && !entry.looseScrew) {
+                html += `
+                    <button class="btn btn-sm btn-warning" onclick="reportLooseScrew('${entry.id}')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </button>`;
+            }
+        }
+        html += '</td>';
+    } else {
+        // Per la vista delle ultime 10 mole
+        html += '<td>';
+        if (currentUser && currentUser.role === 'operator') {
+            if (isWithinDeleteTime && entry.operator === currentUser.username) {
+                html += `
+                    <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
+                        <i class="fas fa-trash"></i> Cancella
+                    </button>`;
+            } else if (isWetMachine && !entry.looseScrew) {
+                html += `
+                    <button class="btn btn-sm btn-warning" onclick="reportLooseScrew('${entry.id}')">
+                        <i class="fas fa-exclamation-triangle"></i> Segnala
+                    </button>`;
+            }
+        }
+        html += '</td>';
+    }
 
     row.innerHTML = html;
-    if (!canDelete) {
-        row.classList.add('disabled-row');
-    }
     return row;
+}
+
+function reportScrewTightening(entryId) {
+    if (confirm('Confermi di aver riavvitato questa mola?')) {
+        const history = getHistory();
+        const entry = history.find(h => h.id === entryId);
+        if (entry) {
+            entry.screwTightened = true;
+            entry.tightenedBy = currentUser.username;
+            entry.tightenedAt = new Date().toISOString();
+            
+            if (saveHistory(history)) {
+                showNotification('Riavvitaggio registrato con successo', 'success');
+                loadHistory();
+                loadRecentHistory();
+            }
+        }
+    }
+}
+
+function reportLooseScrew(entryId) {
+    if (confirm('Vuoi segnalare questa mola come svitata? Questa azione non può essere annullata.')) {
+        const history = getHistory();
+        const entry = history.find(h => h.id === entryId);
+        if (entry) {
+            entry.looseScrew = true;
+            entry.reportedBy = currentUser.username;
+            entry.reportTime = new Date().toISOString();
+            
+            if (saveHistory(history)) {
+                showNotification('Mola svitata segnalata con successo', 'success');
+                loadHistory();
+                loadRecentHistory();
+            }
+        }
+    }
 }
 
 function updateTableHeaders() {
@@ -329,8 +395,18 @@ function updateTableHeaders() {
             <th>Posizione</th>
             <th>Tipo Mola</th>
             <th>Turno</th>
+        </tr>
+    `;
+	
+	const operatorTableHeader = `
+        <tr>
+            <th>Operatore</th>
+            <th>Rettifica</th>
+            <th>Posizione</th>
+            <th>Tipo Mola</th>
+            <th>Turno</th>
             <th>Data e Ora</th>
-			<th>Cancella</th>
+            <th>Azioni</th>
         </tr>
     `;
 
@@ -352,6 +428,8 @@ function updateTableHeaders() {
     document.querySelectorAll('.table thead').forEach(thead => {
         if (thead.closest('#historyTable')) {
             thead.innerHTML = supervisorTableHeader;
+        } else if (thead.closest('#recentHistoryTable')) {
+            thead.innerHTML = operatorTableHeader;
         } else {
             thead.innerHTML = loginTableHeader;
         }
@@ -445,6 +523,12 @@ function showAppropriateView() {
             console.warn('Errore nell\'inizializzazione dashboard supervisor:', error);
         }
     }
+	
+	    const grindingMachineText = document.getElementById('grindingMachineText');
+    if (grindingMachineText && currentUser.grindingMachine) {
+        grindingMachineText.textContent = `Rettifica ${currentUser.grindingMachine}`;
+        document.getElementById('currentGrindingMachine').style.display = 'inline-block';
+    }
 
     determineShift();
     loadHistory();
@@ -537,16 +621,31 @@ function getFormData() {
 }
 
 function validatePosition() {
-    const grindingMachine = currentUser.grindingMachine;
+    const module = document.getElementById('module').value;
     const position = parseInt(document.getElementById('position').value);
-    const maxPosition = MACHINE_POSITIONS[grindingMachine];
+    const grindingType = document.getElementById('grindingType').value;
+    const moduleConfig = GRINDING_MACHINES.modules[module];
+    
+    if (!moduleConfig) return false;
+
+    let isValid = false;
+    if (grindingType === 'BISELLINO') {
+        const allBevelPositions = [
+            ...Object.values(moduleConfig.bevels.operator),
+            ...Object.values(moduleConfig.bevels.nonOperator)
+        ].flat();
+        isValid = allBevelPositions.includes(position);
+    } else {
+        isValid = position >= 1 && position <= moduleConfig.motors;
+    }
+
     const feedback = document.getElementById('positionFeedback');
     const input = document.getElementById('position');
-
-    const isValid = position >= 1 && position <= maxPosition;
+    
     input.classList.toggle('is-invalid', !isValid);
     feedback.style.display = isValid ? 'none' : 'block';
-    feedback.textContent = `Posizione non valida per la rettifica ${grindingMachine} (max: ${maxPosition})`;
+    feedback.textContent = `Posizione non valida per il modulo selezionato`;
+    
     return isValid;
 }
 
@@ -588,8 +687,44 @@ function loadRecentHistory() {
     if (!tbody) return;
 
     tbody.innerHTML = '';
-    history.slice(0, 10).forEach(entry => {
-        const row = createHistoryRow(entry, true);
+
+    // Filtra la storia in base alla rettifica dell'operatore corrente
+    let filteredHistory = history;
+    if (currentUser && currentUser.role === 'operator' && currentUser.grindingMachine) {
+        filteredHistory = history.filter(entry => entry.grindingMachine === currentUser.grindingMachine);
+    }
+
+    // Prendi le ultime 10 voci
+    filteredHistory.slice(0, 10).forEach(entry => {
+        const row = document.createElement('tr');
+        const timeSinceCreation = Date.now() - new Date(entry.timestamp).getTime();
+        const isWetMachine = GRINDING_MACHINES.wet.machines.includes(entry.grindingMachine);
+        const isWithinDeleteTime = timeSinceCreation <= 5 * 60 * 1000; // 5 minuti
+        
+        const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
+        
+        let actionButton = '';
+        if (isWithinDeleteTime && entry.operator === currentUser.username) {
+            actionButton = `
+                <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
+                    <i class="fas fa-trash"></i> Cancella
+                </button>`;
+        } else if (isWetMachine && !entry.looseScrew && currentUser.role === 'operator') {
+            actionButton = `
+                <button class="btn btn-sm btn-warning" onclick="reportLooseScrew('${entry.id}')">
+                    <i class="fas fa-exclamation-triangle"></i> Segnala
+                </button>`;
+        }
+
+        row.innerHTML = `
+            <td>${entry.operator}</td>
+            <td>${rettificaDisplay}</td>
+            <td>${entry.position}</td>
+            <td>${entry.grindingType}</td>
+            <td>${entry.shift}</td>
+            <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
+            <td>${actionButton}</td>
+        `;
         tbody.appendChild(row);
     });
 }
@@ -602,17 +737,20 @@ function loadRecentHistoryOnLogin() {
     tbody.innerHTML = '';
     history.slice(0, 10).forEach(entry => {
         const row = document.createElement('tr');
+        const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
+        
         row.innerHTML = `
             <td>${entry.operator}</td>
-            <td>${entry.module}</td>
+            <td>${rettificaDisplay}</td>
             <td>${entry.position}</td>
             <td>${entry.grindingType}</td>
             <td>${entry.shift}</td>
-            <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
         `;
         tbody.appendChild(row);
     });
 }
+
+
 
 // Dashboard Supervisore
 function initializeSupervisorDashboard() {
@@ -1679,6 +1817,44 @@ function toggleGrindingMachineSelect() {
 
 function isAdmin(username) {
     return username.toLowerCase() === 'aragona';
+}
+
+function updateGrindingTypeAndPosition() {
+    const grindingType = document.getElementById('grindingType');
+    const position = document.getElementById('position');
+    const module = document.getElementById('module').value;
+    const moduleConfig = GRINDING_MACHINES.modules[module];
+
+    if (!moduleConfig) return;
+
+    // Determina se la macchina è a umido o a secco
+    const machine = currentUser.grindingMachine;
+    const isWet = GRINDING_MACHINES.wet.machines.includes(machine);
+    const wheels = isWet ? GRINDING_MACHINES.wet.wheels : GRINDING_MACHINES.dry.wheels;
+
+    // Aggiungi l'opzione bisello
+    const wheelOptions = [...wheels, 'BISELLINO'];
+
+    // Aggiorna le opzioni del tipo mola
+    grindingType.innerHTML = '<option value="">Seleziona Tipo</option>' +
+        wheelOptions.map(wheel => `<option value="${wheel}">${wheel}</option>`).join('');
+
+    // Event listener per il tipo mola
+    grindingType.addEventListener('change', function() {
+        if (this.value === 'BISELLINO') {
+            // Chiedi se è lato operatore o non operatore
+            const side = confirm('Clicca OK per lato operatore, ANNULLA per lato non operatore');
+            const bevelConfig = side ? moduleConfig.bevels.operator : moduleConfig.bevels.nonOperator;
+            
+            position.value = bevelConfig.start;
+            position.min = bevelConfig.start;
+            position.max = bevelConfig.end;
+        } else {
+            // Per le mole normali
+            position.min = 1;
+            position.max = moduleConfig.motors;
+        }
+    });
 }
 
 // Export delle funzioni globali
