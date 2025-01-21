@@ -11,7 +11,7 @@ const DELETE_TIMEOUT = 5 * 60 * 1000; // 5 minuti
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minuti
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
 const COMPRESSION_ENABLED = true;
-const DATA_VERSION = '1.0.0';
+const DATA_VERSION = '1.0.0'; // Aggiungi questa linea
 
 // Inizializzazione dell'applicazione
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,7 +37,7 @@ function refreshAllStats() {
         showLoadingOverlay();
         const history = getHistory();
         updateStatistics(history);
-        updateGrindingStats(); // Aggiungi questa linea
+        updateGrindingStats();
         updateTopOperators(history);
         
         const weeklyData = calculateWeeklyData(history);
@@ -134,18 +134,6 @@ function checkDataVersion() {
     }
 }
 
-function migrateData(fromVersion, toVersion) {
-    try {
-        const history = getHistory();
-        // Implementa qui la logica di migrazione per versioni specifiche se necessario
-        saveHistory(history);
-        showNotification(`Dati migrati con successo alla versione ${toVersion}`, 'success');
-    } catch (error) {
-        console.error('Errore nella migrazione dei dati:', error);
-        showNotification('Errore nella migrazione dei dati', 'error');
-    }
-}
-
 // Gestione cache e storage
 function getHistory() {
     if (historyCache && lastCacheUpdate && (Date.now() - lastCacheUpdate < CACHE_DURATION)) {
@@ -194,11 +182,7 @@ function handleStorageError(error) {
 function compressData(data) {
     if (!COMPRESSION_ENABLED) return JSON.stringify(data);
     try {
-        const jsonString = JSON.stringify(data);
-        // Prima codifica in URI, poi in base64
-        const encoded = encodeURIComponent(jsonString);
-        const compressed = btoa(encoded);
-        return compressed;
+        return btoa(JSON.stringify(data));
     } catch (error) {
         console.error('Errore nella compressione:', error);
         return JSON.stringify(data);
@@ -258,12 +242,6 @@ function migrateData(fromVersion, toVersion) {
             }
         }
 
-        // Assicurati che history sia un array
-        if (!Array.isArray(history)) {
-            console.warn('History non è un array, inizializzo array vuoto');
-            history = [];
-        }
-
         // Salva i dati nel nuovo formato
         saveHistory(history);
         localStorage.setItem('dataVersion', toVersion);
@@ -274,16 +252,14 @@ function migrateData(fromVersion, toVersion) {
     }
 }
 
-// Funzione per creare le righe della tabella storico
-function createHistoryRow(entry, isRecent = false) {
+function createHistoryRow(entry, showActions = true) {
     const row = document.createElement('tr');
     const now = new Date();
     const entryDate = new Date(entry.timestamp);
     const timeSinceCreation = now - entryDate;
     const isWetMachine = GRINDING_MACHINES.wet.machines.includes(entry.grindingMachine);
-    const isWithinDeleteTime = timeSinceCreation <= 5 * 60 * 1000; // 5 minuti
-    
-    // Formatta la visualizzazione della rettifica
+    const isWithinDeleteTime = timeSinceCreation <= DELETE_TIMEOUT;
+
     const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
 
     let html = `
@@ -292,14 +268,11 @@ function createHistoryRow(entry, isRecent = false) {
         <td>${entry.position}</td>
         <td>${entry.grindingType}</td>
         <td>${entry.shift}</td>
-        <td>${new Date(entry.timestamp).toLocaleString('it-IT')}</td>
+        <td>${entryDate.toLocaleString('it-IT')}</td>
+        <td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>
     `;
 
-    if (!isRecent) {
-        // Aggiungi la colonna motivo per lo storico completo
-        html += `<td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>`;
-        
-        // Gestione delle azioni
+    if (showActions) {
         html += '<td>';
         if (currentUser.role === 'supervisor') {
             html += `
@@ -327,45 +300,10 @@ function createHistoryRow(entry, isRecent = false) {
             }
         }
         html += '</td>';
-    } else {
-        // Per la vista delle ultime 10 mole
-        html += '<td>';
-        if (currentUser && currentUser.role === 'operator') {
-            if (isWithinDeleteTime && entry.operator === currentUser.username) {
-                html += `
-                    <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
-                        <i class="fas fa-trash"></i> Cancella
-                    </button>`;
-            } else if (isWetMachine && !entry.looseScrew) {
-                html += `
-                    <button class="btn btn-sm btn-warning" onclick="reportLooseScrew('${entry.id}')">
-                        <i class="fas fa-exclamation-triangle"></i> Segnala
-                    </button>`;
-            }
-        }
-        html += '</td>';
     }
 
     row.innerHTML = html;
     return row;
-}
-
-function reportScrewTightening(entryId) {
-    if (confirm('Confermi di aver riavvitato questa mola?')) {
-        const history = getHistory();
-        const entry = history.find(h => h.id === entryId);
-        if (entry) {
-            entry.screwTightened = true;
-            entry.tightenedBy = currentUser.username;
-            entry.tightenedAt = new Date().toISOString();
-            
-            if (saveHistory(history)) {
-                showNotification('Riavvitaggio registrato con successo', 'success');
-                loadHistory();
-                loadRecentHistory();
-            }
-        }
-    }
 }
 
 function reportLooseScrew(entryId) {
@@ -387,7 +325,6 @@ function reportLooseScrew(entryId) {
 }
 
 function updateTableHeaders() {
-    // Update login page table header
     const loginTableHeader = `
         <tr>
             <th>Operatore</th>
@@ -397,8 +334,8 @@ function updateTableHeaders() {
             <th>Turno</th>
         </tr>
     `;
-	
-	const operatorTableHeader = `
+    
+    const operatorTableHeader = `
         <tr>
             <th>Operatore</th>
             <th>Rettifica</th>
@@ -410,7 +347,6 @@ function updateTableHeaders() {
         </tr>
     `;
 
-    // Update supervisor view table header
     const supervisorTableHeader = `
         <tr>
             <th>Operatore</th>
@@ -435,6 +371,7 @@ function updateTableHeaders() {
         }
     });
 }
+
 // Sincronizzazione tra schede
 function handleStorageChange(e) {
     if (e.key === 'toolHistory') {
@@ -462,20 +399,17 @@ function handleLogin(e) {
     const grindingMachine = document.getElementById('grindingMachine').value;
 
     const user = window.users.find(u => u.username === username && u.password === password);
-    
+
     if (user) {
         currentUser = {
             ...user,
             grindingMachine: user.role === 'supervisor' ? null : grindingMachine
         };
 
-        // Verifica se l'utente è un operatore e ha selezionato una rettifica
-        if (user.role === 'operator' && !grindingMachine) {
-            showNotification('Seleziona una rettifica', 'error');
-            return;
-        }
-        
+        console.log('Utente loggato:', currentUser); // Debug
         showAppropriateView();
+        document.getElementById('toolForm').reset(); // Resetta il form
+        determineShift(); // Imposta il turno corrente dopo il reset
         showNotification(`Benvenuto ${username}!`, 'success');
         resetInactivityTimer();
     } else {
@@ -511,30 +445,27 @@ function showAppropriateView() {
     document.getElementById('appSection').style.display = 'block';
     document.getElementById('logoutButton').style.display = 'block';
 
+    const grindingMachineText = document.getElementById('grindingMachineText');
+    if (grindingMachineText) {
+        if (currentUser.role === 'supervisor') {
+            grindingMachineText.textContent = ''; // Nascondi la rettifica per l'admin
+        } else {
+            grindingMachineText.textContent = `Rettifica ${currentUser.grindingMachine}`;
+        }
+    }
+
     if (currentUser.role === 'operator') {
         document.getElementById('operatorView').style.display = 'block';
         document.getElementById('supervisorView').style.display = 'none';
-    } else {
+    } else if (currentUser.role === 'supervisor') {
         document.getElementById('supervisorView').style.display = 'block';
         document.getElementById('operatorView').style.display = 'none';
-        try {
-            initializeSupervisorDashboard();
-        } catch (error) {
-            console.warn('Errore nell\'inizializzazione dashboard supervisor:', error);
-        }
-    }
-	
-	    const grindingMachineText = document.getElementById('grindingMachineText');
-    if (grindingMachineText && currentUser.grindingMachine) {
-        grindingMachineText.textContent = `Rettifica ${currentUser.grindingMachine}`;
-        document.getElementById('currentGrindingMachine').style.display = 'inline-block';
+        initializeSupervisorDashboard();
     }
 
-    determineShift();
     loadHistory();
     loadRecentHistory();
 }
-
 function startClock() {
     const clockElement = document.getElementById('currentTime');
     if (!clockElement) return;
@@ -579,6 +510,37 @@ function hideLoadingOverlay() {
     if (overlay) overlay.classList.remove('active');
 }
 
+function updateAllOperators() {
+    const history = getHistory();
+    const operatorStats = {};
+
+    // Calcola il numero di cambi per ogni operatore
+    history.forEach(entry => {
+        operatorStats[entry.operator] = (operatorStats[entry.operator] || 0) + 1;
+    });
+
+    // Ordina gli operatori per numero di cambi (decrescente)
+    const sortedOperators = Object.entries(operatorStats)
+        .sort(([, a], [, b]) => b - a);
+
+    const container = document.getElementById('allOperators');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    sortedOperators.forEach(([operator, count]) => {
+        const operatorCard = document.createElement('div');
+        operatorCard.className = 'operator-card mb-3 p-3 bg-light rounded';
+        operatorCard.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="operator-name">${operator}</div>
+                <div class="operator-count">${count} cambi</div>
+            </div>
+        `;
+        container.appendChild(operatorCard);
+    });
+}
+
 // Gestione form mole
 function handleToolSubmit(e) {
     e.preventDefault();
@@ -589,7 +551,7 @@ function handleToolSubmit(e) {
         ...formData,
         id: Date.now().toString(),
         operator: currentUser.username,
-        grindingMachine: currentUser.grindingMachine, // Assicurati che la rettifica sia sempre inclusa
+        grindingMachine: currentUser.grindingMachine,
         timestamp: new Date().toISOString()
     };
 
@@ -603,6 +565,7 @@ function handleToolSubmit(e) {
         
         if (currentUser.role === 'supervisor') {
             refreshAllStats();
+            setupCharts();
         }
 
         showNotification('Cambio registrato con successo', 'success');
@@ -662,9 +625,10 @@ function toggleOtherReason() {
 function determineShift() {
     const now = new Date();
     const hour = now.getHours();
-    const shift = hour >= 6 && hour < 14 ? 'Mattina' : 
-                 hour >= 14 && hour < 22 ? 'Pomeriggio' : 'Notte';
+    const shift = hour >= 4 && hour < 12 ? 'Mattina' : 
+                 hour >= 12 && hour < 20 ? 'Pomeriggio' : 'Notte';
     
+    console.log('Turno determinato:', shift); // Debug
     document.getElementById('shift').value = shift;
 }
 
@@ -676,7 +640,7 @@ function loadHistory() {
 
     tbody.innerHTML = '';
     history.forEach(entry => {
-        const row = createHistoryRow(entry);
+        const row = createHistoryRow(entry, true); // Mostra azioni
         tbody.appendChild(row);
     });
 }
@@ -688,13 +652,11 @@ function loadRecentHistory() {
 
     tbody.innerHTML = '';
 
-    // Filtra la storia in base alla rettifica dell'operatore corrente
     let filteredHistory = history;
     if (currentUser && currentUser.role === 'operator' && currentUser.grindingMachine) {
         filteredHistory = history.filter(entry => entry.grindingMachine === currentUser.grindingMachine);
     }
 
-    // Prendi le ultime 10 voci
     filteredHistory.slice(0, 10).forEach(entry => {
         const row = document.createElement('tr');
         const timeSinceCreation = Date.now() - new Date(entry.timestamp).getTime();
@@ -755,19 +717,23 @@ function loadRecentHistoryOnLogin() {
 // Dashboard Supervisore
 function initializeSupervisorDashboard() {
     updateStatistics();
-    updateGrindingStats(); // Aggiungi questa linea
+    updateGrindingStats();
     setupCharts();
     populateFilters();
-    updateTopOperators();
+    updateAllOperators(); // Aggiungi questa linea
 }
 
-function updateStatistics() {
+function updateStatistics(history = getHistory()) {
     if (!currentUser || currentUser.role !== 'supervisor') return;
 
     try {
-        const history = getHistory();
         const today = new Date().toISOString().split('T')[0];
-        
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        // Calcola weekChanges una sola volta
+        const weekChanges = history.filter(h => new Date(h.timestamp) >= weekAgo).length;
+
         // Statistiche del giorno
         const todayChangesElement = document.getElementById('todayChanges');
         if (todayChangesElement) {
@@ -775,25 +741,25 @@ function updateStatistics() {
             todayChangesElement.textContent = todayChanges;
         }
 
-        // Statistiche per rettifica
-        GRINDING_MACHINES.dry.machines.concat(GRINDING_MACHINES.wet.machines).forEach(machine => {
-            const statsElement = document.getElementById(`stats-machine-${machine}`);
-            if (statsElement) {
-                const machineHistory = history.filter(h => h.grindingMachine === machine);
-                const stats = {
-                    total: machineHistory.length,
-                    today: machineHistory.filter(h => h.timestamp.startsWith(today)).length,
-                    defective: machineHistory.filter(h => h.failureReason === 'Difetto').length
-                };
-                
-                statsElement.innerHTML = `
-                    <h5>Rettifica ${machine}</h5>
-                    <p>Totale: ${stats.total}</p>
-                    <p>Oggi: ${stats.today}</p>
-                    <p>Difetti: ${stats.defective}</p>
-                `;
-            }
-        });
+        // Statistiche della settimana
+        const weekChangesElement = document.getElementById('weekChanges');
+        if (weekChangesElement) {
+            weekChangesElement.textContent = weekChanges;
+        }
+
+        // Mole difettose
+        const defectiveCountElement = document.getElementById('defectiveCount');
+        if (defectiveCountElement) {
+            const defectiveCount = history.filter(h => h.failureReason === 'Difetto').length;
+            defectiveCountElement.textContent = defectiveCount;
+        }
+
+        // Media giornaliera
+        const dailyAverageElement = document.getElementById('dailyAverage');
+        if (dailyAverageElement) {
+            const dailyAverage = weekChanges > 0 ? Math.round(weekChanges / 7) : 0;
+            dailyAverageElement.textContent = dailyAverage;
+        }
     } catch (error) {
         console.warn('Errore nell\'aggiornamento delle statistiche:', error);
     }
@@ -808,8 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Gestione efficiente dei grafici
-function setupCharts() {
-    const history = getHistory();
+function setupCharts(history = getHistory()) {
     const weeklyData = calculateWeeklyData(history);
     const typeData = calculateTypeData(history);
     
@@ -817,48 +782,106 @@ function setupCharts() {
     setupGrindingTypeChart(typeData);
 }
 
+function createTableRow(entry, showActions = true) {
+    const row = document.createElement('tr');
+    const now = new Date();
+    const entryDate = new Date(entry.timestamp);
+    const timeSinceCreation = now - entryDate;
+    const isWetMachine = GRINDING_MACHINES.wet.machines.includes(entry.grindingMachine);
+    const isWithinDeleteTime = timeSinceCreation <= DELETE_TIMEOUT;
+
+    const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
+
+    let html = `
+        <td>${entry.operator}</td>
+        <td>${rettificaDisplay}</td>
+        <td>${entry.position}</td>
+        <td>${entry.grindingType}</td>
+        <td>${entry.shift}</td>
+        <td>${entryDate.toLocaleString('it-IT')}</td>
+    `;
+
+    if (showActions) {
+        html += '<td>';
+        if (currentUser.role === 'supervisor') {
+            html += `
+                <button class="btn btn-sm btn-danger me-2" onclick="handleDelete('${entry.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>`;
+            
+            if (entry.looseScrew) {
+                html += `
+                    <i class="fas fa-exclamation-triangle text-warning" 
+                       style="cursor: help;" 
+                       title="Segnalato da ${entry.reportedBy}"></i>`;
+            }
+        } else if (currentUser.role === 'operator') {
+            if (isWithinDeleteTime && entry.operator === currentUser.username) {
+                html += `
+                    <button class="btn btn-sm btn-danger" onclick="handleDelete('${entry.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>`;
+            } else if (isWetMachine && !entry.looseScrew) {
+                html += `
+                    <button class="btn btn-sm btn-warning" onclick="reportLooseScrew('${entry.id}')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </button>`;
+            }
+        }
+        html += '</td>';
+    }
+
+    row.innerHTML = html;
+    return row;
+}
+
 function setupWeeklyChart(data) {
     const ctx = document.getElementById('weeklyChart')?.getContext('2d');
     if (!ctx) return;
 
+    // Distruggi l'istanza precedente del grafico, se esiste
+    if (weeklyChartInstance) {
+        weeklyChartInstance.destroy();
+    }
+
+    // Crea le etichette per gli ultimi 7 giorni
     const labels = Array(7).fill().map((_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - i);
         return date.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric' });
     }).reverse();
 
-    if (weeklyChartInstance) {
-        weeklyChartInstance.destroy();
-    }
-
+    // Crea il grafico
     weeklyChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: labels, // Etichette per i giorni
             datasets: [{
-                label: 'Cambi Giornalieri',
-                data: data,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                label: 'Cambi Giornalieri', // Etichetta del dataset
+                data: data, // Dati passati alla funzione
+                backgroundColor: 'rgba(54, 162, 235, 0.5)', // Colore di sfondo delle barre
+                borderColor: 'rgba(54, 162, 235, 1)', // Colore del bordo delle barre
+                borderWidth: 1 // Spessore del bordo
             }]
         },
         options: {
-            responsive: true,
+            responsive: true, // Rende il grafico responsive
             scales: {
                 y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
+                    beginAtZero: true, // Inizia l'asse Y da zero
+                    ticks: {
+                        stepSize: 1 // Imposta il passo dell'asse Y a 1
+                    }
                 }
             },
             plugins: {
                 legend: {
-                    display: true,
-                    position: 'top'
+                    display: true, // Mostra la legenda
+                    position: 'top' // Posizione della legenda
                 },
                 title: {
-                    display: true,
-                    text: 'Andamento Settimanale Cambi Mole'
+                    display: true, // Mostra il titolo
+                    text: 'Andamento Settimanale Cambi Mole' // Testo del titolo
                 }
             }
         }
@@ -1056,12 +1079,27 @@ function updateHistoryTable(filteredHistory) {
 function filterHistory(history, filters) {
     return history.filter(entry => {
         const entryDate = entry.timestamp.split('T')[0];
-        return (!filters.dateStart || entryDate >= filters.dateStart) &&
-               (!filters.dateEnd || entryDate <= filters.dateEnd) &&
-               (!filters.operator || entry.operator === filters.operator) &&
-               (!filters.grindingType || entry.grindingType === filters.grindingType) &&
-               (!filters.grindingMachine || entry.grindingMachine === filters.grindingMachine) &&
-               (!filters.position || parseInt(entry.position) === parseInt(filters.position));
+        return Object.entries(filters).every(([key, value]) => {
+            if (!value) return true; // Se il filtro è vuoto, ignoralo
+            switch (key) {
+                case 'dateStart':
+                    return entryDate >= value;
+                case 'dateEnd':
+                    return entryDate <= value;
+                case 'operator':
+                    return entry.operator === value;
+                case 'grindingType':
+                    return entry.grindingType === value;
+                case 'grindingMachine':
+                    return entry.grindingMachine === value;
+                case 'position':
+                    return parseInt(entry.position) === parseInt(value);
+                case 'reason':
+                    return entry.failureReason === value;
+                default:
+                    return true;
+            }
+        });
     });
 }
 
@@ -1072,34 +1110,29 @@ function handleFilterApply() {
         operator: document.getElementById('filterOperator')?.value,
         grindingType: document.getElementById('filterGrindingType')?.value,
         grindingMachine: document.getElementById('filterGrindingMachine')?.value,
-        position: document.getElementById('filterPosition')?.value
+        position: document.getElementById('filterPosition')?.value,
+        reason: document.getElementById('filterReason')?.value // Aggiungi questa linea
     };
 
     const history = getHistory();
     const filteredHistory = filterHistory(history, filters);
+    
     updateHistoryTable(filteredHistory);
-}
-
-function updateGrindingTypeOptions() {
-    const grindingType = document.getElementById('grindingType');
-    if (!grindingType) return;
-
-    const machine = currentUser.grindingMachine;
-    const isWet = GRINDING_MACHINES.wet.machines.includes(machine);
-    const wheels = isWet ? GRINDING_MACHINES.wet.wheels : GRINDING_MACHINES.dry.wheels;
-
-    grindingType.innerHTML = '<option value="">Seleziona Tipo</option>' +
-        wheels.map(wheel => `<option value="${wheel}">${wheel}</option>`).join('');
+    updateStatistics(filteredHistory);
+    setupCharts(filteredHistory);
 }
 
 function resetFilters() {
     ['filterDateStart', 'filterDateEnd', 'filterOperator', 'filterGrindingType', 
-     'filterGrindingMachine', 'filterPosition'].forEach(id => {
+     'filterGrindingMachine', 'filterPosition', 'filterReason'].forEach(id => { // Aggiungi 'filterReason'
         const element = document.getElementById(id);
         if (element) element.value = '';
     });
     
-    loadHistory();
+    const history = getHistory();
+    updateHistoryTable(history);
+    updateStatistics(history);
+    setupCharts(history);
     showNotification('Filtri resettati', 'success');
 }
 
@@ -1120,6 +1153,7 @@ function handleDelete(id) {
             loadHistory();
             loadRecentHistory();
             refreshAllStats();
+            updateAllOperators(); // Aggiungi questa linea
             showNotification('Record eliminato con successo', 'success');
         }
     } else {
@@ -1155,34 +1189,19 @@ function setupAutomaticBackup() {
 }
 
 // Sistema di backup con retry
-async function performBackup(retryCount = 3, delay = 5000) {
-    for (let attempt = 1; attempt <= retryCount; attempt++) {
-        try {
-            const history = getHistory();
-            const date = new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
-            
-            // Crea il file CSV
-            const csv = generateCSV(history);
-            
-            // Salva il file localmente
-            await saveBackupLocally(csv, date);
-
-            // Invia il backup via email
-            await sendBackupEmail(csv, date);
-            
-            console.log('Backup completato con successo');
-            return true;
-        } catch (error) {
-            console.error(`Tentativo ${attempt} fallito:`, error);
-            
-            if (attempt < retryCount) {
-                console.log(`Nuovo tentativo tra ${delay/1000} secondi...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                showNotification('Backup fallito dopo multipli tentativi', 'error');
-                return false;
-            }
-        }
+async function performBackup() {
+    try {
+        const history = getHistory();
+        const date = new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
+        const csv = generateCSV(history);
+        
+        await saveBackupLocally(csv, date);
+        await sendBackupEmail(csv, date);
+        
+        console.log('Backup completato con successo');
+    } catch (error) {
+        console.error('Errore durante il backup:', error);
+        showNotification('Backup fallito', 'error');
     }
 }
 
@@ -1508,9 +1527,6 @@ function handleFileRead(e) {
             'Dettagli'
         ];
         
-        console.log('Headers trovati:', headers);
-        console.log('Headers attesi:', expectedHeaders);
-        
         if (!areHeadersValid(headers, expectedHeaders)) {
             throw new Error('Headers CSV non validi. Attesi: ' + expectedHeaders.join(', '));
         }
@@ -1572,6 +1588,7 @@ function processImportedData(importedData) {
         loadRecentHistory();
         if (currentUser?.role === 'supervisor') {
             refreshAllStats();
+            updateAllOperators(); // Aggiungi questa linea
         }
         document.getElementById('importCSV').value = '';
         showNotification(`Importazione completata: ${uniqueData.length} nuovi record importati`, 'success');
@@ -1682,59 +1699,12 @@ function updateGrindingStats() {
 
 // Support functions for import
 function areHeadersValid(actual, expected) {
-    return expected.every(header => 
-        actual.some(h => h.toLowerCase().includes(header.toLowerCase()))
-    );
-}
-
-function parseItalianDate(dateStr) {
-    try {
-        const [datePart, timePart] = dateStr.split(' ');
-        const [day, month, year] = datePart.includes('/')
-            ? datePart.split('/')
-            : datePart.split('-');
-            
-        let [hours, minutes] = ['00', '00'];
-        if (timePart) {
-            [hours, minutes] = timePart.split(':');
-        }
-        
-        const date = new Date(
-            year.length === 2 ? '20' + year : year,
-            parseInt(month) - 1,
-            parseInt(day),
-            parseInt(hours),
-            parseInt(minutes)
-        );
-        
-        if (isNaN(date.getTime())) {
-            throw new Error('Data non valida');
-        }
-        
-        return date;
-    } catch (error) {
-        console.error('Errore nel parsing della data:', error);
-        return new Date(); // Fallback to current date
-    }
-}
-
-
-// Funzioni di supporto per l'import
-function areHeadersValid(actual, expected) {
     const actualLower = actual.map(h => h.toLowerCase().trim());
     const expectedLower = expected.map(h => h.toLowerCase().trim());
-    
-    // Debug log
-    console.log('Header attuali (lowercase):', actualLower);
-    console.log('Header attesi (lowercase):', expectedLower);
     
     const missingHeaders = expectedLower.filter(header => 
         !actualLower.some(h => h === header)
     );
-    
-    if (missingHeaders.length > 0) {
-        console.log('Header mancanti:', missingHeaders);
-    }
     
     return missingHeaders.length === 0;
 }
@@ -1766,36 +1736,7 @@ function parseItalianDate(dateStr) {
         return date;
     } catch (error) {
         console.error('Errore nel parsing della data:', error);
-        return new Date(); // Fallback alla data corrente
-    }
-}
-
-function migrateData(fromVersion, toVersion) {
-    try {
-        let history = [];
-        const data = localStorage.getItem('toolHistory');
-        
-        if (data) {
-            try {
-                // Prima prova a parsare come JSON normale
-                history = JSON.parse(data);
-            } catch {
-                try {
-                    // Se fallisce, prova a decomprimere
-                    history = decompressData(data);
-                } catch {
-                    // Se tutto fallisce, inizia con array vuoto
-                    history = [];
-                }
-            }
-        }
-
-        // Salva i dati nel nuovo formato
-        saveHistory(history);
-        showNotification(`Dati migrati con successo alla versione ${toVersion}`, 'success');
-    } catch (error) {
-        console.error('Errore nella migrazione dei dati:', error);
-        showNotification('Errore nella migrazione dei dati', 'error');
+        return new Date(); // Fallback to current date
     }
 }
 

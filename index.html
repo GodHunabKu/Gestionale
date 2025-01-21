@@ -3,34 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Cambio Mole</title>
+    <title>Gestionale Cambio Mole - Marazzi</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <div id="notification" class="notification"></div>
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Caricamento...</span>
-        </div>
-    </div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navbar con logo Marazzi -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-marazzi">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-cogs me-2"></i>Gestionale Mole
+                <img src="marazzi-logo.png" alt="Marazzi Logo" class="marazzi-logo">
+                Gestionale Cambio Mole
             </a>
             <div class="d-flex align-items-center">
                 <span id="currentTime" class="text-light me-3"></span>
-				<span id="currentGrindingMachine" class="text-light me-3 p-2 bg-primary rounded">
-					<i class="fas fa-cog me-2"></i>
-					<span id="grindingMachineText"></span>
-				</span>
-				<span id="currentMachine" class="text-light me-3 px-3 py-1 bg-primary-dark rounded" style="display: none;">
-					<i class="fas fa-cog me-2"></i>
-					<span id="machineText"></span>
-				</span>
+                <span id="currentGrindingMachine" class="text-light me-3 p-2 bg-marazzi-secondary rounded">
+                    <i class="fas fa-cog me-2"></i>
+                    <span id="grindingMachineText"></span>
+                </span>
                 <button id="logoutButton" class="btn btn-outline-light">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
@@ -38,381 +29,391 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <!-- Sezione Login -->
-        <div id="loginSection">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h2 class="card-title text-center mb-4">Accesso Utente</h2>
-                            <form id="loginForm">
-								<div class="mb-3">
-									<label for="username" class="form-label">Nome Utente</label>
-									<input type="text" class="form-control" id="username" required>
-								</div>
-								<div class="mb-3">
-									<label for="password" class="form-label">Password</label>
-									<input type="password" class="form-control" id="password" required>
-								</div>
-								<div class="mb-3" id="grindingMachineContainer" style="display: none;">
-									<label for="grindingMachine" class="form-label">Rettifica</label>
-									<select class="form-select" id="grindingMachine">
-										<option value="">Seleziona Rettifica</option>
-										<option value="0">Rettifica 0 (Secco)</option>
-										<option value="1">Rettifica 1 (Umido)</option>
-										<option value="2">Rettifica 2 (Umido)</option>
-										<option value="3">Rettifica 3 (Secco)</option>
-										<option value="4">Rettifica 4 (Secco)</option>
-										<option value="5">Rettifica 5 (Secco)</option>
-									</select>
-								</div>
-								<button type="submit" class="btn btn-primary w-100">
-									<i class="fas fa-sign-in-alt me-2"></i>Accedi
-								</button>
-							</form>
-                            
-                            <!-- Ultime 10 mole cambiate (visibile a tutti) -->
-                            <div class="mt-5">
-                                <h3 class="text-center mb-4">Ultime 10 Mole Cambiate</h3>
-                                <div class="table-responsive">
-                                    <table class="table table-striped" id="recentHistoryTableLogin">
-                                        <thead>
-                                            <tr>
-                                                <th>Operatore</th>
-                                                <th>Rettifica</th>
-                                                <th>Posizione</th>
-                                                <th>Tipo Mola</th>
-                                                <th>Turno</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+    <!-- Sezione Login -->
+    <div id="loginSection" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Accesso Utente</h2>
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Nome Utente</label>
+                                <input type="text" class="form-control" id="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="mb-3" id="grindingMachineContainer" style="display: none;">
+                                <label for="grindingMachine" class="form-label">Rettifica</label>
+                                <select class="form-select" id="grindingMachine">
+                                    <option value="">Seleziona Rettifica</option>
+                                    <option value="0">Rettifica 0 (Secco)</option>
+                                    <option value="1">Rettifica 1 (Umido)</option>
+                                    <option value="2">Rettifica 2 (Umido)</option>
+                                    <option value="3">Rettifica 3 (Secco)</option>
+                                    <option value="4">Rettifica 4 (Secco)</option>
+                                    <option value="5">Rettifica 5 (Secco)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-marazzi w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>Accedi
+                            </button>
+                        </form>
+
+                        <!-- Ultime 10 mole cambiate -->
+                        <div class="mt-5">
+                            <h3 class="text-center mb-4">Ultime 10 Mole Cambiate</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="recentHistoryTableLogin">
+                                    <thead>
+                                        <tr>
+                                            <th>Operatore</th>
+                                            <th>Rettifica</th>
+                                            <th>Posizione</th>
+                                            <th>Tipo Mola</th>
+                                            <th>Turno</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Sezione Applicazione -->
-        <div id="appSection" style="display: none;">
-            <!-- Vista Operatore -->
-            <div id="operatorView" style="display: none;">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h2 class="card-title">Registra Cambio Mola</h2>
-                        <form id="toolForm">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="module" class="form-label">Modulo</label>
-                                    <select class="form-select" id="module" required>
-                                        <option value="">Seleziona Modulo</option>
-                                        <option value="Modulo 1">Modulo 1 (24 mole, 2 biselli)</option>
-                                        <option value="Modulo 2">Modulo 2 (18 mole, 2 biselli)</option>
-                                    </select>
+    <!-- Sezione Applicazione -->
+    <div id="appSection" style="display: none;">
+        <!-- Vista Operatore -->
+        <div id="operatorView" style="display: none;">
+            <div class="card mb-4 shadow-lg">
+                <div class="card-body">
+                    <h2 class="card-title">Registra Cambio Mola</h2>
+                    <form id="toolForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="module" class="form-label">Modulo</label>
+                                <select class="form-select" id="module" required>
+                                    <option value="">Seleziona Modulo</option>
+                                    <option value="Modulo 1">Modulo 1 (24 mole, 2 biselli)</option>
+                                    <option value="Modulo 2">Modulo 2 (18 mole, 2 biselli)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="position" class="form-label">Posizione della Mola</label>
+                                <input type="number" class="form-control" id="position" required>
+                                <div id="positionFeedback" class="invalid-feedback">
+                                    Posizione non valida per il modulo selezionato
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="position" class="form-label">Posizione della Mola</label>
-                                    <input type="number" class="form-control" id="position" required>
-                                    <div id="positionFeedback" class="invalid-feedback">
-                                        Posizione non valida per il modulo selezionato
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grindingType" class="form-label">Tipo di Mola</label>
+                                <select class="form-select" id="grindingType" required>
+                                    <option value="">Seleziona Tipo</option>
+                                    <option value="RK1">RK1</option>
+                                    <option value="RK2">RK2</option>
+                                    <option value="SAETTA50/1">SAETTA50/1</option>
+                                    <option value="SAETTA20/1">SAETTA20/1</option>
+                                    <option value="BISELLINO">BISELLINO</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="shift" class="form-label">Turno</label>
+                                <input type="text" class="form-control" id="shift" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="failureReason" class="form-label">Motivo del Cambio</label>
+                            <select class="form-select" id="failureReason" required>
+                                <option value="Esaurita">Esaurita</option>
+                                <option value="Difetto">Difetto</option>
+                                <option value="Altro">Altro</option>
+                            </select>
+                            <div id="otherReasonContainer" class="mt-2" style="display: none;">
+                                <input type="text" class="form-control" id="otherReason" placeholder="Specificare il motivo">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-marazzi">
+                            <i class="fas fa-save me-2"></i>Registra Cambio
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Ultimi 10 cambi (vista operatore) -->
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Ultime 10 Mole Cambiate</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="recentHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Operatore</th>
+                                    <th>Rettifica</th>
+                                    <th>Posizione</th>
+                                    <th>Tipo Mola</th>
+                                    <th>Turno</th>
+                                    <th>Data e Ora</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Supervisore -->
+        <div id="supervisorView" style="display: none;">
+            <!-- Overview Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="overview-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h3 id="todayChanges">0</h3>
+                            <p>Cambi Oggi</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="overview-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h3 id="weekChanges">0</h3>
+                            <p>Cambi Settimana</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="overview-card">
+                        <div class="overview-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h3 id="defectiveCount">0</h3>
+                            <p>Mole Difettose</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="overview-card">
+                        <div class="overview-icon success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h3 id="dailyAverage">0</h3>
+                            <p>Media Giornaliera</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-xl-8">
+                    <!-- Statistiche per Rettifica -->
+                    <div class="card mb-4 shadow-lg">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="card-title m-0">
+                                    <i class="fas fa-cogs me-2"></i>Statistiche per Rettifica
+                                </h3>
+                            </div>
+                            <div class="row">
+                                <!-- Rettifiche a Secco -->
+                                <div class="col-md-6">
+                                    <div class="grinding-section dry">
+                                        <div class="section-header">
+                                            <i class="fas fa-sun me-2"></i>Rettifiche a Secco
+                                        </div>
+                                        <div id="dry-machines" class="grinding-machines">
+                                            <!-- Machine stats injected by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Rettifiche a Umido -->
+                                <div class="col-md-6">
+                                    <div class="grinding-section wet">
+                                        <div class="section-header">
+                                            <i class="fas fa-tint me-2"></i>Rettifiche a Umido
+                                        </div>
+                                        <div id="wet-machines" class="grinding-machines">
+                                            <!-- Machine stats injected by JS -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="grindingType" class="form-label">Tipo di Mola</label>
-                                    <select class="form-select" id="grindingType" required>
-                                        <option value="">Seleziona Tipo</option>
-                                        <option value="RK1">RK1</option>
-                                        <option value="RK2">RK2</option>
-                                        <option value="SAETTA50/1">SAETTA50/1</option>
-                                        <option value="SAETTA20/1">SAETTA20/1</option>
-                                        <option value="BISELLINO">BISELLINO</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="shift" class="form-label">Turno</label>
-                                    <input type="text" class="form-control" id="shift" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Grafici -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4 shadow-lg">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-chart-bar me-2"></i>Andamento Settimanale
+                                    </h3>
+                                    <canvas id="weeklyChart"></canvas>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="failureReason" class="form-label">Motivo del Cambio</label>
-                                <select class="form-select" id="failureReason" required>
-                                    <option value="Esaurita">Esaurita</option>
-                                    <option value="Difetto">Difetto</option>
-                                    <option value="Altro">Altro</option>
-                                </select>
-                                <div id="otherReasonContainer" class="mt-2" style="display: none;">
-                                    <input type="text" class="form-control" id="otherReason" 
-                                           placeholder="Specificare il motivo">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4 shadow-lg">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-chart-pie me-2"></i>Distribuzione Tipi Mola
+                                    </h3>
+                                    <canvas id="grindingTypeChart"></canvas>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Registra Cambio
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Ultimi 10 cambi (vista operatore) -->
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">Ultime 10 Mole Cambiate</h3>
-                        <div class="table-responsive">
-                            <table class="table table-striped" id="recentHistoryTable">
-                                <thead>
-                                    <tr>
-                                        <th>Operatore</th>
-                                        <th>Rettifica</th>
-                                        <th>Posizione</th>
-                                        <th>Tipo Mola</th>
-                                        <th>Turno</th>
-                                        <th>Data e Ora</th>
-                                        <th>Azioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                <!-- Right Column -->
+                <div class="col-xl-4">
+                    <!-- Top Operatori -->
+				<div class="card mb-4 shadow-lg">
+						<div class="card-body">
+							<h3 class="card-title">
+								<i class="fas fa-users me-2"></i>Tutti gli Operatori
+							</h3>
+							<div id="allOperators"></div>
+						</div>
+					</div>
+
+                    <!-- Quick Actions -->
+                    <div class="card mb-4 shadow-lg">
+                        <div class="card-body">
+                            <h3 class="card-title mb-3">
+                                <i class="fas fa-tools me-2"></i>Gestione Dati
+                            </h3>
+                            <div class="d-grid gap-2">
+                                <button id="exportCSV" class="btn btn-marazzi">
+                                    <i class="fas fa-download me-2"></i>Esporta CSV
+                                </button>
+                                <button id="exportPDF" class="btn btn-marazzi">
+                                    <i class="fas fa-file-pdf me-2"></i>Esporta PDF
+                                </button>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="importCSV" accept=".csv">
+                                    <button class="btn btn-marazzi" type="button" id="importButton">
+                                        <i class="fas fa-upload"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-<div id="supervisorView" style="display: none;">
-    <!-- Overview Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="overview-card">
-                <div class="overview-icon">
-                    <i class="fas fa-tools"></i>
-                </div>
-                <div class="overview-content">
-                    <h3 id="todayChanges">0</h3>
-                    <p>Cambi Oggi</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="overview-card">
-                <div class="overview-icon">
-                    <i class="fas fa-calendar-week"></i>
-                </div>
-                <div class="overview-content">
-                    <h3 id="weekChanges">0</h3>
-                    <p>Cambi Settimana</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="overview-card">
-                <div class="overview-icon warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="overview-content">
-                    <h3 id="defectiveCount">0</h3>
-                    <p>Mole Difettose</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="overview-card">
-                <div class="overview-icon success">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="overview-content">
-                    <h3 id="dailyAverage">0</h3>
-                    <p>Media Giornaliera</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Dashboard Content -->
-    <div class="row">
-        <!-- Left Column -->
-        <div class="col-xl-8">
-            <!-- Statistiche per Rettifica -->
-            <div class="card mb-4">
+            <!-- Filtri e Storico -->
+            <div class="card mb-4 shadow-lg">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="card-title m-0">
-                            <i class="fas fa-cogs me-2"></i>Statistiche per Rettifica
+                            <i class="fas fa-filter me-2"></i>Filtri
                         </h3>
-                    </div>
-                    <div class="row">
-                        <!-- Rettifiche a Secco -->
-                        <div class="col-md-6">
-                            <div class="grinding-section dry">
-                                <div class="section-header">
-                                    <i class="fas fa-sun me-2"></i>Rettifiche a Secco
-                                </div>
-                                <div id="dry-machines" class="grinding-machines">
-                                    <!-- Machine stats injected by JS -->
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Rettifiche a Umido -->
-                        <div class="col-md-6">
-                            <div class="grinding-section wet">
-                                <div class="section-header">
-                                    <i class="fas fa-tint me-2"></i>Rettifiche a Umido
-                                </div>
-                                <div id="wet-machines" class="grinding-machines">
-                                    <!-- Machine stats injected by JS -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Grafici -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                <i class="fas fa-chart-bar me-2"></i>Andamento Settimanale
-                            </h3>
-                            <canvas id="weeklyChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                <i class="fas fa-chart-pie me-2"></i>Distribuzione Tipi Mola
-                            </h3>
-                            <canvas id="grindingTypeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column -->
-        <div class="col-xl-4">
-            <!-- Top Operatori -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">
-                        <i class="fas fa-trophy me-2"></i>Top Operatori
-                    </h3>
-                    <div id="topOperators"></div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title mb-3">
-                        <i class="fas fa-tools me-2"></i>Gestione Dati
-                    </h3>
-                    <div class="d-grid gap-2">
-                        <button id="exportCSV" class="btn btn-success">
-                            <i class="fas fa-download me-2"></i>Esporta CSV
-                        </button>
-                        <button id="exportPDF" class="btn btn-danger">
-                            <i class="fas fa-file-pdf me-2"></i>Esporta PDF
-                        </button>
-                        <div class="input-group">
-                            <input type="file" class="form-control" id="importCSV" accept=".csv">
-                            <button class="btn btn-primary" type="button" id="importButton">
-                                <i class="fas fa-upload"></i>
+                        <div>
+                            <button id="applyFilters" class="btn btn-marazzi">
+                                <i class="fas fa-search me-2"></i>Applica
+                            </button>
+                            <button id="resetFilters" class="btn btn-marazzi-secondary ms-2">
+                                <i class="fas fa-undo me-2"></i>Reset
                             </button>
                         </div>
                     </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Data Inizio</label>
+                            <input type="date" id="filterDateStart" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Fine</label>
+                            <input type="date" id="filterDateEnd" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Rettifica</label>
+                            <select id="filterGrindingMachine" class="form-select">
+                                <option value="">Tutte</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Posizione</label>
+                            <input type="number" id="filterPosition" class="form-control" min="1">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Operatore</label>
+                            <select id="filterOperator" class="form-select">
+                                <option value="">Tutti</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tipo Mola</label>
+                            <select id="filterGrindingType" class="form-select">
+                                <option value="">Tutti</option>
+                            </select>
+                        </div>
+						<div class="col-md-2">
+						<label class="form-label">Motivo</label>
+						<select id="filterReason" class="form-select">
+							<option value="">Tutti</option>
+							<option value="Esaurita">Esaurita</option>
+							<option value="Difetto">Difetto</option>
+							<option value="Altro">Altro</option>
+						</select>
+					</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabella Storico -->
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">
+                        <i class="fas fa-history me-2"></i>Storico Completo
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="historyTable">
+							<thead>
+								<tr>
+									<th>Operatore</th>
+									<th>Rettifica</th>
+									<th>Posizione</th>
+									<th>Tipo Mola</th>
+									<th>Turno</th>
+									<th>Data e Ora</th>
+									<th>Motivo</th>
+									<th>Azioni</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Filtri e Storico -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="card-title m-0">
-                    <i class="fas fa-filter me-2"></i>Filtri
-                </h3>
-                <div>
-                    <button id="applyFilters" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i>Applica
-                    </button>
-                    <button id="resetFilters" class="btn btn-secondary ms-2">
-                        <i class="fas fa-undo me-2"></i>Reset
-                    </button>
-                </div>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Data Inizio</label>
-                    <input type="date" id="filterDateStart" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Data Fine</label>
-                    <input type="date" id="filterDateEnd" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Rettifica</label>
-                    <select id="filterGrindingMachine" class="form-select">
-                        <option value="">Tutte</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Posizione</label>
-                    <input type="number" id="filterPosition" class="form-control" min="1">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Operatore</label>
-                    <select id="filterOperator" class="form-select">
-                        <option value="">Tutti</option>
-                    </select>
-                </div>
-				<div class="col-md-2">
-					<label class="form-label">Tipo Mola</label>
-					<select id="filterGrindingType" class="form-select">
-						<option value="">Tutti</option>
-					</select>
-				</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabella Storico -->
-    <div class="card">
-        <div class="card-body">
-            <h3 class="card-title mb-4">
-                <i class="fas fa-history me-2"></i>Storico Completo
-            </h3>
-            <div class="table-responsive">
-                <table class="table table-hover" id="historyTable">
-                    <thead>
-                        <tr>
-                            <th>Operatore</th>
-                            <th>Rettifica</th>
-                            <th>Posizione</th>
-                            <th>Tipo Mola</th>
-                            <th>Turno</th>
-                            <th>Data e Ora</th>
-                            <th>Motivo</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="users.js"></script>
     <script src="script.js"></script>
-	<script src="grinding-machines.js"></script>
+    <script src="grinding-machines.js"></script>
 </body>
 </html>
