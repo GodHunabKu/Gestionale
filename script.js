@@ -5,11 +5,17 @@ let grindingTypeChartInstance = null;
 let inactivityTimer;
 let historyCache = null;
 let lastCacheUpdate = null;
+let currentMachineStop = null;
+let machineStopCache = null;
+let lastMachineStopCacheUpdate = null;
+let machineStopChartInstance = null;
+
 
 // Costanti
 const DELETE_TIMEOUT = 5 * 60 * 1000; // 5 minuti
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minuti
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
+const MACHINE_STOP_CACHE_DURATION = 5 * 60 * 1000;
 const COMPRESSION_ENABLED = true;
 const DATA_VERSION = '1.0.0'; // Aggiungi questa linea
 
@@ -29,6 +35,33 @@ function initializeApp() {
     checkDataVersion();
 }
 
+// Funzioni per i fermi macchina. Messa qui perché deve essere disponibile subito
+function loadMachineStopHistory() {
+    const history = getMachineStopHistory();
+    const stopTbody = document.getElementById('machineStopHistoryTable')?.querySelector('tbody');
+    const supervisorStopTbody = document.getElementById('supervisorMachineStopHistoryTable')?.querySelector('tbody');
+
+ if (stopTbody) {
+         stopTbody.innerHTML = '';
+      let filteredHistory = history;
+        if (currentUser && currentUser.role === 'operator' && currentUser.grindingMachine) {
+           filteredHistory = history.filter(entry => entry.grindingMachine === currentUser.grindingMachine);
+       }
+        filteredHistory.slice(0, 10).forEach(entry => {
+          const row = createStopHistoryRow(entry);
+           stopTbody.appendChild(row);
+       });
+   }
+
+    if (supervisorStopTbody) {
+        supervisorStopTbody.innerHTML = '';
+       history.forEach(entry => {
+           const row = createStopHistoryRow(entry);
+            supervisorStopTbody.appendChild(row);
+       });
+   }
+}
+
 // Sposta la definizione di refreshAllStats prima del suo utilizzo
 function refreshAllStats() {
     if (!currentUser || currentUser.role !== 'supervisor') return;
@@ -39,13 +72,13 @@ function refreshAllStats() {
         updateStatistics(history);
         updateGrindingStats();
         updateTopOperators(history);
-        
+
         const weeklyData = calculateWeeklyData(history);
         const typeData = calculateTypeData(history);
-        
+
         updateWeeklyChart(weeklyData);
         updateGrindingTypeChart(typeData);
-        
+
         showNotification('Statistiche aggiornate con successo', 'success');
     } catch (error) {
         console.error('Errore nell\'aggiornamento delle statistiche:', error);
@@ -80,22 +113,32 @@ function setupEventListeners() {
     document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
     document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
     document.getElementById('toolForm')?.addEventListener('submit', handleToolSubmit);
-    document.getElementById('module')?.addEventListener('change', function() {
+    document.getElementById('module')?.addEventListener('change', function () {
         updateGrindingTypeAndPosition();
         validatePosition();
     });
     document.getElementById('failureReason')?.addEventListener('change', toggleOtherReason);
     document.getElementById('username')?.addEventListener('input', toggleGrindingMachineSelect);
-    
+    document.getElementById('machineStopButton')?.addEventListener('click', toggleMachineStopSection);
+    document.getElementById('machineStopForm')?.addEventListener('submit', handleMachineStopSubmit);
+
     // Import/Export events
     document.getElementById('exportCSV')?.addEventListener('click', handleExport);
     document.getElementById('exportPDF')?.addEventListener('click', handleExportPDF);
     document.getElementById('importButton')?.addEventListener('click', handleImport);
-    
+
+    // Import/Export events for machine stops
+    document.getElementById('exportStopCSV')?.addEventListener('click', handleStopExport);
+    document.getElementById('exportStopPDF')?.addEventListener('click', handleStopExportPDF);
+    document.getElementById('importStopButton')?.addEventListener('click', handleStopImport);
     // Filter events
     document.getElementById('applyFilters')?.addEventListener('click', handleFilterApply);
     document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
-    
+
+    // Filter events for machine stops
+    document.getElementById('applyStopFilters')?.addEventListener('click', handleStopFilterApply);
+    document.getElementById('resetStopFilters')?.addEventListener('click', resetStopFilters);
+
     // Cross-tab synchronization
     window.addEventListener('storage', handleStorageChange);
 }
@@ -143,7 +186,7 @@ function getHistory() {
     try {
         const data = localStorage.getItem('toolHistory');
         if (!data) return [];
-        
+
         const decompressed = COMPRESSION_ENABLED ? decompressData(data) : JSON.parse(data);
         historyCache = decompressed;
         lastCacheUpdate = Date.now();
@@ -167,6 +210,36 @@ function saveHistory(history) {
     }
 }
 
+function getMachineStopHistory() {
+    if (machineStopCache && lastMachineStopCacheUpdate && (Date.now() - lastMachineStopCacheUpdate < MACHINE_STOP_CACHE_DURATION)) {
+        return machineStopCache;
+    }
+
+    try {
+        const data = localStorage.getItem('machineStopHistory');
+        if (!data) return [];
+        const decompressed = COMPRESSION_ENABLED ? decompressData(data) : JSON.parse(data);
+        machineStopCache = decompressed;
+        lastMachineStopCacheUpdate = Date.now();
+        return machineStopCache;
+    } catch (error) {
+        handleStorageError(error);
+        return machineStopCache || [];
+    }
+}
+
+function saveMachineStopHistory(history) {
+    try {
+        const data = COMPRESSION_ENABLED ? compressData(history) : JSON.stringify(history);
+        localStorage.setItem('machineStopHistory', data);
+        machineStopCache = history;
+        lastMachineStopCacheUpdate = Date.now();
+        return true;
+    } catch (error) {
+        handleStorageError(error);
+        return false;
+    }
+}
 function handleStorageError(error) {
     if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
         showNotification('Spazio di archiviazione esaurito. Esporta i dati.', 'error');
@@ -219,7 +292,7 @@ function migrateData(fromVersion, toVersion) {
     try {
         let history = [];
         const data = localStorage.getItem('toolHistory');
-        
+
         if (data) {
             try {
                 // Prova prima a decomprimere
@@ -279,11 +352,11 @@ function createHistoryRow(entry, showActions = true) {
                 <button class="btn btn-sm btn-danger me-2" onclick="handleDelete('${entry.id}')">
                     <i class="fas fa-trash"></i>
                 </button>`;
-            
+
             if (entry.looseScrew) {
                 html += `
-                    <i class="fas fa-exclamation-triangle text-warning" 
-                       style="cursor: help;" 
+                    <i  class="fas fa-exclamation-triangle text-warning"
+                       style="cursor: help;"
                        title="Segnalato da ${entry.reportedBy}"></i>`;
             }
         } else if (currentUser.role === 'operator') {
@@ -314,7 +387,7 @@ function reportLooseScrew(entryId) {
             entry.looseScrew = true;
             entry.reportedBy = currentUser.username;
             entry.reportTime = new Date().toISOString();
-            
+
             if (saveHistory(history)) {
                 showNotification('Mola svitata segnalata con successo', 'success');
                 loadHistory();
@@ -334,7 +407,7 @@ function updateTableHeaders() {
             <th>Turno</th>
         </tr>
     `;
-    
+
     const operatorTableHeader = `
         <tr>
             <th>Operatore</th>
@@ -360,13 +433,30 @@ function updateTableHeaders() {
         </tr>
     `;
 
+     const stopTableHeader = `
+        <tr>
+             <th>Operatore</th>
+             <th>Rettifica</th>
+            <th>Motivo</th>
+             <th>Note</th>
+             <th>Inizio</th>
+              <th>Durata</th>
+             <th>Data e Ora</th>
+             <th>Azioni</th>
+         </tr>
+     `;
+
     // Aggiorna gli headers delle tabelle
     document.querySelectorAll('.table thead').forEach(thead => {
         if (thead.closest('#historyTable')) {
             thead.innerHTML = supervisorTableHeader;
         } else if (thead.closest('#recentHistoryTable')) {
             thead.innerHTML = operatorTableHeader;
-        } else {
+        }else if (thead.closest('#machineStopHistoryTable')) {
+            thead.innerHTML = stopTableHeader;
+       }else if(thead.closest('#supervisorMachineStopHistoryTable')){
+           thead.innerHTML = stopTableHeader;
+       }else {
             thead.innerHTML = loginTableHeader;
         }
     });
@@ -384,13 +474,22 @@ function handleStorageChange(e) {
             }
         }
     }
+    if (e.key === 'machineStopHistory') {
+        invalidateStopCache();
+        if (currentUser) {
+            loadMachineStopHistory();
+        }
+    }
 }
 
 function invalidateCache() {
     historyCache = null;
     lastCacheUpdate = null;
 }
-
+function invalidateStopCache() {
+    machineStopCache = null;
+    lastMachineStopCacheUpdate = null;
+}
 // Gestione autenticazione
 function handleLogin(e) {
     e.preventDefault();
@@ -421,13 +520,15 @@ function handleLogout() {
     currentUser = null;
     clearTimeout(inactivityTimer);
     invalidateCache();
-    
+    invalidateStopCache();
+
     document.getElementById('appSection').style.display = 'none';
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('logoutButton').style.display = 'none';
     document.getElementById('operatorView').style.display = 'none';
     document.getElementById('supervisorView').style.display = 'none';
-    
+    document.getElementById('machineStopButton').style.display = 'none';
+    document.getElementById('machineStopSection').style.display = 'none';
     document.getElementById('loginForm').reset();
     showNotification('Logout effettuato con successo', 'success');
 }
@@ -441,31 +542,34 @@ function resetInactivityTimer() {
 
 // Gestione UI
 function showAppropriateView() {
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('appSection').style.display = 'block';
-    document.getElementById('logoutButton').style.display = 'block';
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('appSection').style.display = 'block';
+        document.getElementById('logoutButton').style.display = 'block';
+        document.getElementById('machineStopButton').style.display = 'block';
+        const grindingMachineText = document.getElementById('grindingMachineText');
+        if (grindingMachineText) {
+            if (currentUser.role === 'supervisor') {
+                grindingMachineText.textContent = ''; // Nascondi la rettifica per l'admin
+            } else {
+                grindingMachineText.textContent = `Rettifica ${currentUser.grindingMachine}`;
+            }
+        }
 
-    const grindingMachineText = document.getElementById('grindingMachineText');
-    if (grindingMachineText) {
-        if (currentUser.role === 'supervisor') {
-            grindingMachineText.textContent = ''; // Nascondi la rettifica per l'admin
-        } else {
-            grindingMachineText.textContent = `Rettifica ${currentUser.grindingMachine}`;
+        if (currentUser.role === 'operator') {
+            document.getElementById('operatorView').style.display = 'block';
+            document.getElementById('supervisorView').style.display = 'none';
+        } else if (currentUser.role === 'supervisor') {
+            document.getElementById('supervisorView').style.display = 'block';
+            document.getElementById('operatorView').style.display = 'none';
+            initializeSupervisorDashboard();
+        }
+
+        loadHistory();
+        loadRecentHistory();
+       if (currentUser?.role === 'supervisor') {
+           updateMachineCharts()
         }
     }
-
-    if (currentUser.role === 'operator') {
-        document.getElementById('operatorView').style.display = 'block';
-        document.getElementById('supervisorView').style.display = 'none';
-    } else if (currentUser.role === 'supervisor') {
-        document.getElementById('supervisorView').style.display = 'block';
-        document.getElementById('operatorView').style.display = 'none';
-        initializeSupervisorDashboard();
-    }
-
-    loadHistory();
-    loadRecentHistory();
-}
 function startClock() {
     const clockElement = document.getElementById('currentTime');
     if (!clockElement) return;
@@ -562,7 +666,7 @@ function handleToolSubmit(e) {
         determineShift();
         loadHistory();
         loadRecentHistory();
-        
+
         if (currentUser.role === 'supervisor') {
             refreshAllStats();
             setupCharts();
@@ -588,7 +692,7 @@ function validatePosition() {
     const position = parseInt(document.getElementById('position').value);
     const grindingType = document.getElementById('grindingType').value;
     const moduleConfig = GRINDING_MACHINES.modules[module];
-    
+
     if (!moduleConfig) return false;
 
     let isValid = false;
@@ -604,11 +708,11 @@ function validatePosition() {
 
     const feedback = document.getElementById('positionFeedback');
     const input = document.getElementById('position');
-    
+
     input.classList.toggle('is-invalid', !isValid);
     feedback.style.display = isValid ? 'none' : 'block';
     feedback.textContent = `Posizione non valida per il modulo selezionato`;
-    
+
     return isValid;
 }
 
@@ -616,7 +720,7 @@ function toggleOtherReason() {
     const container = document.getElementById('otherReasonContainer');
     const otherReason = document.getElementById('otherReason');
     const showOther = this.value === 'Altro';
-    
+
     container.style.display = showOther ? 'block' : 'none';
     otherReason.required = showOther;
     if (!showOther) otherReason.value = '';
@@ -625,9 +729,9 @@ function toggleOtherReason() {
 function determineShift() {
     const now = new Date();
     const hour = now.getHours();
-    const shift = hour >= 4 && hour < 12 ? 'Mattina' : 
-                 hour >= 12 && hour < 20 ? 'Pomeriggio' : 'Notte';
-    
+    const shift = hour >= 4 && hour < 12 ? 'Mattina' :
+        hour >= 12 && hour < 20 ? 'Pomeriggio' : 'Notte';
+
     console.log('Turno determinato:', shift); // Debug
     document.getElementById('shift').value = shift;
 }
@@ -662,9 +766,9 @@ function loadRecentHistory() {
         const timeSinceCreation = Date.now() - new Date(entry.timestamp).getTime();
         const isWetMachine = GRINDING_MACHINES.wet.machines.includes(entry.grindingMachine);
         const isWithinDeleteTime = timeSinceCreation <= 5 * 60 * 1000; // 5 minuti
-        
+
         const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
-        
+
         let actionButton = '';
         if (isWithinDeleteTime && entry.operator === currentUser.username) {
             actionButton = `
@@ -700,7 +804,7 @@ function loadRecentHistoryOnLogin() {
     history.slice(0, 10).forEach(entry => {
         const row = document.createElement('tr');
         const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
-        
+
         row.innerHTML = `
             <td>${entry.operator}</td>
             <td>${rettificaDisplay}</td>
@@ -721,6 +825,7 @@ function initializeSupervisorDashboard() {
     setupCharts();
     populateFilters();
     updateAllOperators(); // Aggiungi questa linea
+    updateMachineCharts();
 }
 
 function updateStatistics(history = getHistory()) {
@@ -760,7 +865,8 @@ function updateStatistics(history = getHistory()) {
             const dailyAverage = weekChanges > 0 ? Math.round(weekChanges / 7) : 0;
             dailyAverageElement.textContent = dailyAverage;
         }
-    } catch (error) {
+    } catch (error)
+	 {
         console.warn('Errore nell\'aggiornamento delle statistiche:', error);
     }
 }
@@ -770,6 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTableHeaders();
     if (currentUser?.role === 'supervisor') {
         updateStatistics();
+         updateMachineCharts();
     }
 });
 
@@ -777,7 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupCharts(history = getHistory()) {
     const weeklyData = calculateWeeklyData(history);
     const typeData = calculateTypeData(history);
-    
+
     setupWeeklyChart(weeklyData);
     setupGrindingTypeChart(typeData);
 }
@@ -799,6 +906,7 @@ function createTableRow(entry, showActions = true) {
         <td>${entry.grindingType}</td>
         <td>${entry.shift}</td>
         <td>${entryDate.toLocaleString('it-IT')}</td>
+        <td>${entry.failureReason}${entry.otherReason ? ` (${entry.otherReason})` : ''}</td>
     `;
 
     if (showActions) {
@@ -808,11 +916,11 @@ function createTableRow(entry, showActions = true) {
                 <button class="btn btn-sm btn-danger me-2" onclick="handleDelete('${entry.id}')">
                     <i class="fas fa-trash"></i>
                 </button>`;
-            
+
             if (entry.looseScrew) {
                 html += `
-                    <i class="fas fa-exclamation-triangle text-warning" 
-                       style="cursor: help;" 
+                    <i  class="fas fa-exclamation-triangle text-warning"
+                       style="cursor: help;"
                        title="Segnalato da ${entry.reportedBy}"></i>`;
             }
         } else if (currentUser.role === 'operator') {
@@ -929,7 +1037,7 @@ function setupGrindingTypeChart(data) {
 function updateTopOperators() {
     const history = getHistory();
     const operatorStats = {};
-    
+
     history.forEach(entry => {
         operatorStats[entry.operator] = (operatorStats[entry.operator] || 0) + 1;
     });
@@ -964,9 +1072,9 @@ function updateTopOperators() {
 function calculateWeeklyData(history) {
     const lastWeek = new Date();
     lastWeek.setDate(lastWeek.getDate() - 7);
-    
+
     const dailyData = Array(7).fill(0);
-    
+
     history.forEach(entry => {
         const entryDate = new Date(entry.timestamp);
         if (entryDate >= lastWeek) {
@@ -976,7 +1084,7 @@ function calculateWeeklyData(history) {
             }
         }
     });
-    
+
     return dailyData;
 }
 
@@ -1016,7 +1124,7 @@ function populateFilters() {
     // Popola il select degli operatori
     const operatorSelect = document.getElementById('filterOperator');
     if (operatorSelect) {
-        operatorSelect.innerHTML = '<option value="">Tutti</option>' + 
+        operatorSelect.innerHTML = '<option value="">Tutti</option>' +
             operators.map(op => `<option value="${op}">${op}</option>`).join('');
     }
 
@@ -1025,14 +1133,14 @@ function populateFilters() {
     const types = [...new Set(history.map(h => h.grindingType))].sort();
     const typeSelect = document.getElementById('filterGrindingType');
     if (typeSelect) {
-        typeSelect.innerHTML = '<option value="">Tutti</option>' + 
+        typeSelect.innerHTML = '<option value="">Tutti</option>' +
             types.map(type => `<option value="${type}">${type}</option>`).join('');
     }
 
     // Aggiungi gli event listener per la validazione della posizione
     const rettificaFilterSelect = document.getElementById('filterGrindingMachine');
     const positionFilterInput = document.getElementById('filterPosition');
-    
+
     if (rettificaFilterSelect && positionFilterInput) {
         rettificaFilterSelect.addEventListener('change', () => {
             const selectedRettifica = rettificaFilterSelect.value;
@@ -1051,6 +1159,31 @@ function populateFilters() {
                 }
             }
         });
+    }
+}
+function populateStopFilters() {
+    const rettificaSelect = document.getElementById('filterStopGrindingMachine');
+    if (rettificaSelect) {
+        const allMachines = [
+            ...GRINDING_MACHINES.dry.machines,
+            ...GRINDING_MACHINES.wet.machines
+        ].sort((a, b) => parseInt(a) - parseInt(b));
+
+        rettificaSelect.innerHTML = `
+            <option value="">Tutte</option>
+            ${allMachines.map(machine => `
+                <option value="${machine}">Rettifica ${machine}</option>
+            `).join('')}
+        `;
+    }
+
+    const operators = window.users
+        .filter(user => user.role === 'operator')
+        .map(user => user.username);
+    const operatorSelect = document.getElementById('filterStopOperator');
+    if (operatorSelect) {
+        operatorSelect.innerHTML = '<option value="">Tutti</option>' +
+            operators.map(op => `<option value="${op}">${op}</option>`).join('');
     }
 }
 
@@ -1072,6 +1205,24 @@ function updateHistoryTable(filteredHistory) {
     // Popola la tabella con i risultati filtrati
     filteredHistory.forEach(entry => {
         const row = createHistoryRow(entry);
+        tbody.appendChild(row);
+    });
+}
+function updateStopHistoryTable(filteredHistory) {
+    const tbody = document.getElementById('supervisorMachineStopHistoryTable')?.querySelector('tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (filteredHistory.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" class="text-center">Nessun risultato trovato</td>`;
+        tbody.appendChild(row);
+        return;
+    }
+
+    filteredHistory.forEach(entry => {
+        const row = createStopHistoryRow(entry, true);
         tbody.appendChild(row);
     });
 }
@@ -1102,7 +1253,28 @@ function filterHistory(history, filters) {
         });
     });
 }
-
+function filterStopHistory(history, filters) {
+    return history.filter(entry => {
+        const entryDate = entry.timestamp.split('T')[0];
+        return Object.entries(filters).every(([key, value]) => {
+            if (!value) return true;
+            switch (key) {
+                case 'dateStart':
+                    return entryDate >= value;
+                case 'dateEnd':
+                    return entryDate <= value;
+                case 'operator':
+                    return entry.operator === value;
+                case 'grindingMachine':
+                    return entry.grindingMachine === value;
+                case 'reason':
+                    return entry.reason === value;
+                default:
+                    return true;
+            }
+        });
+    });
+}
 function handleFilterApply() {
     const filters = {
         dateStart: document.getElementById('filterDateStart')?.value,
@@ -1116,26 +1288,48 @@ function handleFilterApply() {
 
     const history = getHistory();
     const filteredHistory = filterHistory(history, filters);
-    
+
     updateHistoryTable(filteredHistory);
     updateStatistics(filteredHistory);
     setupCharts(filteredHistory);
 }
+ function handleStopFilterApply() {
+    const filters = {
+        dateStart: document.getElementById('filterStopDateStart')?.value,
+        dateEnd: document.getElementById('filterStopDateEnd')?.value,
+        operator: document.getElementById('filterStopOperator')?.value,
+        grindingMachine: document.getElementById('filterStopGrindingMachine')?.value,
+        reason: document.getElementById('filterStopReason')?.value,
+     };
+
+    const history = getMachineStopHistory();
+    const filteredHistory = filterStopHistory(history, filters);
+    updateStopHistoryTable(filteredHistory);
+ }
 
 function resetFilters() {
-    ['filterDateStart', 'filterDateEnd', 'filterOperator', 'filterGrindingType', 
-     'filterGrindingMachine', 'filterPosition', 'filterReason'].forEach(id => { // Aggiungi 'filterReason'
+    ['filterDateStart', 'filterDateEnd', 'filterOperator', 'filterGrindingType',
+        'filterGrindingMachine', 'filterPosition', 'filterReason'].forEach(id => { // Aggiungi 'filterReason'
         const element = document.getElementById(id);
         if (element) element.value = '';
     });
-    
+
     const history = getHistory();
     updateHistoryTable(history);
     updateStatistics(history);
     setupCharts(history);
     showNotification('Filtri resettati', 'success');
 }
+function resetStopFilters() {
+    ['filterStopDateStart', 'filterStopDateEnd', 'filterStopOperator', 'filterStopGrindingMachine', 'filterStopReason'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+    });
 
+    const history = getMachineStopHistory();
+    updateStopHistoryTable(history);
+    showNotification('Filtri resettati', 'success');
+}
 function handleDelete(id) {
     if (!confirm('Sei sicuro di voler eliminare questo record?')) return;
 
@@ -1146,7 +1340,7 @@ function handleDelete(id) {
     const entry = history[entryIndex];
     const timeSinceCreation = Date.now() - new Date(entry.timestamp).getTime();
 
-    if (currentUser.role === 'supervisor' || 
+    if (currentUser.role === 'supervisor' ||
         (entry.operator === currentUser.username && timeSinceCreation <= DELETE_TIMEOUT)) {
         history.splice(entryIndex, 1);
         if (saveHistory(history)) {
@@ -1160,7 +1354,23 @@ function handleDelete(id) {
         showNotification('Non hai i permessi per eliminare questo record', 'error');
     }
 }
+function handleStopDelete(id) {
+    if (!confirm('Sei sicuro di voler eliminare questo fermo macchina?')) return;
 
+    const history = getMachineStopHistory();
+    const entryIndex = history.findIndex(h => h.id === id);
+    if (entryIndex === -1) return;
+
+    if (currentUser.role === 'supervisor') {
+        history.splice(entryIndex, 1);
+        if (saveMachineStopHistory(history)) {
+            loadMachineStopHistory();
+            showNotification('Fermo macchina eliminato con successo', 'success');
+        }
+    } else {
+        showNotification('Non hai i permessi per eliminare questo fermo macchina', 'error');
+    }
+}
 // Sistema di backup automatico
 function setupAutomaticBackup() {
     const now = new Date();
@@ -1172,14 +1382,14 @@ function setupAutomaticBackup() {
         0,
         0
     );
-    
+
     // Se l'ora corrente è dopo le 7:00, programma per il giorno successivo
     if (now > scheduledTime) {
         scheduledTime.setDate(scheduledTime.getDate() + 1);
     }
-    
+
     const timeUntilBackup = scheduledTime - now;
-    
+
     // Programma il primo backup
     setTimeout(() => {
         performBackup();
@@ -1194,10 +1404,10 @@ async function performBackup() {
         const history = getHistory();
         const date = new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
         const csv = generateCSV(history);
-        
+
         await saveBackupLocally(csv, date);
         await sendBackupEmail(csv, date);
-        
+
         console.log('Backup completato con successo');
     } catch (error) {
         console.error('Errore durante il backup:', error);
@@ -1247,7 +1457,7 @@ async function sendBackupEmail(csv, date) {
 // Funzione helper per generare CSV
 function generateCSV(history) {
     const headers = ['Operatore', 'Rettifica', 'Posizione', 'Tipo Mola', 'Turno', 'Data e Ora', 'Motivo', 'Dettagli'];
-    
+
     const rows = history.map(entry => {
         const date = new Date(entry.timestamp);
         const formattedDate = date.toLocaleString('it-IT').replace(',', '');
@@ -1263,14 +1473,34 @@ function generateCSV(history) {
             entry.otherReason || ''
         ].map(cell => `"${cell}"`).join(',');
     });
-    
+
     return [headers.join(','), ...rows].join('\n');
+}
+function generateStopCSV(history) {
+    const headers = ['Operatore', 'Rettifica', 'Motivo', 'Note', 'Inizio', 'Durata', 'Data e Ora'];
+     const rows = history.map(entry => {
+         const date = new Date(entry.timestamp);
+        const formattedDate = date.toLocaleString('it-IT').replace(',', '');
+        const startTime = new Date(entry.startTime).toLocaleString('it-IT').replace(',', '');
+
+        return [
+            entry.operator,
+            entry.grindingMachine,
+             entry.reason,
+            entry.notes,
+            startTime,
+            entry.duration,
+             formattedDate,
+         ].map(cell => `"${cell}"`).join(',');
+     });
+
+   return [headers.join(','), ...rows].join('\n');
 }
 
 // Gestione Export
 function handleExport() {
     showLoadingOverlay();
-    
+
     setTimeout(() => {
         try {
             const history = getHistory();
@@ -1285,7 +1515,22 @@ function handleExport() {
         }
     }, 500);
 }
-
+function handleStopExport() {
+    showLoadingOverlay();
+    setTimeout(() => {
+        try {
+            const history = getMachineStopHistory();
+            const csv = generateStopCSV(history);
+            downloadFile(csv, `registro_fermi_macchina_${new Date().toLocaleDateString('it-IT')}.csv`, 'text/csv');
+            showNotification('Esportazione completata con successo', 'success');
+        } catch (error) {
+            console.error('Errore durante l\'esportazione:', error);
+            showNotification('Errore durante l\'esportazione', 'error');
+        } finally {
+            hideLoadingOverlay();
+        }
+    }, 500);
+}
 function handleExportPDF() {
     if (!window.jspdf) {
         showNotification('Libreria PDF non caricata', 'error');
@@ -1293,24 +1538,24 @@ function handleExportPDF() {
     }
 
     showLoadingOverlay();
-    
+
     setTimeout(() => {
         try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Intestazione
             doc.setFontSize(20);
             doc.text('Report Cambio Mole', 14, 20);
-            
+
             // Data generazione
             doc.setFontSize(11);
             doc.text(`Data di generazione: ${new Date().toLocaleString('it-IT')}`, 14, 30);
-            
+
             // Statistiche generali
             const history = getHistory();
             addStatsToPDF(doc, history);
-            
+
             // Tabella ultimi cambi
             doc.addPage();
             addTableToPDF(doc, history.slice(0, 20));
@@ -1336,14 +1581,49 @@ function handleExportPDF() {
         }
     }, 500);
 }
+function handleStopExportPDF() {
+    if (!window.jspdf) {
+        showNotification('Libreria PDF non caricata', 'error');
+        return;
+    }
 
+    showLoadingOverlay();
+
+    setTimeout(() => {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Intestazione
+            doc.setFontSize(20);
+            doc.text('Report Fermo Macchina', 14, 20);
+
+            // Data generazione
+            doc.setFontSize(11);
+            doc.text(`Data di generazione: ${new Date().toLocaleString('it-IT')}`, 14, 30);
+
+            // Tabella ultimi fermi macchina
+            doc.addPage();
+            addStopTableToPDF(doc, getMachineStopHistory().slice(0, 20));
+
+            // Salva il PDF
+            doc.save(`report_fermi_macchina_${new Date().toLocaleDateString('it-IT')}.pdf`);
+            showNotification('PDF generato con successo', 'success');
+        } catch (error) {
+            console.error('Errore nella generazione del PDF:', error);
+            showNotification('Errore nella generazione del PDF', 'error');
+        } finally {
+            hideLoadingOverlay();
+        }
+    }, 500);
+}
 // Funzioni helper per PDF
 function addStatsToPDF(doc, history) {
     const stats = calculateStats(history);
-    
+
     doc.setFontSize(14);
     doc.text('Statistiche Generali', 14, 45);
-    
+
     doc.setFontSize(11);
     const statsText = [
         `Totale cambi: ${stats.total}`,
@@ -1353,7 +1633,7 @@ function addStatsToPDF(doc, history) {
         `Tipo mola più utilizzato: ${stats.mostUsedType}`,
         `Operatore più attivo: ${stats.topOperator}`
     ];
-    
+
     statsText.forEach((text, i) => {
         doc.text(text, 14, 55 + (i * 7));
     });
@@ -1383,6 +1663,30 @@ function addTableToPDF(doc, history) {
         styles: { fontSize: 8, cellPadding: 2 }
     });
 }
+function addStopTableToPDF(doc, history) {
+    doc.setFontSize(14);
+    doc.text('Ultimi Fermi Macchina Registrati', 14, 20);
+    
+        const headers = ['Operatore', 'Rettifica', 'Motivo', 'Note', 'Inizio', 'Durata','Data'];
+         const rows = history.map(entry => [
+            entry.operator,
+            entry.grindingMachine,
+            entry.reason,
+            entry.notes,
+            new Date(entry.startTime).toLocaleString('it-IT'),
+             entry.duration,
+            new Date(entry.timestamp).toLocaleString('it-IT')
+        ]);
+
+        doc.autoTable({
+            startY: 30,
+            head: [headers],
+             body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [41, 128, 185] },
+            styles: { fontSize: 8, cellPadding: 2 }
+        });
+    }
 
 function addChartsToPDF(doc) {
     doc.setFontSize(14);
@@ -1407,7 +1711,7 @@ function addChartsToPDF(doc) {
 function addTopOperatorsToPDF(doc) {
     const history = getHistory();
     const operatorStats = {};
-    
+
     history.forEach(entry => {
         operatorStats[entry.operator] = (operatorStats[entry.operator] || 0) + 1;
     });
@@ -1424,7 +1728,6 @@ function addTopOperatorsToPDF(doc) {
         doc.text(`${index + 1}. ${operator}: ${count} cambi`, 14, 35 + (index * 10));
     });
 }
-
 // Funzioni utilità
 function downloadFile(content, fileName, contentType) {
     const blob = new Blob([content], { type: contentType });
@@ -1441,10 +1744,10 @@ function downloadFile(content, fileName, contentType) {
 function calculateStats(history) {
     const now = new Date();
     const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-    
+
     const typeCount = {};
     const operatorCount = {};
-    
+
     history.forEach(entry => {
         typeCount[entry.grindingType] = (typeCount[entry.grindingType] || 0) + 1;
         operatorCount[entry.operator] = (operatorCount[entry.operator] || 0) + 1;
@@ -1457,8 +1760,8 @@ function calculateStats(history) {
         weekly: weeklyChanges,
         defective: history.filter(h => h.failureReason === 'Difetto').length,
         dailyAverage: Math.round(weeklyChanges / 7),
-        mostUsedType: Object.entries(typeCount).sort(([,a], [,b]) => b - a)[0]?.[0] || 'N/A',
-        topOperator: Object.entries(operatorCount).sort(([,a], [,b]) => b - a)[0]?.[0] || 'N/A'
+        mostUsedType: Object.entries(typeCount).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A',
+        topOperator: Object.entries(operatorCount).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A'
     };
 }
 
@@ -1466,7 +1769,7 @@ function calculateStats(history) {
 function handleImport() {
     const fileInput = document.getElementById('importCSV');
     const file = fileInput?.files[0];
-    
+
     if (!file) {
         showNotification('Seleziona un file da importare', 'warning');
         return;
@@ -1503,6 +1806,46 @@ function handleImport() {
 
     reader.readAsText(file);
 }
+function handleStopImport() {
+    const fileInput = document.getElementById('importStopCSV');
+    const file = fileInput?.files[0];
+
+    if (!file) {
+        showNotification('Seleziona un file da importare', 'warning');
+        return;
+    }
+
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        showNotification('Il file deve essere in formato CSV', 'error');
+        return;
+    }
+
+    // Dialog di conferma con dettagli
+    const existingRecords = getMachineStopHistory().length;
+    const confirmImport = confirm(
+        `Stai per importare nuovi dati.\n\n` +
+        `Record esistenti: ${existingRecords}\n` +
+        `File selezionato: ${file.name}\n` +
+        `Dimensione: ${(file.size / 1024).toFixed(2)} KB\n\n` +
+        `I nuovi dati verranno uniti con quelli esistenti.\n` +
+        `Vuoi procedere con l'importazione?`
+    );
+
+    if (!confirmImport) {
+        fileInput.value = '';
+        return;
+    }
+
+    showLoadingOverlay();
+    const reader = new FileReader();
+    reader.onload = handleStopFileRead;
+    reader.onerror =     () => {
+        hideLoadingOverlay();
+        showNotification('Errore nella lettura del file', 'error');
+    };
+
+    reader.readAsText(file);
+}
 
 function handleFileRead(e) {
     try {
@@ -1526,7 +1869,7 @@ function handleFileRead(e) {
             'Motivo',
             'Dettagli'
         ];
-        
+
         if (!areHeadersValid(headers, expectedHeaders)) {
             throw new Error('Headers CSV non validi. Attesi: ' + expectedHeaders.join(', '));
         }
@@ -1546,10 +1889,50 @@ function handleFileRead(e) {
         hideLoadingOverlay();
     }
 }
+function handleStopFileRead(e) {
+    try {
+        const text = e.target.result;
+            const rows = text.split('\n')
+                .map(row => row.trim())
+                .filter(row => row.length > 0);
 
+            if (rows.length < 2) {
+                throw new Error('File CSV vuoto o non valido');
+            }
+
+            const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+             const expectedHeaders = [
+                'Operatore',
+                'Rettifica',
+                 'Motivo',
+                 'Note',
+                 'Inizio',
+                  'Durata',
+                'Data e Ora'
+            ];
+
+         if (!areHeadersValid(headers, expectedHeaders)) {
+            throw new Error('Headers CSV non validi. Attesi: ' + expectedHeaders.join(', '));
+            }
+
+            const importedData = parseStopCSVRows(rows.slice(1));
+
+             if (importedData.length === 0) {
+                 throw new Error('Nessun dato valido trovato nel file');
+             }
+
+             processImportedStopData(importedData);
+
+         } catch (error) {
+             console.error('Errore durante l\'importazione:', error);
+             showNotification(`Errore durante l'importazione: ${error.message}`, 'error');
+        } finally {
+            hideLoadingOverlay();
+        }
+    }
 function processImportedData(importedData) {
     const existingData = getHistory();
-    
+
     // Funzione per normalizzare il timestamp rimuovendo i secondi
     const normalizeTimestamp = (timestamp) => {
         const date = new Date(timestamp);
@@ -1579,7 +1962,7 @@ function processImportedData(importedData) {
     }
 
     // Unisci i dati e ordina per timestamp decrescente
-    const mergedData = [...uniqueData, ...existingData].sort((a, b) => 
+    const mergedData = [...uniqueData, ...existingData].sort((a, b) =>
         new Date(b.timestamp) - new Date(a.timestamp)
     );
 
@@ -1594,10 +1977,53 @@ function processImportedData(importedData) {
         showNotification(`Importazione completata: ${uniqueData.length} nuovi record importati`, 'success');
     }
 }
+function processImportedStopData(importedData) {
+    const existingData = getMachineStopHistory();
+
+    // Funzione per normalizzare il timestamp rimuovendo i secondi
+    const normalizeTimestamp = (timestamp) => {
+        const date = new Date(timestamp);
+        date.setSeconds(0);
+        return date.getTime();
+    };
+
+    // Funzione per creare una chiave univoca per ogni record
+    const createUniqueKey = (entry) => {
+        const timestamp = normalizeTimestamp(entry.timestamp);
+        return `${entry.operator}-${entry.grindingMachine}-${entry.reason}-${timestamp}`;
+    };
+
+    // Crea un map degli elementi esistenti per ricerca veloce
+    const existingKeys = new Set(existingData.map(createUniqueKey));
+    // Filtra solo i dati veramente nuovi
+    const uniqueData = importedData.filter(imported => {
+        const key = createUniqueKey(imported);
+        return !existingKeys.has(key);
+    });
+
+    // Se non ci sono nuovi dati, termina qui
+    if (uniqueData.length === 0) {
+        showNotification('Nessun nuovo record da importare', 'warning');
+        return;
+    }
+
+    // Unisci i dati e ordina per timestamp decrescente
+    const mergedData = [...uniqueData, ...existingData].sort((a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+    );
+
+    if (saveMachineStopHistory(mergedData)) {
+        loadMachineStopHistory();
+        if (currentUser?.role === 'supervisor') {
+        }
+        document.getElementById('importStopCSV').value = '';
+        showNotification(`Importazione completata: ${uniqueData.length} nuovi record importati`, 'success');
+    }
+}
 
 function parseCSVRows(rows) {
     const importedData = [];
-    
+
     for (let i = 0; i < rows.length; i++) {
         try {
             const values = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
@@ -1627,14 +2053,46 @@ function parseCSVRows(rows) {
             continue;
         }
     }
-    
+
     return importedData;
 }
+function parseStopCSVRows(rows) {
+    const importedData = [];
+    for (let i = 0; i < rows.length; i++) {
+        try {
+            const values = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
+                ?.map(value => value.replace(/^"(.*)"$/, '$1').trim());
 
+            if (!values || values.length < 7) continue;
+
+            const dateStr = values[6];
+            const startTimeStr = values[4]
+            const timestamp = parseItalianDate(dateStr);
+            const startTime = parseItalianDate(startTimeStr)
+            const grindingMachine = values[1].replace(/[^0-9]/g, ''); // Estrae solo il numero
+
+            importedData.push({
+                id: `import_${Date.now()}_${i}`,
+                operator: values[0],
+                grindingMachine: grindingMachine,
+                reason: values[2],
+                notes: values[3],
+                startTime: startTime.toISOString(),
+                 duration: values[5],
+                timestamp: timestamp.toISOString()
+            });
+        } catch (error) {
+            console.warn(`Errore nel processing della riga ${i + 1}:`, error);
+            continue;
+        }
+    }
+
+    return importedData;
+}
 function updateGrindingStats() {
     const history = getHistory();
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Template per una singola rettifica
     function createMachineStatsTemplate(machineId, stats) {
         return `
@@ -1701,11 +2159,11 @@ function updateGrindingStats() {
 function areHeadersValid(actual, expected) {
     const actualLower = actual.map(h => h.toLowerCase().trim());
     const expectedLower = expected.map(h => h.toLowerCase().trim());
-    
-    const missingHeaders = expectedLower.filter(header => 
+
+    const missingHeaders = expectedLower.filter(header =>
         !actualLower.some(h => h === header)
     );
-    
+
     return missingHeaders.length === 0;
 }
 
@@ -1715,12 +2173,12 @@ function parseItalianDate(dateStr) {
         const [day, month, year] = datePart.includes('/')
             ? datePart.split('/')
             : datePart.split('-');
-            
+
         let [hours, minutes] = ['00', '00'];
         if (timePart) {
             [hours, minutes] = timePart.split(':');
         }
-        
+
         const date = new Date(
             year.length === 2 ? '20' + year : year,
             parseInt(month) - 1,
@@ -1728,11 +2186,11 @@ function parseItalianDate(dateStr) {
             parseInt(hours),
             parseInt(minutes)
         );
-        
+
         if (isNaN(date.getTime())) {
             throw new Error('Data non valida');
         }
-        
+
         return date;
     } catch (error) {
         console.error('Errore nel parsing della data:', error);
@@ -1744,7 +2202,7 @@ function toggleGrindingMachineSelect() {
     const username = document.getElementById('username').value.trim();
     const grindingMachineContainer = document.getElementById('grindingMachineContainer');
     const grindingMachineSelect = document.getElementById('grindingMachine');
-    
+
     if (grindingMachineContainer && grindingMachineSelect) {
         if (isAdmin(username)) {
             grindingMachineContainer.style.display = 'none';
@@ -1759,7 +2217,26 @@ function toggleGrindingMachineSelect() {
 function isAdmin(username) {
     return username.toLowerCase() === 'aragona';
 }
-
+function toggleMachineStopSection() {
+    const appSection = document.getElementById('appSection');
+    const machineStopSection = document.getElementById('machineStopSection');
+   if (machineStopSection.style.display === 'none') {
+       appSection.style.display = 'none';
+       machineStopSection.style.display = 'block';
+       loadMachineStopHistory();
+       populateStopFilters();
+       if (currentUser.role === 'supervisor') {
+           document.getElementById('machineStopSupervisorSection').style.display = 'block';
+           document.getElementById('machineStopHistorySection').style.display = 'none';
+       } else {
+            document.getElementById('machineStopHistorySection').style.display = 'block';
+            document.getElementById('machineStopSupervisorSection').style.display = 'none';
+       }
+   } else {
+        appSection.style.display = 'block';
+        machineStopSection.style.display = 'none';
+   }
+}
 function updateGrindingTypeAndPosition() {
     const grindingType = document.getElementById('grindingType');
     const position = document.getElementById('position');
@@ -1781,12 +2258,12 @@ function updateGrindingTypeAndPosition() {
         wheelOptions.map(wheel => `<option value="${wheel}">${wheel}</option>`).join('');
 
     // Event listener per il tipo mola
-    grindingType.addEventListener('change', function() {
+    grindingType.addEventListener('change', function () {
         if (this.value === 'BISELLINO') {
             // Chiedi se è lato operatore o non operatore
             const side = confirm('Clicca OK per lato operatore, ANNULLA per lato non operatore');
             const bevelConfig = side ? moduleConfig.bevels.operator : moduleConfig.bevels.nonOperator;
-            
+
             position.value = bevelConfig.start;
             position.min = bevelConfig.start;
             position.max = bevelConfig.end;
@@ -1797,7 +2274,139 @@ function updateGrindingTypeAndPosition() {
         }
     });
 }
+function handleMachineStopSubmit(e) {
+    e.preventDefault();
 
+    const stopReason = document.getElementById('stopReason').value;
+    const stopNotes = document.getElementById('stopNotes').value;
+    const stopDuration = parseInt(document.getElementById('stopDuration').value); // Durata in minuti
+
+    const now = new Date();
+    const startTime = new Date(now.getTime() - stopDuration * 60000); // Calcola l'ora di inizio
+
+
+    const newStopEntry = {
+        id: Date.now().toString(),
+        operator: currentUser.username,
+        grindingMachine: currentUser.grindingMachine,
+        timestamp: now.toISOString(), // Ora attuale
+        startTime: startTime.toISOString(), // Ora di inizio calcolata
+        duration: stopDuration,
+        reason: stopReason,
+        notes: stopNotes
+    };
+
+    const history = getMachineStopHistory();
+    history.unshift(newStopEntry);
+    if (saveMachineStopHistory(history)) {
+        document.getElementById('machineStopForm').reset();
+        loadMachineStopHistory();
+        showNotification('Fermo Macchina registrato con successo', 'success');
+    }
+}
+function createStopHistoryRow(entry, showActions = true) {
+    const row = document.createElement('tr');
+    const formattedDate = new Date(entry.timestamp).toLocaleString('it-IT');
+    const formattedStartTime = new Date(entry.startTime).toLocaleString('it-IT');
+     const rettificaDisplay = entry.grindingMachine ? `Rettifica ${entry.grindingMachine}` : 'N/A';
+    let html = `
+         <td>${entry.operator}</td>
+         <td>${rettificaDisplay}</td>
+        <td>${entry.reason}</td>
+         <td>${entry.notes}</td>
+         <td>${formattedStartTime}</td>
+          <td>${entry.duration} minuti</td>
+         <td>${formattedDate}</td>
+    `;
+
+    if (showActions) {
+        html += '<td>';
+        if (currentUser.role === 'supervisor') {
+            html += `<button class="btn btn-sm btn-danger me-2" onclick="handleStopDelete('${entry.id}')">
+                        <i class="fas fa-trash"></i>
+                     </button>`;
+        }
+        html += '</td>';
+    }
+
+    row.innerHTML = html;
+    return row;
+}
+
+ function updateMachineCharts(timeRange = '24h') {
+        const stopHistory = getMachineStopHistory();
+
+       const stopData = calculateStopData(stopHistory, timeRange);
+        setupMachineStopChart(stopData);
+    }
+  function calculateStopData(history, timeRange) {
+    const now = new Date();
+    let startTime;
+    
+    if(timeRange === '24h'){
+         startTime = new Date(now - 24 * 60 * 60 * 1000);
+    } else if (timeRange === '7d') {
+         startTime = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    } else if (timeRange === '30d') {
+        startTime = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    } else {
+        startTime = new Date(now - 24 * 60 * 60 * 1000);
+    }
+    
+    const stopData = {};
+
+     history.forEach(entry => {
+            const entryStartTime = new Date(entry.startTime);
+            if (entryStartTime >= startTime) {
+            if (!stopData[entry.grindingMachine]) {
+               stopData[entry.grindingMachine] = 0;
+             }
+             stopData[entry.grindingMachine] += parseInt(entry.duration);
+            }
+       });
+    
+    // Imposta a 0 le macchine senza dati
+    const allMachines = [...GRINDING_MACHINES.dry.machines, ...GRINDING_MACHINES.wet.machines];
+    allMachines.forEach(machine => {
+        if(!stopData[machine]) stopData[machine] = 0
+    });
+
+     return stopData;
+ }
+ function setupMachineStopChart(data) {
+     const ctx = document.getElementById('machineStopChart')?.getContext('2d');
+     if (!ctx) return;
+
+      if (machineStopChartInstance) {
+          machineStopChartInstance.destroy();
+      }
+
+      const labels = Object.keys(data).map(machine => `Rettifica ${machine}`);
+      const values = Object.values(data);
+
+      machineStopChartInstance = new Chart(ctx, {
+            type: 'bar',
+             data: {
+                labels: labels,
+                 datasets: [{
+                    label: 'Durata Totale Fermo (minuti)',
+                     data: values,
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                     borderWidth: 1
+                }]
+            },
+           options: {
+               indexAxis: 'y',
+                responsive: true,
+                scales: {
+                     x: {
+                        beginAtZero: true,
+                      }
+                    }
+            }
+        });
+ }
 // Export delle funzioni globali
 window.handleDelete = handleDelete;
 window.handleFilterApply = handleFilterApply;
@@ -1806,3 +2415,12 @@ window.handleImport = handleImport;
 window.handleExportPDF = handleExportPDF;
 window.resetFilters = resetFilters;
 window.refreshAllStats = refreshAllStats;
+window.handleStopExport = handleStopExport;
+window.handleStopImport = handleStopImport;
+window.handleStopExportPDF = handleStopExportPDF;
+window.handleStopFilterApply = handleStopFilterApply;
+window.resetStopFilters = resetStopFilters;
+window.handleStopDelete = handleStopDelete;
+window.toggleMachineStopSection = toggleMachineStopSection;
+window.loadMachineStopHistory = loadMachineStopHistory;
+window.updateMachineCharts = updateMachineCharts;

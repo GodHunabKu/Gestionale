@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
+
 <body>
     <!-- Navbar con logo Marazzi -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-marazzi">
@@ -22,6 +24,9 @@
                     <i class="fas fa-cog me-2"></i>
                     <span id="grindingMachineText"></span>
                 </span>
+                <button id="machineStopButton" class="btn btn-outline-light me-2" style="display: none;">
+                    <i class="fas fa-power-off me-2"></i>Fermo Macchina
+                </button>
                 <button id="logoutButton" class="btn btn-outline-light">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
@@ -285,8 +290,8 @@
 
                 <!-- Right Column -->
                 <div class="col-xl-4">
-                    <!-- Top Operatori -->
-				<div class="card mb-4 shadow-lg">
+                     <!-- Top Operatori -->
+					<div class="card mb-4 shadow-lg">
 						<div class="card-body">
 							<h3 class="card-title">
 								<i class="fas fa-users me-2"></i>Tutti gli Operatori
@@ -407,6 +412,162 @@
             </div>
         </div>
     </div>
+   <!-- Fermo Macchina Section (Hidden by default) -->
+    <div id="machineStopSection" class="container mt-5" style="display: none;">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-lg">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Gestione Fermo Macchina</h2>
+                        <div id="machineStopFormContainer" style="display: block;">
+                            <form id="machineStopForm">
+                                <div class="mb-3">
+                                    <label for="stopReason" class="form-label">Motivo del Fermo</label>
+                                    <select class="form-select" id="stopReason" required>
+                                        <option value="">Seleziona Motivo</option>
+                                        <option value="Mancanza Materiale">Mancanza Materiale</option>
+                                        <option value="Guasto Meccanico">Guasto Meccanico</option>
+                                        <option value="Guasto Elettrico">Guasto Elettrico</option>
+                                        <option value="Manutenzione">Manutenzione</option>
+                                    </select>
+                                </div>
+                                 <div class="mb-3">
+                                     <label for="stopDuration" class="form-label">Durata del Fermo (minuti)</label>
+                                    <input type="number" class="form-control" id="stopDuration" required min="1">
+                                 </div>
+                                <div class="mb-3">
+                                    <label for="stopNotes" class="form-label">Note</label>
+                                    <textarea class="form-control" id="stopNotes" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-marazzi">
+                                    <i class="fas fa-save me-2"></i>Registra Fermo
+                                </button>
+                            </form>
+                        </div>
+                        <div id="machineStopHistorySection">
+                            <h3 class="text-center mb-4 mt-4">Ultimi 10 Fermi Macchina</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="machineStopHistoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Operatore</th>
+                                            <th>Rettifica</th>
+                                            <th>Motivo</th>
+                                            <th>Note</th>
+                                             <th>Inizio</th>
+                                              <th>Durata</th>
+                                            <th>Data e Ora</th>
+                                             <th>Azioni</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="machineStopSupervisorSection" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+                                <h3 class="card-title m-0">
+                                    <i class="fas fa-filter me-2"></i>Filtri Fermo Macchina
+                                </h3>
+                                <div>
+                                    <button id="applyStopFilters" class="btn btn-marazzi">
+                                        <i class="fas fa-search me-2"></i>Applica
+                                    </button>
+                                    <button id="resetStopFilters" class="btn btn-marazzi-secondary ms-2">
+                                        <i class="fas fa-undo me-2"></i>Reset
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Data Inizio</label>
+                                    <input type="date" id="filterStopDateStart" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Data Fine</label>
+                                    <input type="date" id="filterStopDateEnd" class="form-control">
+                                </div>
+                                 <div class="col-md-3">
+                                    <label class="form-label">Rettifica</label>
+                                    <select id="filterStopGrindingMachine" class="form-select">
+                                        <option value="">Tutte</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Motivo</label>
+                                    <select id="filterStopReason" class="form-select">
+                                        <option value="">Tutti</option>
+                                         <option value="Mancanza Materiale">Mancanza Materiale</option>
+                                        <option value="Guasto Meccanico">Guasto Meccanico</option>
+                                        <option value="Guasto Elettrico">Guasto Elettrico</option>
+                                        <option value="Manutenzione">Manutenzione</option>
+                                    </select>
+                                </div>
+                                 <div class="col-md-3">
+                                    <label class="form-label">Operatore</label>
+                                    <select id="filterStopOperator" class="form-select">
+                                        <option value="">Tutti</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="d-grid gap-2">
+                                     <button id="exportStopCSV" class="btn btn-marazzi">
+                                        <i class="fas fa-download me-2"></i>Esporta CSV Fermi
+                                    </button>
+                                     <button id="exportStopPDF" class="btn btn-marazzi">
+                                        <i class="fas fa-file-pdf me-2"></i>Esporta PDF Fermi
+                                    </button>
+                                   <div class="input-group">
+                                        <input type="file" class="form-control" id="importStopCSV" accept=".csv">
+                                         <button class="btn btn-marazzi" type="button" id="importStopButton">
+                                            <i class="fas fa-upload"></i>
+                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 table-responsive">
+                                <table class="table table-striped" id="supervisorMachineStopHistoryTable">
+                                    <thead>
+                                        <tr>
+                                             <th>Operatore</th>
+                                            <th>Rettifica</th>
+                                            <th>Motivo</th>
+                                            <th>Note</th>
+                                            <th>Inizio</th>
+                                             <th>Durata</th>
+                                            <th>Data e Ora</th>
+                                            <th>Azioni</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     <!-- Grafici Fermi e Produzione -->
+        <div class="card mb-4 shadow-lg" id="machineChartSection" style="display: none;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="card-title m-0">
+                        <i class="fas fa-chart-bar me-2"></i>Grafico Durata Fermi Macchina
+                    </h3>
+                     <div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('24h')">24 Ore</button>
+                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('7d')">7 Giorni</button>
+                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('30d')">30 Giorni</button>
+                        </div>
+                     </div>
+                 </div>
+               
+                <canvas id="machineStopChart"></canvas>
+            </div>
+         </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
@@ -416,4 +577,5 @@
     <script src="script.js"></script>
     <script src="grinding-machines.js"></script>
 </body>
+
 </html>
