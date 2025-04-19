@@ -1,0 +1,601 @@
+/* Reset e Stili Base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: auto; /* Assicura che lo scroll di default sia istantaneo */
+}
+
+
+body {
+    /* Background migliorato con fallback e gradiente scuro */
+    background-color: #1a0000; /* Fallback scuro */
+    background-image: linear-gradient(to bottom, #2d0000, #1a0000);
+    font-weight: 350;
+    color: #e8ffd4;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Stack font migliore */
+    font-size: 18px; /* Leggermente ridotto per leggibilità */
+    line-height: 1.6; /* Aggiunta interlinea */
+    min-height: 100vh;
+    overflow-x: hidden; /* Previene scroll orizzontale */
+}
+
+body.scroll_block {
+    overflow: hidden;
+}
+
+/* Preloader */
+.preload {
+    background: #0a0a0a;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    display: flex; /* Usiamo flex per centrare */
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.5s ease-out; /* Transizione per fadeOut */
+}
+
+.preload.hidden {
+    opacity: 0;
+    pointer-events: none; /* Rende non cliccabile quando nascosto */
+}
+
+
+.preload .preload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center; /* Centra testo figlio */
+}
+
+.preload .preload-container .preload-logo {
+     /* Rimosso height fissa */
+    width: 80%; /* Larghezza relativa */
+    max-width: 300px; /* Limite massimo */
+    margin-bottom: 20px; /* Spazio sotto il logo */
+}
+.preload .preload-container .preload-logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+.preload .preload-container span {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.preload .preload-loading-text {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #edff88;
+}
+
+
+/* Mobile Header */
+#mobile {
+    background: #090808;
+    border-bottom: 1px solid #535255;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.5); /* Ombra più sottile */
+    display: none; /* Nascosto di default, mostrato da media query */
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px; /* Padding uniforme */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Sopra il resto */
+    height: 80px; /* Altezza fissa per coerenza */
+}
+
+#mobile img {
+    height: 50px; /* Logo più piccolo */
+    width: auto;
+}
+
+#mobile #hamburger {
+    background: #211e23;
+    border-radius: 4px;
+    width: 48px; /* Larghezza fissa */
+    height: 48px;
+    padding: 12px 8px; /* Padding aggiustato */
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra le barre */
+    justify-content: center; /* Centra le barre */
+}
+
+#mobile #hamburger span {
+    background: #ccc; /* Barre più visibili */
+    border-radius: 2px;
+    display: block;
+    height: 3px;
+    width: 28px; /* Barre leggermente più corte */
+    margin-bottom: 5px; /* Spazio tra barre */
+    transition: all 0.3s ease;
+    position: relative; /* Necessario per trasformazioni */
+    transform-origin: center;
+}
+#mobile #hamburger span:last-child {
+     margin-bottom: 0;
+}
+
+
+/* Animazione Hamburger -> X */
+#mobile #hamburger.hamburger-open span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg); /* Sposta e ruota */
+}
+#mobile #hamburger.hamburger-open span:nth-child(2) {
+    opacity: 0; /* Nasconde la barra centrale */
+    transform: scaleX(0);
+}
+#mobile #hamburger.hamburger-open span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg); /* Sposta e ruota */
+}
+
+
+/* Scrollbar (Potrebbe non funzionare su tutti i browser, specialmente Firefox) */
+::-webkit-scrollbar {
+    width: 10px; /* Larghezza scrollbar */
+    background-color: #333; /* Sfondo leggermente più chiaro */
+    /* background: url(...) se preferisci immagine */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #777; /* Colore del thumb */
+    border-radius: 5px; /* Angoli arrotondati */
+    border: 2px solid #333; /* Bordo per contrasto */
+     /* background-image: url(...) se preferisci immagine */
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+}
+
+/* Layout Principale */
+.main {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    padding-top: 0; /* Rimosso padding se non necessario */
+}
+
+/* Rimosse le pseudo-elementi :before e :after per i gradienti fissi,
+   se li vuoi ancora, potresti riaggiungerli ma potrebbero coprire il menu mobile */
+
+/* Menu Laterale Sinistro */
+.main__menu {
+    /* background: url(../../img/left-panel.png) right top no-repeat; */ /* Sostituito con gradiente */
+    background: linear-gradient(to right, #1a0808, #2a1010);
+    box-shadow: 5px 0px 25px rgba(115, 0, 0, 0.6); /* Ombra più definita */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra il box del menu */
+    justify-content: flex-start; /* Allinea in alto */
+    width: 350px; /* Larghezza fissa per il menu */
+    flex-shrink: 0; /* Non ridimensionare il menu */
+    height: 100vh;
+    padding: 20px 15px; /* Padding interno */
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 500; /* Sotto l'header mobile */
+    overflow-y: auto; /* Permette lo scroll del menu se troppo lungo */
+}
+
+.main__menu_box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Allinea contenuto box in alto */
+    width: 100%; /* Occupa tutta la larghezza del .main__menu */
+    max-width: 315px; /* Larghezza massima come da immagine bg originale */
+    margin: 0 auto; /* Centra se .main__menu fosse più largo */
+}
+
+.main__menu_box--logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px; /* Spazio sotto il logo */
+    padding: 10px 0;
+}
+.main__menu_box--logo img {
+    max-width: 80%; /* Limita dimensione logo */
+    height: auto;
+}
+
+.main__menu_box--nav {
+    /* background: url('../../img/menu-bg.png') no-repeat center center; */ /* Rimosso bg image */
+    background-color: rgba(0, 0, 0, 0.3); /* Sfondo semi-trasparente */
+    border: 1px solid #444;
+    border-radius: 8px;
+    display: block;
+    width: 100%; /* Occupa tutta la larghezza del box */
+    /* height: 546px; Rimuovi altezza fissa */
+    position: relative;
+    padding: 15px; /* Padding interno */
+    z-index: 1;
+    overflow: hidden; /* Nasconde overflow */
+}
+
+.main__menu_box--nav > ul {
+    list-style: none; /* Rimuovi pallini lista */
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-height: calc(100vh - 250px); /* Altezza max calcolata (aggiusta se serve) */
+    overflow-y: auto; /* Scroll se la lista è lunga */
+    overflow-x: hidden;
+}
+
+
+.main__menu_box--nav > ul > li.nav--item {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Titoli Sezioni Menu (rimossi se non usati, se usati, decommenta e adatta)
+.main__menu_box--nav > ul > li.nav--item .nav--title { ... }
+*/
+
+.main__menu_box--nav > ul > li.nav--item .nav--list {
+    /* display: block; Sempre visibile se non usi accordion */
+    padding: 0; /* Rimosso padding extra */
+    list-style: none;
+}
+
+.main__menu_box--nav > ul > li.nav--item .nav--list > li {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.main__menu_box--nav > ul > li.nav--item .nav--list > li a {
+    /* background: url(../../img/btn-menu.png) repeat; */ /* Rimosso bg image */
+    background-color: transparent; /* Sfondo trasparente */
+    border: 1px solid transparent; /* Bordo invisibile per spaziatura */
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Allinea testo a sinistra */
+    width: 100%; /* Occupa tutta larghezza */
+    min-height: 38px; /* Altezza minima */
+    line-height: 1.4;
+    padding: 8px 15px; /* Padding interno */
+    margin: 4px 0; /* Margine verticale */
+    font-size: 16px; /* Dimensione font link menu */
+    text-shadow: 0 0 3px #000;
+    font-family: "Segoe UI", sans-serif; /* Font più leggibile */
+    font-weight: 400;
+    color: #ffe6ad;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.main__menu_box--nav > ul > li.nav--item .nav--list > li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* --- Stile Link Attivo --- */
+.main__menu_box--nav > ul > li.nav--item .nav--list > li a.active {
+    background-color: rgba(237, 255, 136, 0.2); /* Sfondo giallo/verde semi-trasparente */
+    border-left: 3px solid #edff88; /* Bordo laterale per evidenziare */
+    color: #edff88; /* Colore testo giallo */
+    font-weight: 600; /* Testo leggermente più grassetto */
+    padding-left: 12px; /* Sposta testo per far spazio al bordo */
+    /* filter: brightness(1.3) saturate(1.2); Rimosso filtro, gestito con colori */
+    transition: all 0.3s ease;
+}
+/* Opzionale: Stile specifico per lo span dentro il link attivo */
+.main__menu_box--nav .nav--list li a.active span {
+    /* Non serve più se color è già su <a> */
+     /* text-shadow: 0 0 5px #edff88; */ /* Leggero glow opzionale */
+}
+/* --- Fine Stile Link Attivo --- */
+
+
+/* Accordion (se riattivato)
+.main__menu_box--nav > ul > li.nav--item.active .nav--title:after { ... }
+.main__menu_box--nav > ul > li.nav--item.active .nav--list { ... }
+*/
+
+/* Contenuto Principale */
+.main__content {
+    flex-grow: 1; /* Occupa lo spazio rimanente */
+    /* min-width: 1195px; Rimosso min-width */
+    /* max-width: 1195px; Rimosso max-width */
+    position: relative;
+    padding: 40px; /* Padding generale */
+    /* padding-top: 50px; */
+    /* padding-bottom: 125px; */
+    z-index: 2;
+    /* background: url(../../img/main_bg.png); */ /* Sfondo ereditato dal body o specifico qui */
+    background-color: rgba(10, 5, 5, 0.5); /* Sfondo contenuto semi-trasparente */
+}
+
+.main__content .section {
+    display: block;
+    width: 100%;
+    padding: 30px 0; /* Padding verticale tra sezioni */
+    margin-bottom: 30px; /* Margine inferiore tra sezioni */
+    border-bottom: 1px solid #444; /* Linea separatrice tra sezioni */
+    text-align: center;
+}
+.main__content .section:last-child {
+    border-bottom: none; /* Rimuovi bordo dall'ultima sezione */
+    margin-bottom: 0;
+}
+
+.main__content .section img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Rende l'immagine un blocco per centrarla con margin */
+    margin: 15px auto; /* Margine verticale e centratura orizzontale */
+    border-radius: 4px; /* Piccola stondatura angoli immagini */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Leggera ombra immagine */
+}
+.main__content .section img.separator {
+    box-shadow: none;
+    border-radius: 0;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.main__content .section img[src*="pointer.png"] {
+    display: inline-block; /* Per allineare con testo */
+    vertical-align: middle;
+    margin: 0 5px 0 0; /* Spazio a destra */
+    box-shadow: none;
+    border-radius: 0;
+    width: 20px; /* Dimensione fissa per coerenza */
+    height: auto;
+}
+
+.main__content .section p {
+    position: relative;
+    margin-bottom: 10px; /* Spazio tra paragrafi */
+    max-width: 800px; /* Limita larghezza testo per leggibilità */
+    margin-left: auto;
+    margin-right: auto;
+}
+.main__content .section p:last-child {
+    margin-bottom: 0;
+}
+.main__content .section p img:not([src*="pointer.png"]):not(.separator) {
+    /* Stili specifici per immagini dentro <p> se necessario */
+     margin-top: 5px;
+     margin-bottom: 5px;
+}
+
+
+/* Stili per testo evidenziato (ex <font>) */
+.highlight-yellow, b.highlight-yellow { /* Applica anche a tag b con questa classe */
+    color: #edff88;
+    font-weight: bold; /* Assicura grassetto */
+}
+.highlight-green {
+    color: #bdff9f;
+}
+.highlight-yellow-light {
+    color: #f9ff9f;
+}
+.text-white {
+    color: #ffffff;
+}
+.text-red {
+    color: #ffa7a7;
+}
+.text-green-bonus { /* Per bonus rune/guanti etc */
+    color: #88ff8e;
+    display: block; /* Mette ogni bonus su una nuova riga */
+    margin-bottom: 3px;
+}
+.bold {
+    font-weight: bold;
+}
+
+
+/* Rimosse regole per .main__photo */
+
+/* Pulsanti Social/Esterni */
+/* Questi stili erano nel file originale, li manteniamo */
+.socials {
+    margin: 20px auto; /* Aggiunto margine */
+    text-align: center;
+    align-items: center;
+    /* margin-top: -10px; */ /* Rimosso margine negativo */
+}
+
+.socials a { /* Applica a tutti i link nei socials */
+    display: inline-block;
+    margin: 0 10px; /* Spazio tra pulsanti */
+    transition: transform 0.2s ease, filter 0.2s ease; /* Transizione per hover */
+}
+.socials a:hover {
+    transform: scale(1.05); /* Leggero ingrandimento */
+    filter: brightness(120%);
+}
+
+.socials a img {
+    display: block; /* Assicura che l'immagine sia un blocco */
+    max-height: 69px; /* Altezza max come da originale */
+    width: auto;
+    margin: 0; /* Rimuovi margini auto dall'immagine */
+    box-shadow: none; /* Rimuovi ombra generica delle img */
+    border-radius: 0; /* Rimuovi bordi generici */
+}
+
+/* Stili specifici per classi pulsanti (se necessario) */
+.socials .btn-discord {
+    /* width: 89px; */ /* La larghezza è data dall'immagine */
+    /* height: 69px; */
+    /* background: url('../../img/btn-discord.png') no-repeat; */ /* Usa <img> invece */
+    cursor: pointer;
+}
+.socials .btn-fb {
+    cursor: pointer;
+}
+
+
+/* Tabelle */
+table {
+    margin: 20px auto; /* Margine sopra/sotto */
+    text-align: center;
+    max-width: 95%; /* Larghezza massima tabella */
+    border-collapse: collapse; /* Bordi uniti */
+    background-color: rgba(0,0,0,0.2); /* Sfondo leggermente scuro per tabella */
+    border: 1px solid #555;
+}
+th, td {
+    padding: 10px 15px; /* Padding celle */
+    border: 1px solid #444; /* Bordi celle */
+    vertical-align: middle; /* Allineamento verticale */
+}
+th {
+    background-color: rgba(255,255,255,0.1); /* Sfondo header tabella */
+    color: #edff88;
+    font-weight: bold;
+}
+td img {
+    margin: 0 5px; /* Margine immagini in tabella */
+    vertical-align: middle;
+}
+
+
+/* --- Media Queries --- */
+
+@media screen and (max-width: 1200px) {
+     /* Non più necessario dividere 40/60 */
+}
+
+@media screen and (max-width: 980px) {
+    body {
+        padding-top: 80px; /* Spazio per l'header fisso */
+    }
+
+    #mobile {
+        display: flex; /* Mostra header mobile */
+    }
+
+    .main {
+        flex-direction: column; /* Stack verticale su mobile */
+    }
+
+    .main__menu {
+        position: fixed; /* Menu diventa overlay */
+        left: 0;
+        top: 80px; /* Sotto l'header mobile */
+        width: 100%;
+        height: calc(100vh - 80px); /* Occupa altezza rimanente */
+        transform: translateX(-100%); /* Nascosto fuori schermo a sinistra */
+        transition: transform 0.4s ease-in-out;
+        z-index: 999; /* Sopra il contenuto, sotto l'header */
+        padding: 20px;
+        background: #1c0c0c; /* Sfondo solido per overlay */
+        overflow-y: auto; /* Permetti scroll menu */
+        justify-content: flex-start; /* Allinea box in alto */
+    }
+
+    .main__menu.active {
+        transform: translateX(0); /* Mostra il menu facendolo scorrere */
+    }
+
+    .main__menu_box {
+         max-width: 100%; /* Occupa tutta la larghezza disponibile */
+         margin: 0;
+    }
+
+    .main__menu_box--logo {
+        display: none; /* Nascondi logo nel menu overlay */
+    }
+    .main__menu_box--nav {
+         background-color: transparent; /* Rimuovi sfondo nav */
+         border: none; /* Rimuovi bordo nav */
+         max-height: none; /* Altezza automatica */
+    }
+    .main__menu_box--nav > ul {
+         max-height: none; /* Altezza automatica lista */
+    }
+
+    .main__content {
+        width: 100%; /* Occupa tutta la larghezza */
+        padding: 20px 15px; /* Padding ridotto */
+    }
+
+    .main__content .section {
+        padding: 20px 0;
+        margin-bottom: 20px;
+    }
+    .main__content .section p {
+        max-width: 100%; /* Testo a larghezza piena */
+        font-size: 16px; /* Font leggermente più piccolo */
+    }
+     .main__content .section p img {
+         max-width: 90%; /* Immagini leggermente più piccole del contenitore */
+     }
+
+}
+
+/* Stile per i Nuovi Titoli di Sezione (h2) */
+.section-title {
+    font-family: 'Cinzel Decorative', cursive; /* Font Epico */
+    font-size: 2.5em; /* Dimensione Generosa */
+    color: #ffca6e; /* Colore Oro/Giallo Caldo */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Ombra per profondità */
+    margin-top: 20px; /* Spazio sopra il titolo */
+    margin-bottom: 30px; /* Spazio sotto il titolo */
+    line-height: 1.2;
+    text-align: center;
+    letter-spacing: 1px; /* Leggera spaziatura lettere */
+    border-top: 1px solid #553c1e; /* Linea sottile sopra */
+    border-bottom: 1px solid #553c1e; /* Linea sottile sotto */
+    padding: 10px 0; /* Padding verticale interno */
+}
+
+/* Stile per Sottotitoli (h3) opzionali */
+.section-subtitle {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font più semplice */
+    font-size: 1.6em;
+    color: #e8ffd4; /* Colore testo normale */
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: center;
+    position: relative; /* Per eventuali decorazioni future */
+}
+
+/* Adattamenti Mobile per Titoli */
+@media screen and (max-width: 768px) {
+    .section-title {
+        font-size: 1.8em; /* Riduci dimensione su mobile */
+        margin-bottom: 20px;
+    }
+    .section-subtitle {
+        font-size: 1.3em;
+    }
+}
+
+/* Fix specifici se necessari */
+.main__content .section p img[src*="pointer.png"] {
+    width: 18px; /* Leggermente più piccolo */
+    margin-bottom: -3px; /* Allineamento verticale fine */
+}

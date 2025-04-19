@@ -1,581 +1,1342 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Cambio Mole - Marazzi</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
+    <title>Hunter Metin2 - La Caccia è Aperta!</title>
+
+    <!-- Google Font per i titoli -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+
+    <!-- CSS Principale -->
+    <link rel="stylesheet" href="./style.css">
+    <!-- Preload Immagini Chiave -->
+    <link rel="preload" as="image" href="./Hunter - Presentazione Server_files/logo.png">
+    <!-- Favicon -->
+    <link rel="icon" href="./Hunter - Presentazione Server_files/favicon.ico" type="image/x-icon">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="./Hunter - Presentazione Server_files/js"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-B2BXT9GJ6R');
+    </script>
 </head>
-
 <body>
-    <!-- Navbar con logo Marazzi -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-marazzi">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <img src="marazzi-logo.png" alt="Marazzi Logo" class="marazzi-logo">
-                Gestionale Cambio Mole
-            </a>
-            <div class="d-flex align-items-center">
-                <span id="currentTime" class="text-light me-3"></span>
-                <span id="currentGrindingMachine" class="text-light me-3 p-2 bg-marazzi-secondary rounded">
-                    <i class="fas fa-cog me-2"></i>
-                    <span id="grindingMachineText"></span>
-                </span>
-                <button id="machineStopButton" class="btn btn-outline-light me-2" style="display: none;">
-                    <i class="fas fa-power-off me-2"></i>Fermo Macchina
-                </button>
-                <button id="logoutButton" class="btn btn-outline-light">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Sezione Login -->
-    <div id="loginSection" class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-lg">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Accesso Utente</h2>
-                        <form id="loginForm">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Nome Utente</label>
-                                <input type="text" class="form-control" id="username" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" required>
-                            </div>
-                            <div class="mb-3" id="grindingMachineContainer" style="display: none;">
-                                <label for="grindingMachine" class="form-label">Rettifica</label>
-                                <select class="form-select" id="grindingMachine">
-                                    <option value="">Seleziona Rettifica</option>
-                                    <option value="0">Rettifica 0 (Secco)</option>
-                                    <option value="1">Rettifica 1 (Umido)</option>
-                                    <option value="2">Rettifica 2 (Umido)</option>
-                                    <option value="3">Rettifica 3 (Secco)</option>
-                                    <option value="4">Rettifica 4 (Secco)</option>
-                                    <option value="5">Rettifica 5 (Secco)</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-marazzi w-100">
-                                <i class="fas fa-sign-in-alt me-2"></i>Accedi
-                            </button>
-                        </form>
-
-                        <!-- Ultime 10 mole cambiate -->
-                        <div class="mt-5">
-                            <h3 class="text-center mb-4">Ultime 10 Mole Cambiate</h3>
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="recentHistoryTableLogin">
-                                    <thead>
-                                        <tr>
-                                            <th>Operatore</th>
-                                            <th>Rettifica</th>
-                                            <th>Posizione</th>
-                                            <th>Tipo Mola</th>
-                                            <th>Turno</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Schermata di Caricamento -->
+    <div class="preload">
+        <div class="preload-container">
+            <div class="preload-logo"><img src="./Hunter - Presentazione Server_files/logo.png" alt="Hunter Logo Loading"></div>
+            <span>Affilando le lame... Preparazione del server...</span>
+            <div class="preload-loading-text"><span id="loadingText">0%</span></div>
         </div>
     </div>
 
-    <!-- Sezione Applicazione -->
-    <div id="appSection" style="display: none;">
-        <!-- Vista Operatore -->
-        <div id="operatorView" style="display: none;">
-            <div class="card mb-4 shadow-lg">
-                <div class="card-body">
-                    <h2 class="card-title">Registra Cambio Mola</h2>
-                    <form id="toolForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="module" class="form-label">Modulo</label>
-                                <select class="form-select" id="module" required>
-                                    <option value="">Seleziona Modulo</option>
-                                    <option value="Modulo 1">Modulo 1 (24 mole, 2 biselli)</option>
-                                    <option value="Modulo 2">Modulo 2 (18 mole, 2 biselli)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="position" class="form-label">Posizione della Mola</label>
-                                <input type="number" class="form-control" id="position" required>
-                                <div id="positionFeedback" class="invalid-feedback">
-                                    Posizione non valida per il modulo selezionato
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="grindingType" class="form-label">Tipo di Mola</label>
-                                <select class="form-select" id="grindingType" required>
-                                    <option value="">Seleziona Tipo</option>
-                                    <option value="RK1">RK1</option>
-                                    <option value="RK2">RK2</option>
-                                    <option value="SAETTA50/1">SAETTA50/1</option>
-                                    <option value="SAETTA20/1">SAETTA20/1</option>
-                                    <option value="BISELLINO">BISELLINO</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="shift" class="form-label">Turno</label>
-                                <input type="text" class="form-control" id="shift" readonly>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="failureReason" class="form-label">Motivo del Cambio</label>
-                            <select class="form-select" id="failureReason" required>
-                                <option value="Esaurita">Esaurita</option>
-                                <option value="Difetto">Difetto</option>
-                                <option value="Altro">Altro</option>
-                            </select>
-                            <div id="otherReasonContainer" class="mt-2" style="display: none;">
-                                <input type="text" class="form-control" id="otherReason" placeholder="Specificare il motivo">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-marazzi">
-                            <i class="fas fa-save me-2"></i>Registra Cambio
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Ultimi 10 cambi (vista operatore) -->
-            <div class="card shadow-lg">
-                <div class="card-body">
-                    <h3 class="card-title">Ultime 10 Mole Cambiate</h3>
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="recentHistoryTable">
-                            <thead>
-                                <tr>
-                                    <th>Operatore</th>
-                                    <th>Rettifica</th>
-                                    <th>Posizione</th>
-                                    <th>Tipo Mola</th>
-                                    <th>Turno</th>
-                                    <th>Data e Ora</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vista Supervisore -->
-        <div id="supervisorView" style="display: none;">
-            <!-- Overview Cards -->
-            <div class="row mb-4">
-                <div class="col-xl-3 col-md-6 mb-3">
-                    <div class="overview-card">
-                        <div class="overview-icon">
-                            <i class="fas fa-tools"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h3 id="todayChanges">0</h3>
-                            <p>Cambi Oggi</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-3">
-                    <div class="overview-card">
-                        <div class="overview-icon">
-                            <i class="fas fa-calendar-week"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h3 id="weekChanges">0</h3>
-                            <p>Cambi Settimana</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-3">
-                    <div class="overview-card">
-                        <div class="overview-icon warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h3 id="defectiveCount">0</h3>
-                            <p>Mole Difettose</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-3">
-                    <div class="overview-card">
-                        <div class="overview-icon success">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h3 id="dailyAverage">0</h3>
-                            <p>Media Giornaliera</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Dashboard Content -->
-            <div class="row">
-                <!-- Left Column -->
-                <div class="col-xl-8">
-                    <!-- Statistiche per Rettifica -->
-                    <div class="card mb-4 shadow-lg">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h3 class="card-title m-0">
-                                    <i class="fas fa-cogs me-2"></i>Statistiche per Rettifica
-                                </h3>
-                            </div>
-                            <div class="row">
-                                <!-- Rettifiche a Secco -->
-                                <div class="col-md-6">
-                                    <div class="grinding-section dry">
-                                        <div class="section-header">
-                                            <i class="fas fa-sun me-2"></i>Rettifiche a Secco
-                                        </div>
-                                        <div id="dry-machines" class="grinding-machines">
-                                            <!-- Machine stats injected by JS -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Rettifiche a Umido -->
-                                <div class="col-md-6">
-                                    <div class="grinding-section wet">
-                                        <div class="section-header">
-                                            <i class="fas fa-tint me-2"></i>Rettifiche a Umido
-                                        </div>
-                                        <div id="wet-machines" class="grinding-machines">
-                                            <!-- Machine stats injected by JS -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Grafici -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card mb-4 shadow-lg">
-                                <div class="card-body">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-chart-bar me-2"></i>Andamento Settimanale
-                                    </h3>
-                                    <canvas id="weeklyChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card mb-4 shadow-lg">
-                                <div class="card-body">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-chart-pie me-2"></i>Distribuzione Tipi Mola
-                                    </h3>
-                                    <canvas id="grindingTypeChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column -->
-                <div class="col-xl-4">
-                     <!-- Top Operatori -->
-					<div class="card mb-4 shadow-lg">
-						<div class="card-body">
-							<h3 class="card-title">
-								<i class="fas fa-users me-2"></i>Tutti gli Operatori
-							</h3>
-							<div id="allOperators"></div>
-						</div>
-					</div>
-
-                    <!-- Quick Actions -->
-                    <div class="card mb-4 shadow-lg">
-                        <div class="card-body">
-                            <h3 class="card-title mb-3">
-                                <i class="fas fa-tools me-2"></i>Gestione Dati
-                            </h3>
-                            <div class="d-grid gap-2">
-                                <button id="exportCSV" class="btn btn-marazzi">
-                                    <i class="fas fa-download me-2"></i>Esporta CSV
-                                </button>
-                                <button id="exportPDF" class="btn btn-marazzi">
-                                    <i class="fas fa-file-pdf me-2"></i>Esporta PDF
-                                </button>
-                                <div class="input-group">
-                                    <input type="file" class="form-control" id="importCSV" accept=".csv">
-                                    <button class="btn btn-marazzi" type="button" id="importButton">
-                                        <i class="fas fa-upload"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtri e Storico -->
-            <div class="card mb-4 shadow-lg">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="card-title m-0">
-                            <i class="fas fa-filter me-2"></i>Filtri
-                        </h3>
-                        <div>
-                            <button id="applyFilters" class="btn btn-marazzi">
-                                <i class="fas fa-search me-2"></i>Applica
-                            </button>
-                            <button id="resetFilters" class="btn btn-marazzi-secondary ms-2">
-                                <i class="fas fa-undo me-2"></i>Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Data Inizio</label>
-                            <input type="date" id="filterDateStart" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Data Fine</label>
-                            <input type="date" id="filterDateEnd" class="form-control">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Rettifica</label>
-                            <select id="filterGrindingMachine" class="form-select">
-                                <option value="">Tutte</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Posizione</label>
-                            <input type="number" id="filterPosition" class="form-control" min="1">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Operatore</label>
-                            <select id="filterOperator" class="form-select">
-                                <option value="">Tutti</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Tipo Mola</label>
-                            <select id="filterGrindingType" class="form-select">
-                                <option value="">Tutti</option>
-                            </select>
-                        </div>
-						<div class="col-md-2">
-						<label class="form-label">Motivo</label>
-						<select id="filterReason" class="form-select">
-							<option value="">Tutti</option>
-							<option value="Esaurita">Esaurita</option>
-							<option value="Difetto">Difetto</option>
-							<option value="Altro">Altro</option>
-						</select>
-					</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabella Storico -->
-            <div class="card shadow-lg">
-                <div class="card-body">
-                    <h3 class="card-title mb-4">
-                        <i class="fas fa-history me-2"></i>Storico Completo
-                    </h3>
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="historyTable">
-							<thead>
-								<tr>
-									<th>Operatore</th>
-									<th>Rettifica</th>
-									<th>Posizione</th>
-									<th>Tipo Mola</th>
-									<th>Turno</th>
-									<th>Data e Ora</th>
-									<th>Motivo</th>
-									<th>Azioni</th>
-								</tr>
-							</thead>
-							<tbody></tbody>
-						</table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Header Mobile -->
+    <div id="mobile">
+        <img src="./Hunter - Presentazione Server_files/logo.png" alt="Hunter Logo Mobile">
+        <div id="hamburger"><span></span><span class="animated-item"></span><span></span></div>
     </div>
-   <!-- Fermo Macchina Section (Hidden by default) -->
-    <div id="machineStopSection" class="container mt-5" style="display: none;">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card shadow-lg">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Gestione Fermo Macchina</h2>
-                        <div id="machineStopFormContainer" style="display: block;">
-                            <form id="machineStopForm">
-                                <div class="mb-3">
-                                    <label for="stopReason" class="form-label">Motivo del Fermo</label>
-                                    <select class="form-select" id="stopReason" required>
-                                        <option value="">Seleziona Motivo</option>
-                                        <option value="Mancanza Materiale">Mancanza Materiale</option>
-                                        <option value="Guasto Meccanico">Guasto Meccanico</option>
-                                        <option value="Guasto Elettrico">Guasto Elettrico</option>
-                                        <option value="Manutenzione">Manutenzione</option>
-                                    </select>
-                                </div>
-                                 <div class="mb-3">
-                                     <label for="stopDuration" class="form-label">Durata del Fermo (minuti)</label>
-                                    <input type="number" class="form-control" id="stopDuration" required min="1">
-                                 </div>
-                                <div class="mb-3">
-                                    <label for="stopNotes" class="form-label">Note</label>
-                                    <textarea class="form-control" id="stopNotes" rows="3"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-marazzi">
-                                    <i class="fas fa-save me-2"></i>Registra Fermo
-                                </button>
-                            </form>
-                        </div>
-                        <div id="machineStopHistorySection">
-                            <h3 class="text-center mb-4 mt-4">Ultimi 10 Fermi Macchina</h3>
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="machineStopHistoryTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Operatore</th>
-                                            <th>Rettifica</th>
-                                            <th>Motivo</th>
-                                            <th>Note</th>
-                                             <th>Inizio</th>
-                                              <th>Durata</th>
-                                            <th>Data e Ora</th>
-                                             <th>Azioni</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div id="machineStopSupervisorSection" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-                                <h3 class="card-title m-0">
-                                    <i class="fas fa-filter me-2"></i>Filtri Fermo Macchina
-                                </h3>
-                                <div>
-                                    <button id="applyStopFilters" class="btn btn-marazzi">
-                                        <i class="fas fa-search me-2"></i>Applica
-                                    </button>
-                                    <button id="resetStopFilters" class="btn btn-marazzi-secondary ms-2">
-                                        <i class="fas fa-undo me-2"></i>Reset
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <label class="form-label">Data Inizio</label>
-                                    <input type="date" id="filterStopDateStart" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Data Fine</label>
-                                    <input type="date" id="filterStopDateEnd" class="form-control">
-                                </div>
-                                 <div class="col-md-3">
-                                    <label class="form-label">Rettifica</label>
-                                    <select id="filterStopGrindingMachine" class="form-select">
-                                        <option value="">Tutte</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Motivo</label>
-                                    <select id="filterStopReason" class="form-select">
-                                        <option value="">Tutti</option>
-                                         <option value="Mancanza Materiale">Mancanza Materiale</option>
-                                        <option value="Guasto Meccanico">Guasto Meccanico</option>
-                                        <option value="Guasto Elettrico">Guasto Elettrico</option>
-                                        <option value="Manutenzione">Manutenzione</option>
-                                    </select>
-                                </div>
-                                 <div class="col-md-3">
-                                    <label class="form-label">Operatore</label>
-                                    <select id="filterStopOperator" class="form-select">
-                                        <option value="">Tutti</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <div class="d-grid gap-2">
-                                     <button id="exportStopCSV" class="btn btn-marazzi">
-                                        <i class="fas fa-download me-2"></i>Esporta CSV Fermi
-                                    </button>
-                                     <button id="exportStopPDF" class="btn btn-marazzi">
-                                        <i class="fas fa-file-pdf me-2"></i>Esporta PDF Fermi
-                                    </button>
-                                   <div class="input-group">
-                                        <input type="file" class="form-control" id="importStopCSV" accept=".csv">
-                                         <button class="btn btn-marazzi" type="button" id="importStopButton">
-                                            <i class="fas fa-upload"></i>
-                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-4 table-responsive">
-                                <table class="table table-striped" id="supervisorMachineStopHistoryTable">
-                                    <thead>
-                                        <tr>
-                                             <th>Operatore</th>
-                                            <th>Rettifica</th>
-                                            <th>Motivo</th>
-                                            <th>Note</th>
-                                            <th>Inizio</th>
-                                             <th>Durata</th>
-                                            <th>Data e Ora</th>
-                                            <th>Azioni</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+
+    <!-- Contenuto Principale -->
+    <main class="main">
+        <!-- Menu Laterale Fisso (Desktop) / Overlay (Mobile) -->
+        <div class="main__menu">
+            <div class="main__menu_box">
+                <div class="main__menu_box--logo"><img src="./Hunter - Presentazione Server_files/logo.png" alt="Hunter Logo Menu"></div>
+                <div class="main__menu_box--nav">
+                    <ul>
+                        <li class="nav--item active">
+                            <ul class="nav--list" id="item-1">
+                                <!-- Menu Link -->
+                                <li class="section_1"><a href="#section_1" class="item-content"><span>Inizia la Caccia!</span></a></li>
+                                <li class="section_2"><a href="#section_2" class="item-content"><span>Performance da Pro</span></a></li>
+                                <li class="section_3"><a href="#section_3" class="item-content"><span>Mappe Rinnovate</span></a></li>
+                                <li class="section_4"><a href="#section_4" class="item-content"><span>Rate: EXP & Drop</span></a></li>
+                                <li class="section_5"><a href="#section_5" class="item-content"><span>Valute Hunter</span></a></li>
+                                <li class="section_6"><a href="#section_6" class="item-content"><span>Kit del Predatore</span></a></li>
+                                <li class="section_7"><a href="#section_7" class="item-content"><span>NPC Essenziali</span></a></li>
+                                <li class="section_8"><a href="#section_8" class="item-content"><span>Interfaccia Ottimizzata</span></a></li>
+                                <li class="section_9"><a href="#section_9" class="item-content"><span>Inventario Infinito</span></a></li>
+                                <li class="section_10"><a href="#section_10" class="item-content"><span>Forgia il Tuo Destino: Skill</span></a></li>
+                                <li class="section_11"><a href="#section_11" class="item-content"><span>Supporto Istantaneo: AutoBuff</span></a></li>
+                                <li class="section_12"><a href="#section_12" class="item-content"><span>Compagno Fedele: Pet System</span></a></li>
+                                <li class="section_13"><a href="#section_13" class="item-content"><span>Viaggi Rapidi: Teleport</span></a></li>
+                                <li class="section_14"><a href="#section_14" class="item-content"><span>Bestie Leggendarie</span></a></li>
+                                <li class="section_15"><a href="#section_15" class="item-content"><span>Dungeon: Sfida & Ricompensa</span></a></li>
+                                <li class="section_16"><a href="#section_16" class="item-content"><span>Salva Spot Preferiti</span></a></li>
+                                <li class="section_17"><a href="#section_17" class="item-content"><span>Mercato 24/7: Shop Offline</span></a></li>
+                                <li class="section_18"><a href="#section_18" class="item-content"><span>Decifra i Bonus</span></a></li>
+                                <li class="section_19"><a href="#section_19" class="item-content"><span>Caccia Grossa: TP Boss/Metin</span></a></li>
+                                <li class="section_20"><a href="#section_20" class="item-content"><span>Metamorfosi: Polymorph</span></a></li>
+                                <li class="section_21"><a href="#section_21" class="item-content"><span>Potere Ancestrale: Alchimia</span></a></li>
+                                <li class="section_22"><a href="#section_22" class="item-content"><span>Reliquie Potenti: Artefatti</span></a></li>
+                                <li class="section_23"><a href="#section_23" class="item-content"><span>Incisioni Mistiche: Rune</span></a></li>
+                                <li class="section_24"><a href="#section_24" class="item-content"><span>Eleganza Letale: Stola</span></a></li>
+                                <li class="section_25"><a href="#section_25" class="item-content"><span>Sigilli Leggendari</span></a></li>
+                                <li class="section_26"><a href="#section_26" class="item-content"><span>Portali Maledetti</span></a></li>
+                                <li class="section_27"><a href="#section_27" class="item-content"><span>Predatori Elite</span></a></li>
+                                <li class="section_28"><a href="#section_28" class="item-content"><span>Scala il Prestigio: Rango</span></a></li>
+                                <li class="section_29"><a href="#section_29" class="item-content"><span>Eventi Non-Stop</span></a></li>
+                                <li class="section_30"><a href="#section_30" class="item-content"><span>Pass Battaglia Ricco</span></a></li>
+                                <li class="section_31"><a href="#section_31" class="item-content"><span>Anime Cristallizzate: Pietre</span></a></li>
+                                <li class="section_32"><a href="#section_32" class="item-content"><span>Missioni: La Via dell'Eroe</span></a></li>
+                                <li class="section_33"><a href="#section_33" class="item-content"><span>Equip: Upp & Bonus Perfetti</span></a></li>
+                                <li class="section_34"><a href="#section_34" class="item-content"><span>Pesca & Mining Istantanei</span></a></li>
+                                <li class="section_35"><a href="#section_35" class="item-content"><span>Simboli di Potere: Emblemi</span></a></li>
+                                <li class="section_36"><a href="#section_36" class="item-content"><span>Nocche d'Acciaio: Guanti</span></a></li>
+                                <li class="section_37"><a href="#section_37" class="item-content"><span>Cinture da Titano</span></a></li>
+                                <li class="section_38"><a href="#section_38" class="item-content"><span>Bazar Esclusivo: Item Shop</span></a></li>
+                                <li class="section_39"><a href="#section_39" class="item-content"><span>Dominio PVM: Equip da EXP</span></a></li>
+                                <li class="section_40"><a href="#section_40" class="item-content"><span>Arena Ti Chiama: Equip da PVP</span></a></li>
+                                <li class="section_41"><a href="#section_41" class="item-content"><span>Comodità da Re: QoL</span></a></li>
+                                <li class="section_42"><a href="#section_42" class="item-content"><span>Vesti lo Stile: Costumi</span></a></li>
+                                <li class="section_43"><a href="#section_43" class="item-content"><span>Cavalca la Furia: Mounts</span></a></li>
+                                <li class="section_44"><a href="#section_44" class="item-content"><span>Mini Leggende: Pet Estetici</span></a></li>
+                                <li class="section_45"><a href="#section_45" class="item-content"><span>Dubbi? Leggi le FAQ!</span></a></li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
-     <!-- Grafici Fermi e Produzione -->
-        <div class="card mb-4 shadow-lg" id="machineChartSection" style="display: none;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="card-title m-0">
-                        <i class="fas fa-chart-bar me-2"></i>Grafico Durata Fermi Macchina
-                    </h3>
-                     <div>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('24h')">24 Ore</button>
-                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('7d')">7 Giorni</button>
-                            <button type="button" class="btn btn-sm btn-marazzi-secondary" onclick="updateMachineCharts('30d')">30 Giorni</button>
-                        </div>
-                     </div>
+
+        <!-- Contenuto delle Sezioni -->
+        <div class="main__content">
+
+            <!-- COPIA QUI LE SEZIONI DA 1 A 4 GIÀ COMPLETATE NELLA RISPOSTA PRECEDENTE -->
+            <!-- ================= SEZIONE 1: INIZIA LA CACCIA! ================= -->
+             <div class="section" id="section_1">
+			                   <p><img src="./Hunter - Presentazione Server_files/logohuhu3.png" alt="logo"></p>
+                 <h2 class="section-title">Hunter: La Caccia è Aperta!</h2>
+                 <p> Ascolta il richiamo, <strong class="highlight-yellow">Predatore</strong>! </p>
+                 <p> <strong class="highlight-yellow bold">Hunter Metin2</strong> ti spalanca le porte di un mondo <strong class="bold">Easy/Medium</strong> dove solo i più tenaci raggiungono la vetta del <strong class="highlight-yellow">Livello 200</strong>.</p>
+                 <p> Qui, ogni stile di gioco trova la sua arena: dal farmer incallito che domina le mappe iniziali, al guerriero leggendario che ambisce al trono della classifica.</p>
+                 <p> Siamo una nuova forza nel panorama, ma la nostra dedizione è antica: aggiornamenti costanti, supporto fulmineo e un'esperienza di gioco rifinita all'estremo.</p>
+                 <p> Preparati a scatenare la tua furia. Questa è la tua nuova terra di caccia!</p>
+                 <br>
+                 <div class="socials">
+                     <a href="https://discord.gg/Aa9ZT5DfbP" target="_blank" rel="noopener noreferrer" title="Unisciti al nostro Discord!"><img src="./Hunter - Presentazione Server_files/dc_button.png" alt="Discord Hunter"></a>
+                     <a href="https://metin2hunter.com//" target="_blank" rel="noopener noreferrer" title="Visita il Sito Ufficiale!"><img src="./Hunter - Presentazione Server_files/vip_button.png" alt="Sito Hunter"></a>
                  </div>
-               
-                <canvas id="machineStopChart"></canvas>
+                 <h3 class="section-subtitle">Dono del Monarca</h3>
+                 <p>I primi <strong class="highlight-yellow">Sura, War, Shamy e Ninja</strong> che infrangeranno il <strong class="highlight-yellow">Livello 200</strong> saranno incoronati con <strong class="bold">Una Set leggendario</strong>, simbolo eterno della loro supremazia!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 <h3 class="section-subtitle">Le Regole della Caccia (Info Server)</h3>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Tipo Server: <strong class="highlight-yellow">Easy/Medium</strong> (Azione bilanciata, sfida costante)</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Livello Massimo: <strong class="highlight-yellow">200</strong> (La vera vetta!)</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Punti Status per Livello: <strong class="highlight-yellow">90</strong> (Build flessibili!)</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Regni: <strong class="highlight-yellow">2</strong> - La classica sfida tra <img src="./Hunter - Presentazione Server_files/jinno.png" alt="Jinno"> Jinno e <img src="./Hunter - Presentazione Server_files/shinsoo.png" alt="Shinsoo"> Shinsoo</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Canali (CH): <strong class="highlight-yellow">2</strong> (Addio lag, benvenuto grind!)</span></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 2: PERFORMANCE DA PRO ================= -->
+             <div class="section" id="section_2">
+                 <h2 class="section-title">Performance da Pro Gamer</h2>
+                 <p><img src="./Hunter - Presentazione Server_files/optymalizacja.gif" alt="Gameplay Super Fluido"></p>
+                 <p>Abbiamo ottimizzato ogni singolo bit per garantirti un'esperienza di gioco senza compromessi. Preparati a una fluidità mai vista!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Client Potenziato:</strong> DirectX aggiornato, addio scatti anche nelle risse più furiose.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Caricamenti Istantanei:</strong> Login, cambio mappa, cambio CH alla velocità di un Ninja.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Zero Micro-Lag:</strong> Salire e scendere da cavallo è finalmente liscio come seta.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Spot Affollati? No Problem:</strong> Rendering dei nomi ottimizzato, i tuoi FPS ti ringrazieranno.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Shop Leggeri:</strong> Piazza piena, performance al top.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Apertura Forzieri Veloce:</strong> Apri centinaia di scrigni senza timore.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Spawn Mob/Player Fluido:</strong> Niente più comparse improvvise e laggose.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-yellow">Opzioni Performance:</strong> Limita effetti, regola raggio visuale... controllo totale!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 3: MAPPE RINNOVATE ================= -->
+             <div class="section" id="section_3">
+                  <h2 class="section-title">Territori Rinnovati: Stile Unico</h2>
+                  <p><img src="./Hunter - Presentazione Server_files/miasta.png" alt="Capitale"></p>
+                  <p> Ci sarà una sola e appariscente capitale <strong class="highlight-yellow">Che ospiterà i due regni</strong>, e vi renderanno partecipi del mondo Hunter!</p>
+                  <p> Stessa disposizione strategica degli NPC, ma con texture mozzafiato e un'atmosfera tutta nuova. Un piacere per gli occhi mentre pianifichi la tua prossima mossa.</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+              <!-- ================= SEZIONE 4: RATE: EXP & DROP ================= -->
+              <div class="section" id="section_4">
+                  <h2 class="section-title">Rate Server: Scalata Veloce, Drop Intelligente</h2>
+                  <p>L'EXP scorre a fiumi! Domina le mappe, supera i rivali e conquista il <strong class="highlight-yellow">livello 200</strong> prima di tutti. La gloria (e ricompense uniche) attende i più rapidi!</p>
+                  <p>Il leveling è progettato per essere appagante, ma non aspettarti una passeggiata: le vere sfide iniziano ai livelli alti. Qui si suda!</p>
+                  <br>
+                  <p> Il tuo <strong class="bold">potenziale EXP</strong> dipende da:</p>
+                  <p><span class="highlight-green">Passiva PG, VIP Status, Equip specifico, Amuleto di Nazar</span> e i giusti <span class="highlight-green">Pesci potenziati</span>.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/itemy.png" alt="Oggetti Bonus EXP"></p>
+                  <p> Potenzia ulteriormente con gli Anelli EXP:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/pdki.png" alt="Anelli Esperienza"></p>
+                  <br>
+                  <h3 class="section-subtitle">Drop e Guanti del Ladro: Il Tocco del Predatore</h3>
+                  <p> Abbiamo ripensato i Guanti per un drop più strategico:</p>
+                  <p> Il <strong class="highlight-yellow">Guanto del Ladro (Normale)</strong> aumenta la chance drop generica e il numero di casse dai dungeon (<strong class="bold">4x</strong>).</p>
+                  <p> Il <strong class="highlight-yellow">Guanto VIP (IS)</strong> non tocca la chance drop, ma fa piovere <strong class="bold">più casse</strong> dai dungeon (<strong class="bold">5x</strong>)! Massimizza le ricompense!</p>
+                  <p><img src="./Hunter - Presentazione Server_files/rekawice.png" alt="Guanto Ladro vs Guanto VIP"></p>
+                  <p> (<strong class="highlight-green">Dritta Pro:</strong> Equipaggia entrambi i guanti contemporaneamente per un effetto combinato!)</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+              </div>
+
+            <!-- ORA INSERISCO TUTTE LE SEZIONI MANCANTI DA 5 A 44 ADATTATE -->
+
+            <!-- ================= SEZIONE 5: Valute Hunter ================= -->
+            <div class="section" id="section_5">
+                <h2 class="section-title">Valute Hunter: Yang, Won e PH</h2>
+                <p>Tre valute per dominare il mercato di Hunter:</p>
+                <p> 1. <strong class="text-white bold">Yang</strong>: Il pane quotidiano. Lo fai spaccando Metin e umiliando boss. Si ottiene sotto forma di <strong class="highlight-yellow">Pepite e Lingotti</strong>.</p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/waluty.png" alt="Yang, Lingotti, Pepite"></p>
+                <br>
+                <h3 class="section-subtitle">Uso Veloce Lingotti/Pepite</h3>
+                <p> Stanco di calli ai polpastrelli? <strong class="highlight-yellow">Shift + Click Destro</strong> e apri <strong class="bold">500 lingotti/pepite</strong> alla volta. Boom!</p>
+                <p><img src="./Hunter - Presentazione Server_files/szybkie_sztabki.gif" alt="Uso Rapido Lingotti"></p>
+                <br>
+                <p> 2. <strong class="text-white bold">Won</strong>: Per gli affari che contano. Converti <strong class="highlight-yellow-light">500.000.000 Yang</strong> (500kk) in Won dall'NPC apposito. Facile, no?</p>
+                <p><img src="./Hunter - Presentazione Server_files/wymiana.gif" alt="Scambio Yang in Won"></p>
+                <p> 3. <strong class="highlight-green bold">Punti Hunter (PH)</strong>: La valuta dei veri cacciatori. Ottienili sconfiggendo <strong class="bold">Boss e Metin</strong>.</p>
+                <p> Scambiali da <strong class="text-white">Hwa-Hae</strong> nella Capitale per premi esclusivi o usali per <strong class="bold">crafting e upp avanzati</strong>. Sono fondamentali!</p>
+                <p><img src="./Hunter - Presentazione Server_files/sklep_po.png" alt="Negozio Punti Hunter"></p>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
             </div>
-         </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="users.js"></script>
-    <script src="script.js"></script>
-    <script src="grinding-machines.js"></script>
+            <!-- ================= SEZIONE 6: KIT DEL PREDATORE ================= -->
+            <div class="section" id="section_6">
+                <h2 class="section-title">Kit del Predatore: Pronti, Via!</h2>
+                <p>Appena metti piede su Hunter, ti equipaggiamo per la caccia. Niente perdite di tempo, subito all'azione!</p>
+                <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Equip base <strong class="highlight-yellow">+9</strong> con bonus decenti, giusto per iniziare a menare.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Un arsenale di Pozioni Rosse/Blu, Mantelli e altre utility.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span><strong class="highlight-yellow">Pet, AutoBuff e Mount PERMANENTI!</strong> Nessuna rottura di scatole con scadenze.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Anello EXP (25%, 30min) per un boost iniziale.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Item base per upp e switch: Metalli, Cambia Bonus, Aggiungi Bonus.</span></p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/startowe_eq1.png" alt="Equip Iniziale nel Dettaglio"></p>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+             <!-- ================= SEZIONE 7: NPC ESSENZIALI ================= -->
+             <div class="section" id="section_7">
+                  <h2 class="section-title">NPC Essenziali: I Tuoi Punti di Riferimento</h2>
+                  <p>nella Capitale, i mercanti principali hanno tutto ciò che serve per non restare mai a secco:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/sklepy_handlarze.png" alt="Negozi NPC Principali"></p>
+                  <p>Bottegaia, Mercante d'Armi, d'Armature... i soliti noti, ma ben forniti per ogni tua esigenza, dal livello 1 al 200!</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 8: INTERFACCIA OTTIMIZZATA ================= -->
+              <div class="section" id="section_8">
+                 <h2 class="section-title">Interfaccia Ottimizzata: Tutto Sotto Controllo</h2>
+                 <p>Accedi a funzioni vitali con un click grazie al nostro <strong class="highlight-yellow">Pannello Laterale</strong> super intuitivo:</p>
+                 <p><img src="./Hunter - Presentazione Server_files/panelboczny.png" alt="Funzionalità Pannello Laterale Completo"></p>
+                 <p>Teleport, Magazzino, Shop Offline, Missioni, Ranking, Impostazioni Veloci... Addio finestre su finestre, benvenuta praticità!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+              </div>
+
+             <!-- ================= SEZIONE 9: INVENTARIO INFINITO ================= -->
+             <div class="section" id="section_9">
+                 <h2 class="section-title">Inventario Infinito (o Quasi!): Addio Caos</h2>
+                 <p> Spazio, spazio, spazio! Il nostro <strong class="highlight-green bold">Inventario Extra</strong> ti salverà dall'incubo degli item sparsi.</p>
+                 <p>Diviso in 6 categorie smart (Upp, Libri, Pietre, Bonus, Eventi, Altro) con 3 pagine l'una. L'ordine regna sovrano!</p>
+                 <br>
+                 <p>Il bottino raccolto finisce <strong class="highlight-yellow">automaticamente</strong> nello slot giusto. Meno gestione, più massacro! (Puoi disattivarlo se sei un nostalgico del disordine).</p>
+                 <br>
+                 <p>
+                     <img src="./Hunter - Presentazione Server_files/dodatkowe_eq_img.png" alt="Inventario Extra - Categorie" style="max-width: 48%; vertical-align: top;">
+                     <img src="./Hunter - Presentazione Server_files/dodatkowe_eq_img2.gif" alt="Inventario Extra - Auto-Sort" style="max-width: 48%; vertical-align: top;">
+                 </p>
+                 <br>
+                 <p>Sposta item tra inventari al volo con le <strong class="highlight-yellow">scorciatoie da tastiera</strong>. Efficienza pura.</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+            <!-- ================= SEZIONE 10: FORGIA IL TUO DESTINO: SKILL ================= -->
+            <div class="section" id="section_10">
+                <h2 class="section-title">Forgia il Tuo Destino: Sistema Skill</h2>
+                <h3 class="section-subtitle">Skill da Combattimento: Potenza Pura</h3>
+                <p>Niente menate con libri da M1 a G. Appena scelta la dottrina, tutte le tue skill partono <strong class="highlight-yellow bold">direttamente a G1</strong>!</p>
+                <p>Da G1 a P, la via è lastricata di <strong class="text-white">Pietre dello Spirito</strong>. Preparati al grind (e ai fail)!</p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/kamien_duchowy_icon.png" alt="icona pietra"><span>Pietra Spirituale<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Chance base: <strong class="highlight-yellow">30%</strong> (Qui si vede chi ha pazienza!)</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/egzo_icon.png" alt="icona egzo"><span>Esorcismo<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Salta il cooldown. Letture a raffica!</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/rada_icon.png" alt="icona rada"><span>Consiglio Eremita<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Aumenta chance del <strong class="highlight-yellow">+15%</strong>. Un piccolo aiuto non guasta.</span></p>
+                <br>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                <h3 class="section-subtitle">Skill Passive: Affina le Tue Abilità</h3>
+                <p><img src="./Hunter - Presentazione Server_files/polimorfia.png" alt="Icona Polimorfia"> <strong class="bold">Polymorphia:</strong></p>
+                <p>Porta questa skill a P per trasformazioni che durano <strong class="highlight-yellow">1 ORA</strong> e picchiano più forte!</p>
+                <br>
+                <p><span>Libro Poli (Base -> M1): <strong class="highlight-yellow">20</strong> richiesti</span></p>
+                <p><span>Libro Poli (Avanz. -> G1): <strong class="highlight-yellow">10</strong> richiesti</span></p>
+                <p><span>Libro Poli (Master -> P): <strong class="highlight-yellow">10</strong> richiesti</span></p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/egzo_icon.png" alt="icona egzo"><span>Esorcismo (Poli)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Salta cooldown.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/rada_icon.png" alt="icona rada"><span>Consiglio Eremita (Poli)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> <strong class="highlight-yellow">100%</strong> successo garantito! (Solo per libri Poli)</span></p>
+                <br>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                <p>Le altre Passive (Lingue, Combo, Guida, Mining, ecc.) si uppano con Libri specifici:</p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/skrzynia_um_pas.png" alt="Forziere Skill Passive"><span>Li trovi nel <strong class="text-white bold">Forziere Skill Passive</strong>, droppabile da <strong class="highlight-green">ogni Dungeo</strong>n del server. Fanne scorta!</span></p>
+				 <h3 class="section-subtitle" style="margin-top: 20px;">Bonus Skill Passive PG</h3>
+				 <table class="bonus-table" style="width: 100%; border-collapse: collapse; margin-top: 10px; background-color: rgba(0, 0, 0, 0.5); border: 1px solid #444;">
+					 <thead>
+						 <tr style="background-color: rgba(50, 20, 10, 0.7); font-weight: bold;">
+							 <th style="border: 1px solid #555; padding: 8px; color: #f0e68c;">Bonus</th>
+							 <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">M1</th>
+							 <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">G1</th>
+							 <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">P</th>
+						 </tr>
+					 </thead>
+					 <tbody>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Mezziuomini</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">30%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Mostri</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">30%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Metin</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+						 </tr>
+						  <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Dungeon</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Bonus Esperienza (EXP)</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Danni Abilità</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">3%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Danni Medi</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">8%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">12%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Punti Status (STR/INT/VIT/DEX)</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+5</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+10</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+15</td>
+						 </tr>
+						  <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Boss</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+						 </tr>
+						 <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Max HP</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+500</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+1500</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+3000</td>
+						 </tr>
+						  <tr>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee;">Max HP (%)</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">3%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+							 <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+						 </tr>
+					 </tbody>
+				 </table>
+                <p> Anche qui, uppare è più facile con:</p>
+                <br>
+                <p><img src="./Hunter - Presentazione Server_files/pasywka_egzo.png" alt="Egzo Passivo"><span>Esorcismo (Passive)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Salta cooldown.</span></p>
+                <p><img src="./Hunter - Presentazione Server_files/pasywka_rada.png" alt="Rada Passivo"><span>Consiglio Eremita (Passive)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> <strong class="highlight-yellow">100%</strong> di successo assicurato! Non sprecare libri.</span></p>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+             <!-- ================= SEZIONE 11: SUPPORTO ISTANTANEO: AUTOBUFF ================= -->
+             <div class="section" id="section_11">
+                  <h2 class="section-title">Supporto Istantaneo: AutoBuff</h2>
+                  <p>Basta loggare il buffer! Il tuo <strong class="text-white bold">AutoBuff personale e PERMANENTE</strong> ti segue come un'ombra, lanciando skill di supporto senza sosta.</p>
+                  <p>Ti viene dato <strong class="highlight-yellow">subito all'inizio</strong>, pronto a potenziarti!</p>
+                  <br>
+                  <p>L'AutoBuff parte già skillato a <strong class="bold">M1</strong> con:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span class="highlight-yellow">Benedizione</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span class="highlight-yellow">Aiuto del Drago</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span class="highlight-yellow">Attacco+</span></p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/autobuff1.png" alt="Interfaccia AutoBuff"></p>
+                  <br>
+                  <p>Puoi fargli indossare <strong class="bold">costumi fighissimi</strong>, ma ricorda: sono <strong class="text-red bold">SOLO ESTETICI</strong>, non danno bonus aggiuntivi all'efficacia dei buff.</p>
+                  <br>
+                  <h3 class="section-subtitle">Potenziare le Skill del Tuo Buffer</h3>
+                  <p>Da M1 a G1, usa i Libri Skill Aiutante:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/um_pomocnika.png" alt="Forziere Skill Buffer"><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Li trovi nel <strong class="text-white bold">Forziere Skill Aiutante</strong> (ottenibile in game).</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/buff_ksiega.png" alt="Libro Skill Buffer"><span>Libro Skill Aiutante: <strong class="highlight-yellow">50%</strong> chance, <strong class="highlight-yellow">10</strong> libri per livello.</span></p>
+                  <br>
+                  <p>Da G1 a P, la sfida sale con le Pietre dell'Aiutante:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/kamien_pomocnika.png" alt="Pietra Skill Buffer"><span>Pietra Aiutante: <strong class="highlight-yellow">20%</strong> chance, <strong class="highlight-yellow">10</strong> pietre per livello.</span></p>
+                  <p>Le puoi <strong class="highlight-green">craftare</strong> dagli NPC nella Capitale.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/szkolenie_um.gif" alt="Up Skill Buffer Animazione"></p>
+                  <p>Accelera l'upp con:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/egzo_buff.png" alt="Egzo Buffer"><span>Esorcismo (Buffer)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Salta cooldown.</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/rada_buff.png" alt="Rada Buffer"><span>Consiglio Eremita (Buffer)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Chance fino all'<strong class="highlight-yellow">80%</strong>!</span></p>
+                  <br>
+                  <h3 class="section-subtitle">Bonus Finale: Buff Divini!</h3>
+                  <p>Porta <strong class="bold">TUTTE</strong> le skill del buffer a <strong class="highlight-yellow bold">P</strong> e sblocca un <strong class="highlight-green bold">BONUS PASSIVO PERMANENTE: +30% di efficacia</strong> su tutti i suoi buff! Diventa inarrestabile!</p>
+                  <br>
+                  <h3 class="section-subtitle">Stile Buffer: Equip Estetico</h3>
+                  <p>Rendi unico il tuo compagno di buff. I set estetici si ottengono principalmente dal <strong class="highlight-yellow">BattlePass</strong>.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/eq_autobuffa.png" alt="Esempi Equip Estetico Buffer"></p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+			<!-- ================= SEZIONE 12: COMPAGNO FEDELE: PET SYSTEM (Modificata) ================= -->
+			<div class="section" id="section_12">
+				 <h2 class="section-title">Compagno Fedele: Pet System Evoluto</h2>
+				 <p>Il tuo <strong class="text-white bold">Pet da combattimento</strong> ti aspetta fin dal primo login! Expa con te fino al livello 40, poi tocca a te farlo diventare una leggenda.</p>
+				 <br>
+				 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Livello massimo Pet: <strong class="highlight-yellow">110</strong></span></p>
+				 <br>
+				 <p>Per farlo crescere oltre il 40, nutrilo con le <strong class="text-white bold">Fiale Esperienza</strong> (craftabili nei Capitale):</p>
+				 <p><img src="./Hunter - Presentazione Server_files/fiolka_m.png" alt="Fiala EXP Media"><span>Fiala (M): Per livelli <strong class="highlight-yellow">40-70</strong>.</span></p>
+				 <p><img src="./Hunter - Presentazione Server_files/fiolka_d.png" alt="Fiala EXP Grande"><span>Fiala (D): Per livelli <strong class="highlight-yellow">70-110</strong>.</span></p>
+				 <p>Ogni fiala dà <strong class="highlight-green">10% EXP</strong> per il livello Pet. Grind mirato!</p>
+				 <p><img src="./Hunter - Presentazione Server_files/zwierzak_gui.png" alt="Interfaccia Pet System Completa"></p>
+				 <p>Compra l'equip base per il Pet (Sigilli, Amuleti) dal <strong class="text-white">Mercante Ambulante</strong> (Capitale).</p>
+				 <br>
+				 <h3 class="section-subtitle">Scatenare il Potere: Skill del Pet</h3>
+				 <p>Da M1 a G1, servono Libri Abilità Pet:</p>
+				 <p><img src="./Hunter - Presentazione Server_files/skrzynia_um_zwierzaka.png" alt="Forziere Skill Pet"><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Li trovi nel <strong class="text-white bold">Forziere Abilità Pet</strong> (droppa dai <strong class="highlight-green">Metin 75+</strong>).</span></p>
+				 <br>
+				 <p><img src="./Hunter - Presentazione Server_files/zwierzak_ku.png" alt="Libro Skill Pet"><span>Libro Abilità Pet: <strong class="highlight-yellow">20%</strong> chance, <strong class="highlight-yellow">10</strong> libri per livello.</span></p>
+				 <p><img src="./Hunter - Presentazione Server_files/pasywka_rada.png" alt="Rada Pet"><span>Consiglio Eremita (Pet): Aumenta chance del <strong class="highlight-yellow">+60%</strong>!</span></p>
+				 <br>
+				 <p>Da G1 a P, il gioco si fa serio con le Pietre Anima Pet:</p>
+				 <p><img src="./Hunter - Presentazione Server_files/zwierzak_kamien.png" alt="Pietra Skill Pet"><span>Pietra Anima Pet: <strong class="highlight-yellow">20%</strong> chance, <strong class="highlight-yellow">10</strong> pietre per livello.</span></p>
+				 <p>Le droppi dai <strong class="highlight-green">Dungeon 100+</strong>.</p>
+				 <br>
+				 <p><img src="./Hunter - Presentazione Server_files/pasywka_rada.png" alt="Rada Pet"><span>Consiglio Eremita (Pet): Aumenta chance del <strong class="highlight-yellow">+40%</strong>.</span></p>
+				 <p><img src="./Hunter - Presentazione Server_files/szkolenie_um_pet.gif" alt="Up Skill Pet Animazione"></p>
+				 <p> Non dimenticare l'Esorcismo per letture rapide:</p>
+				 <p><img src="./Hunter - Presentazione Server_files/pasywka_egzo.png" alt="Egzo Pet"><span>Esorcismo (Pet)<img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Salta cooldown.</span></p>
+
+				 <!-- INIZIO SOSTITUZIONE IMMAGINE pety_tabela_bonusow.png CON TABELLA -->
+			   <h3 class="section-subtitle" style="margin-top: 20px;">Bonus Skill Aiutante per Livello</h3>
+			   <table class="bonus-table" style="width: 100%; border-collapse: collapse; margin-top: 10px; background-color: rgba(0, 0, 0, 0.5); border: 1px solid #444;">
+				   <thead>
+					   <tr style="background-color: rgba(50, 20, 10, 0.7); font-weight: bold;">
+						   <th style="border: 1px solid #555; padding: 8px; color: #f0e68c;">Bonus</th>
+						   <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">M1</th>
+						   <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">G1</th>
+						   <th style="border: 1px solid #555; padding: 8px; color: #f0e68c; text-align: center;">P</th>
+					   </tr>
+				   </thead>
+				   <tbody>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Max HP</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+3000</td> <!-- Valore M1 sembra errato nell'immagine originale -->
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+2000</td> <!-- Valore G1 sembra errato nell'immagine originale -->
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+3500</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Mostri</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">30%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Danni Medi</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+						<tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Danni Abilità</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Valore d'Attacco / Attacco Magico</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+60</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+120</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">+200</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Mezziuomini</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">20%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">30%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Max HP (%)</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Elite</td> <!-- Termine presunto da "Governanti" -->
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Resistenza Abilità</td> <!-- Termine presunto da "A. sul taglio GM." -->
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">5%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">10%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Metin</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+					   <tr>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee;">Forte contro Boss</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">4%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">7%</td>
+						   <td style="border: 1px solid #555; padding: 8px; color: #eee; text-align: center;">15%</td>
+					   </tr>
+				   </tbody>
+			   </table>
+				 <!-- FINE SOSTITUZIONE IMMAGINE CON TABELLA -->
+
+				 <h3 class="section-subtitle">Bonus Finale: Pet Divino!</h3>
+				 <p>Porta <strong class="bold">TUTTE</strong> le skill del tuo Pet da combattimento a <strong class="highlight-yellow bold">P</strong> e sblocca un <strong class="highlight-green bold">BONUS PASSIVO PERMANENTE: +30% di efficacia</strong> su tutte le sue abilità! Un vero mostro al tuo fianco!</p>
+				 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+			</div>
+
+            <!-- ================= SEZIONE 13: VIAGGI RAPIDI: TELEPORT ================= -->
+            <div class="section" id="section_13">
+                 <h2 class="section-title">Viaggi Rapidi: Domina le Distanze</h2>
+                 <p>Basta correre come disperati! Usa la <strong class="highlight-yellow">Mappa Teletrasporto</strong> (dal pannello laterale o tasto rapido) per spostarti istantaneamente dove vuoi.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/mapa_tp_img.png" alt="Interfaccia Mappa Teletrasporto"></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 <h3 class="section-subtitle">Mappe Principali e Avanzate</h3>
+                 <p>(Immagini delle mappe disponibili per il teletrasporto)</p>
+				                  <p><img src="./Hunter - Presentazione Server_files/mapy_podstawowe3.png" alt="Elenco Mappe Base Teleport"></p>
+				 								                   <h3 class="section-subtitle">Bonus forte contro "ORCHI"</h3>
+				                  <p><img src="./Hunter - Presentazione Server_files/mapy2.png" alt="Elenco Mappe Avanzate Teleport"></p>
+                 <p><img src="./Hunter - Presentazione Server_files/mapy5.png" alt="Elenco Mappe Avanzate Teleport"></p>
+
+<!-- Fine Blocco Bonus Forte -->
+
+<!-- Separatore (come nel tuo codice originale) -->
+<img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator" style="display: block; margin: 20px auto;">
+            </div>
+
+            <!-- ================= SEZIONE 14: BESTIE LEGGENDARIE ================= -->
+            <div class="section" id="section_14">
+                 <h2 class="section-title">Bestie Leggendarie: La Vera Caccia</h2>
+                 <p>Preparati allo scontro finale! I <strong class="text-red bold">Boss Leggendari</strong> sono le sfide più ardue di Hunter. Servono <strong class="bold">strategia, team affiatati e equip al top</strong> per abbatterli.</p>
+                 <p>Ma la ricompensa vale il rischio: drop unici, materiali per item endgame e la gloria eterna!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/legendy.png" alt="Esempi Boss Leggendari Imponenti"></p>
+				 <!-- Inizio Blocco Bonus Forte -->
+<div class="event-bonus-block" style="background-color: #181818; /* Sfondo molto scuro, quasi nero */
+                                       border: 1px solid #404040; /* Bordo grigio scuro sottile */
+                                       padding: 20px;
+                                       text-align: center;
+                                       margin: 20px auto; /* Centra il blocco stesso se il contenitore è più largo */
+                                       max-width: 600px; /* Larghezza massima per leggibilità */
+                                       border-radius: 4px;">
+
+    <h4 style="margin: 0 0 10px 0; font-size: 1.2em; color: #e0e0e0;">
+        BONUS <span class="highlight-yellow" style="font-weight: bold;">FORTE</span>
+    </h4>
+    <p style="margin: 0 0 10px 0; font-size: 1em; color: #b0b0b0;">
+        FORTE CONTRO DIAVOLI / LEGGENDE
+    </p>
+    <p style="margin: 0; font-size: 0.9em; color: #888;">
+        Orari di Attivazione: 10:00, 16:00, 22:00, 04:00 (UTC +2)
+    </p>
+
+</div>
+                 <br>
+                 <p>Vuoi vedere chi mena di più? Controlla la <strong class="text-white bold">Classifica Danni</strong> per ogni Leggenda!</p>
+                 <p>I <strong class="highlight-yellow">Top 15 DPS</strong> vengono registrati. Scala la classifica e mostra chi comanda!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+             <!-- ================= SEZIONE 15: DUNGEON: SFIDA & RICOMPENSA ================= -->
+             <div class="section" id="section_15">
+                 <h2 class="section-title">Dungeon: Sfida & Ricompensa</h2>
+                 <p>Il <strong class="text-white bold">Pannello Dungeon</strong> è la tua bibbia dei dungeon. TP diretto all'NPC, controllo drop, classifiche (<strong class="highlight-yellow">Tempo Record, Top DMG, Run Completate</strong>).</p>
+                 <p><img src="./Hunter - Presentazione Server_files/dungi_bg.png" alt="Pannello Dungeon Super Completo"></p>
+                 <p>Crash? DC? Nessun problema! Torna dall'NPC e <strong class="highlight-green">rientra subito</strong> nella tua run.</p>
+                 <br>
+                 <h3 class="section-subtitle">Drop Istantaneo? Sì!</h3>
+                 <p>Visualizza il possibile loot <strong class="bold">prima</strong> di entrare. Zero sorprese, massima efficienza.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/PODGLAD_DROPU.gif" alt="Anteprima Drop Dungeon Animata"></p>
+                 <h3 class="section-subtitle">Run a Raffica!</h3>
+                 <p>Finita una spedizione? Clicca <strong class="highlight-yellow">"Ripeti"</strong> e sei di nuovo dentro. Grind senza sosta!</p>
+                 <br>
+                 <h3 class="section-subtitle">Permessi? Comprali con i PH!</h3>
+                 <p><img src="./Hunter - Presentazione Server_files/przepy.png" alt="Permessi Dungeon Vari"></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Tutti i permessi/chiavi si comprano facilmente con i <span class="text-white bold">Punti Hunter (PH)</span>. Farma e accedi!</strong></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 <p>Equipaggiarsi per ogni singolo dungeon è una rottura? Abbiamo creato il <strong class="highlight-yellow bold">BONUS UNIVERSALE vs DUNGEON</strong>!</p>
+                 <p>Un solo bonus che funziona in <strong class="text-red bold">TUTTE</strong> le Dungeon. Swicthare è un ricordo!</p>
+                 <br>
+                 <br>
+                 <p>I dungeon sono stati ottimizzati: <strong class="bold">meno corse inutili, più azione</strong>. Divertimento e sfida bilanciati.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/dungi0.png" alt="Elenco Dungeon Livelli Bassi/Medi"></p>
+                 <p><img src="./Hunter - Presentazione Server_files/dungi1.png" alt="Elenco Dungeon Livelli Medi/Alti"></p>
+                 <p><img src="./Hunter - Presentazione Server_files/dungi2.png" alt="Dungeon Speciale: Nave Fantasma"></p>
+                 <p><strong class="text-red bold">Nave Fantasma (Info):</strong> Gruppo <strong class="highlight-yellow">min. 2 PG</strong> richiesto.</p>
+                 <p><span class="bold">Nave (I)</span> - Solo Liv. <strong class="highlight-yellow">149</strong>.</p>
+                 <p><span class="bold">Nave (II)</span> - Solo Liv. <strong class="highlight-yellow">200</strong>.</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+            <!-- ================= SEZIONE 16: SALVA SPOT PREFERITI ================= -->
+            <div class="section" id="section_16">
+                <h2 class="section-title">Salva Posizione: I Tuoi Spot Segreti</h2>
+                <p>Trova il punto perfetto per farmare o un nascondiglio sicuro? Salvalo!</p>
+                <p>Il sistema <strong class="highlight-yellow">Salva Posizione</strong> (nel pannello laterale) ti permette di memorizzare le coordinate e tornarci quando vuoi.</p>
+                <p><img src="./Hunter - Presentazione Server_files/zapis_pozycji.png" alt="Interfaccia Salva Posizione"></p>
+                <p>Puoi anche impostare una <strong class="bold">pagina preferita</strong> per teletrasportarti ancora più velocemente tra i tuoi spot.</p>
+                <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 17: MERCATO 24/7: SHOP OFFLINE ================= -->
+            <div class="section" id="section_17">
+                 <h2 class="section-title">Mercato 24/7: Shop Offline</h2>
+                 <p>Vendi la tua merce anche mentre dormi! Il sistema di <strong class="text-white bold">Shop Offline</strong> è la linfa vitale dell'economia.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Aprire uno shop è <strong class="highlight-green bold">GRATIS</strong> e resta attivo per <strong class="highlight-yellow">7 GIORNI</strong>!</span></p>
+                 <br>
+                 <p>Interagisci facilmente: <strong class="highlight-yellow">PM diretto</strong> al venditore e vedi subito se è <strong class="bold">Online/Offline</strong>.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/sklepy_offline.gif" alt="Funzionalità Avanzate Shop Offline"></p>
+                 <br><br>
+                 <h3 class="section-subtitle">Registro Affari</h3>
+                 <p>Tieni sotto controllo vendite e acquisti con la <strong class="bold">Cronologia Shop</strong> (2 pagine, 20 log).</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/historia_sklepuimg.png" alt="Cronologia Acquisti/Vendite Shop"></p>
+                 <br>
+                 <p>Regola la <strong class="highlight-yellow">distanza di visualizzazione</strong> degli shop nelle opzioni per massimizzare gli FPS anche in piazza strapiena.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/optymalka_sklepow.png" alt="Grafico FPS con Shop Ottimizzati"></p>
+                 <p>Abbiamo reso gli shop leggerissimi. La tua scheda grafica ti ringrazierà!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+            <!-- ================= SEZIONE 18: DECIFRA I BONUS ================= -->
+            <div class="section" id="section_18">
+                 <h2 class="section-title">Decifra i Bonus: La Tua Enciclopedia</h2>
+                 <p>Quanti HP dà quella Corazza? Che bonus ha quella Pietra? Scoprilo subito!</p>
+                 <p>La <strong class="highlight-yellow">Tabella Bonus</strong> (pannello laterale) è stata potenziata con una <strong class="bold">funzione di ricerca</strong>.</p>
+                 <p>Trova istantaneamente i valori massimi e le possibili uscite di ogni bonus del gioco. Indispensabile per lo switch e il PVM/PVP!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/tableA_bon.png" alt="Tabella Bonus con Funzione Ricerca"></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 19: CACCIA GROSSA: TP BOSS/METIN ================= -->
+            <div class="section" id="section_19">
+                 <h2 class="section-title">Caccia Grossa: Teleport Boss & Metin</h2>
+                 <p>Niente più giri a vuoto per le mappe! Il sistema di <strong class="highlight-yellow">Teletrasporto Boss/Metin</strong> ti porta dritto alla preda.</p>
+                 <p>Dal pannello dedicato (accessibile dal pannello laterale) puoi:
+                    <br><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Teletrasportarti direttamente al Boss/Metin selezionato.</span>
+                    <br><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Controllare il <strong class="bold">Drop Possibile</strong>.</span>
+                    <br><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Vedere il <strong class="bold">Tempo di Respawn</strong> rimanente.</span>
+                 </p>
+                 <p><img src="./Hunter - Presentazione Server_files/tp_metki_bosy.png" alt="Interfaccia Teleport Boss e Metin"></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 20: METAMORFOSI: POLYMORPH ================= -->
+            <div class="section" id="section_20">
+                 <h2 class="section-title">Metamorfosi: Scatena la Bestia Polymorph</h2>
+                 <p>Le Biglie Polymorph su Hunter sono più potenti che mai, divise in 3 livelli:</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-yellow">Livello I (Base):</strong> Nessun bonus aggiuntivo.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-yellow">Livello II (Avanzato):</strong></p>
+                 <p class="text-green-bonus">Forte contro Mostri +10%</p>
+                 <p class="text-green-bonus">Forte contro Boss +10%</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-yellow">Livello III (Supremo):</strong></p>
+                 <p class="text-green-bonus">Forte contro Mostri +20%</p>
+                 <p class="text-green-bonus">Forte contro Boss +15%</p>
+                 <p class="text-green-bonus"><strong class="text-red">Forte contro Leggende +5%</strong> (Novità!)</p>
+                 <p></p>
+                 <p><img src="./Hunter - Presentazione Server_files/marmury_poli.gif" alt="Creazione Marmi Polymorph"></p>
+                 <br>
+                 <p>Ricorda: potenziare la skill passiva <strong class="text-white bold">Trasformazione</strong> aumenta durata e danni. A <strong class="highlight-yellow">P dura 1 ORA</strong>!</p>
+                 <br>
+                 <p>Puoi annullare la trasformazione cliccando l'icona della biglia attiva in alto a sinistra.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-green">Bonus Extra:</strong> La velocità di movimento in trasformazione è aumentata del <strong class="highlight-yellow">200%</strong>! Addio lentezza!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 21: POTERE ANCESTRALE: ALCHIMIA ================= -->
+             <div class="section" id="section_21">
+                  <h2 class="section-title">Potere Ancestrale: Alchimia del Drago</h2>
+                  <p>Forgia le leggendarie <strong class="text-white bold">Pietre del Drago</strong>! Ottieni i Cor Draconis (droppandoli o craftandoli) e inizia l'estrazione.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/alchemia_window.png" alt="Finestra Sistema Alchimia"></p>
+                  <br>
+                  <h3 class="section-subtitle">Uppare le Pietre: Rito Antico</h3>
+                  <p>Per potenziare le tue pietre servono i <strong class="text-white bold">Fagioli del Drago</strong> (acquistabili nel negozio per PO). Mira al <strong class="highlight-yellow bold">+6</strong> per le Pietre Leggendarie!</p>
+                  <br><br>
+                  <p><img src="./Hunter - Presentazione Server_files/zfasola.png" alt="Fagiolo Verde"><span>Fagiolo Drago Verde (Base)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/nfasola.png" alt="Fagiolo Blu"><span>Fagiolo Drago Blu <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Chance UP <strong class="highlight-yellow">+5%</strong></span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/rfasola.png" alt="Fagiolo Rosa"><span>Fagiolo Drago Rosa <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Chance UP <strong class="highlight-yellow">+10%</strong></span></p>
+                  <br>
+                  <h3 class="section-subtitle">Estendere la Durata: Energia Draconica</h3>
+                  <p>Rinnovare l'Alchimia è un gioco da ragazzi: clicca il pulsante <strong class="highlight-yellow">"Rinnova Tempo"</strong> direttamente nella finestra dell'Alchimia.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/odnawianie_czasu.png" alt="Pulsante Rinnova Tempo Alchimia"></p>
+                  <br>
+                  <p>Abbiamo reso alcuni bonus più incisivi:</p>
+                  <br>
+
+                  <!-- Blocco Onice -->
+                  <div class="alchemy-bonus-centered" style="text-align: center; margin-bottom: 30px; padding: 15px; border: 1px solid #555; background-color: rgba(20, 10, 5, 0.5); border-radius: 8px;">
+                      <img src="./Hunter - Presentazione Server_files/onyks.png" alt="Onice" style="width: 50px; height: auto; display: block; margin: 0 auto 10px auto;">
+                      <h4 style="margin: 0 0 10px 0; font-weight: bold; color: #eee;">
+                          Onice:
+                          <span class="text-red" style="font-weight: normal; margin-left: 10px;">(-) Resistenza Trafiggenti</span>
+                          <span class="highlight-green" style="font-weight: normal; margin-left: 10px;">(+) Forte vs Boss</span>
+                      </h4>
+                      <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.7; display: inline-block; text-align: left;">
+                          <li><span style="color: #ccc; display: inline-block; width: 120px;">Opaco +4:</span> <span class="highlight-green" style="font-weight: bold;">3%</span></li>
+                          <li><span style="color: #ccc; display: inline-block; width: 120px;">Limpido +4:</span> <span class="highlight-green" style="font-weight: bold;">5%</span></li>
+                          <li><span style="color: #ccc; display: inline-block; width: 120px;">Taglio +4:</span> <span class="highlight-green" style="font-weight: bold;">6%</span></li>
+                          <li><span class="highlight-yellow" style="display: inline-block; width: 120px;">Brillante +5:</span> <span class="highlight-green" style="font-weight: bold;">9%</span></li>
+                          <li><span class="highlight-yellow bold" style="display: inline-block; width: 120px;">Eccellente +6:</span> <span class="highlight-green" style="font-weight: bold;">12%</span></li>
+                      </ul>
+                  </div>
+
+                  <!-- Blocco Giada -->
+                   <div class="alchemy-bonus-centered" style="text-align: center; margin-bottom: 30px; padding: 15px; border: 1px solid #555; background-color: rgba(5, 20, 10, 0.5); border-radius: 8px;">
+                      <img src="./Hunter - Presentazione Server_files/jadeit.png" alt="Giada" style="width: 50px; height: auto; display: block; margin: 0 auto 10px auto;">
+                      <h4 style="margin: 0 0 10px 0; font-weight: bold; color: #eee;">
+                          Giada:
+                          <span class="text-red" style="font-weight: normal; margin-left: 10px;">(-) Resistenza Critici</span>
+                          <span class="highlight-green" style="font-weight: normal; margin-left: 10px;">(+) Forte vs Metin</span>
+                      </h4>
+                      <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.7; display: inline-block; text-align: left;">
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Opaco +4:</span> <span class="highlight-green" style="font-weight: bold;">3%</span></li>
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Limpido +4:</span> <span class="highlight-green" style="font-weight: bold;">5%</span></li>
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Taglio +4:</span> <span class="highlight-green" style="font-weight: bold;">6%</span></li>
+                           <li><span class="highlight-yellow" style="display: inline-block; width: 120px;">Brillante +5:</span> <span class="highlight-green" style="font-weight: bold;">9%</span></li>
+                           <li><span class="highlight-yellow bold" style="display: inline-block; width: 120px;">Eccellente +6:</span> <span class="highlight-green" style="font-weight: bold;">12%</span></li>
+                      </ul>
+                  </div>
+
+                  <!-- Blocco Granato -->
+                  <div class="alchemy-bonus-centered" style="text-align: center; margin-bottom: 30px; padding: 15px; border: 1px solid #555; background-color: rgba(20, 5, 15, 0.5); border-radius: 8px;">
+                       <img src="./Hunter - Presentazione Server_files/granat.png" alt="Granato" style="width: 50px; height: auto; display: block; margin: 0 auto 10px auto;">
+                      <h4 style="margin: 0 0 10px 0; font-weight: bold; color: #eee;">
+                          Granato:
+                          <span class="text-red" style="font-weight: normal; margin-left: 10px;">(-) Resistenza Trafiggenti</span> <!-- Assumo sia come Onice -->
+                          <span class="highlight-green" style="font-weight: normal; margin-left: 10px;">(+) Forte vs Boss</span>
+                      </h4>
+                      <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.7; display: inline-block; text-align: left;">
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Opaco +4:</span> <span class="highlight-green" style="font-weight: bold;">3%</span></li>
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Limpido +4:</span> <span class="highlight-green" style="font-weight: bold;">5%</span></li>
+                           <li><span style="color: #ccc; display: inline-block; width: 120px;">Taglio +4:</span> <span class="highlight-green" style="font-weight: bold;">6%</span></li>
+                           <li><span class="highlight-yellow" style="display: inline-block; width: 120px;">Brillante +5:</span> <span class="highlight-green" style="font-weight: bold;">9%</span></li>
+                           <li><span class="highlight-yellow bold" style="display: inline-block; width: 120px;">Eccellente +6:</span> <span class="highlight-green" style="font-weight: bold;">12%</span></li>
+                      </ul>
+                  </div>
+
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+            <!-- ================= SEZIONE 22: RELIQUIE POTENTI: ARTEFATTI ================= -->
+            <div class="section" id="section_22">
+                 <h2 class="section-title">Reliquie Potenti: Sistema Artefatti</h2>
+                 <p>Scova e colleziona gli <strong class="text-white bold">Artefatti</strong>, antiche reliquie che potenziano il tuo personaggio con bonus unici.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/artefakty.png" alt="Interfaccia Sistema Artefatti"></p>
+                 <br>
+                 <p>Puoi trovarli sia <strong class="highlight-green">spaccando Metin</strong> che completando <strong class="highlight-green">Dungeon</strong>.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Esistono 2 tipi di Artefatti:</span></p>
+                 <p><strong class="highlight-yellow">1. Artefatti Potenziabili:</strong></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Si trovano nel <strong class="text-white bold">Forziere degli Artefatti</strong> (drop PvM).</span></p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/artefakty_chest.png" alt="Forziere Artefatti"></p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/artefakty_lista.png" alt="Elenco Artefatti Potenziabili"></p>
+                 <br>
+                 <p><strong class="highlight-yellow">2. Artefatti Fissi (Non Potenziabili):</strong></p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/artefakty_lista2.png" alt="Elenco Artefatti Fissi"></p>
+                 <p>Collezionali tutti per massimizzare il tuo potenziale!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 23: INCISIONI MISTICHE: RUNE ================= -->
+             <div class="section" id="section_23">
+                 <h2 class="section-title">Incisioni Mistiche: Sistema Rune</h2>
+                 <p>Incidi il potere degli elementi sul tuo equip con il <strong class="text-white bold">Sistema Rune</strong>. Compra le rune base <strong class="highlight-yellow">+0</strong> nel negozio per Punti Hunter.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/rune_bg.png" alt="Interfaccia Sistema Rune"></p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/runy_lista.png" alt="Elenco Rune Disponibili"></p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Le rune possono essere uppate fino a <strong class="highlight-yellow">+5</strong>.</span></p>
+                 <br>
+                 <p>L'ingrediente chiave per l'up è il <strong class="text-white bold">Frammento di Runa</strong>:</p>
+                 <p><img src="./Hunter - Presentazione Server_files/odlamekruny.png" alt="Frammento di Runa"><span>Frammento di Runa <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Lo ottieni completando i <strong class="highlight-green">Dungeon</strong>.</span></p>
+                 <br>
+                 <p>Completa un intero set di rune a livello <strong class="highlight-yellow">+5</strong> e sblocca <strong class="bold">BONUS AGGIUNTIVI DEVASTANTI</strong>:</p>
+                 <br>
+                 <p class="text-green-bonus">Danno Finale +5%</p>
+                 <p class="text-green-bonus">Danni Medi +15%</p>
+                 <p class="text-green-bonus">Forte contro Mezziuomini +25%</p>
+                 <p class="text-green-bonus">Forte contro Classi (War, Sura, etc.) +10%</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 24: ELEGANZA LETALE: Stola ================= -->
+             <div class="section" id="section_24">
+                 <h2 class="section-title">Eleganza Letale: Sistema Stole</h2>
+                 <p>Crea e potenzia le tue Stola da <strong class="text-white bold">Theowahdan</strong> (presente nelle mappe remote e nei Capitale).</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Assorbimento massimo: <strong class="highlight-yellow">30%</strong>.</span></p>
+                 <p>Puoi assorbire solo i <strong class="bold">bonus presenti sulle Armi</strong>.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/swiadectwo_zmiany.png" alt="Certificato Rimozione Stola"><span>Certificato di Cambiamento <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Rimuove l'arma assorbita dalla Stola (Item Shop).</span></p>
+                 <br>
+                 <h3 class="section-subtitle">Creazione Stola</h3>
+                 <p>Servono i <strong class="text-white bold">Tessuti Pregiati</strong> (drop da Boss e Dungeon).</p>
+                 <p><img src="./Hunter - Presentazione Server_files/wytwarzanie_szarf.png" alt="Finestra Creazione Stola"></p>
+                 <br>
+                 <h3 class="section-subtitle">Combinazione Stola (Upgrade)</h3>
+                 <p>Per uppare le Stola servono Uppa specifici, Won e Yang.</p>
+                 <br>
+                 <p><img src="./Hunter - Presentazione Server_files/kombinacja.png" alt="Finestra Combinazione Stola"></p>
+                 <br>
+                 <p>La finestra di combinazione ha un'opzione per l'up rapido con il tasto <strong class="highlight-yellow">INVIO</strong>. Comodissimo!</p>
+                 <br>
+                 <h3 class="section-subtitle">Skin per Stola (Sovrapposizioni)</h3>
+                 <p>Personalizza l'aspetto della tua Stola con le <strong class="text-white bold">Sovrapposizioni</strong> (Item Shop).</p>
+                 <p>Oltre all'estetica unica, forniscono anche <strong class="highlight-green">bonus aggiuntivi</strong>!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/przykladowa_nakladka.png" alt="Esempio Sovrapposizione Stola con Bonus"></p>
+                 <p>Gli item per aggiungere/cambiare bonus alle sovrapposizioni sono disponibili nell'Item Shop.</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 25: SIGILLI LEGGENDARI ================= -->
+             <div class="section" id="section_25">
+                 <h2 class="section-title">Sigilli Leggendari: Oltre il Limite</h2>
+                 <p><img src="./Hunter - Presentazione Server_files/legendarne_wzmocnienie.png" alt="Potenziamento Leggendario"></p>
+                 <p>Il <strong class="text-red bold">Potenziamento Leggendario</strong> è un item rarissimo che spinge i bonus del tuo equip oltre il normale limite.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Lo ottieni sconfiggendo i <strong class="highlight-green">Boss Leggendari</strong>. Una ricompensa per pochi eletti.</span></p>
+                 <br>
+                 <h3 class="section-subtitle">Applica su Stola</h3>
+                 <p>Aumenta l'assorbimento della Stola del <strong class="highlight-yellow">+15%</strong>.</p>
+                 <p>Utilizzabile solo su Stola con assorbimento già al <strong class="highlight-yellow">30%</strong>. Porta l'assorbimento a livelli divini!</p>
+                 <br>
+                 <h3 class="section-subtitle">Applica su Rune</h3>
+                 <p>Aumenta i bonus della runa del <strong class="highlight-yellow">+20%</strong>.</p>
+                 <p>Utilizzabile solo su rune <strong class="highlight-yellow">+5</strong>.</p>
+                 <br>
+                 <h3 class="section-subtitle">Applica su Guanti</h3>
+                 <p>Aumenta i bonus del guanto del <strong class="highlight-yellow">+20%</strong>.</p>
+                 <p>Utilizzabile solo su guanti <strong class="highlight-yellow">+5</strong>.</p>
+                 <br>
+                 <h3 class="section-subtitle">Applica su Equip Pet</h3>
+                 <p>Aumenta i bonus degli item del Pet del <strong class="highlight-yellow">+30%</strong>.</p>
+                 <p>Utilizzabile solo su item Pet <strong class="highlight-yellow">+9</strong>.</p>
+                 <br>
+                 <p><strong class="text-red bold">ATTENZIONE MASSIMA!</strong></p>
+                 <p>I Potenziamenti Leggendari sono <strong class="text-red bold">PERMANENTI</strong> e non possono essere rimossi.</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><strong class="highlight-yellow">Usali SOLO su item endgame con bonus PERFETTI che non cambierai mai più!</strong></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 26: GLORIA SETTIMANALE: RANKING ================= -->
+             <div class="section" id="section_26">
+                  <h2 class="section-title">I Portali Maledetti</h2>
+                  <p>Ogni settimana, compariranno diversi portali nel regno Hunter.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/ranking_tygodniowy.png" alt="Immagine portali"></p>
+                  <br>
+                  <p>I vincitori di questa sfida Riceveranno <strong class="highlight-yellow">Punti e oggetti Esclusivi</strong> con bonus potenti, consegnati automaticamente nell'inventario.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/ranking_tygodniowy2.png" alt="Esempi Titoli Ranking con Bonus"></p>
+                  <p>Scala le classifiche PvP, Boss, Metin, Dungeon e mostra a tutti la tua supremazia!</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 27: PREDATORI ELITE ================= -->
+             <div class="section" id="section_27">
+                  <h2 class="section-title">Predatori Elite: Mini-Boss Ovunque</h2>
+                  <p>Nelle mappe di livello <strong class="highlight-yellow">100+</strong>, fai attenzione ai <strong class="text-red bold">Boss Elite</strong>!</p>
+                  <p>Sono versioni potenziate dei mob normali, più resistenti e cattivi. Da loro ottieni <strong class="highlight-green">upp rari e costosi</strong>, essenziali per l'equip endgame, oltre a drop sempre soddisfacenti!</p>
+                  <p><img src="./Hunter - Presentazione Server_files/elitki0.png" alt="Esempi Boss Elite 1"></p>
+                  <p><img src="./Hunter - Presentazione Server_files/elitki1.png" alt="Esempi Boss Elite 2"></p>
+                  <p>Trovali, sconfiggili, raccogli il bottino!</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 28: SCALA IL PRESTIGIO: RANGO ================= -->
+             <div class="section" id="section_28">
+                  <h2 class="section-title">Scala il Prestigio: Sistema Rango / Dono del Monarca</h2>
+
+                  <!-- Titolo del Sistema Rango (dalla prima immagine) -->
+                  <h3 class="section-subtitle rank-system-title" style="text-align:center; border: 2px solid #a08c5a; padding: 5px; margin: 15px auto; max-width: 300px; background-color: rgba(50, 20, 10, 0.5); color: #f0e68c; font-weight: bold;">
+                      DONO DEL MONARCA
+                  </h3>
+
+                  <p>Il tuo <strong class="text-white bold">Rango (Dono del Monarca)</strong> non è solo un titolo, ma una fonte di potere! Aumentalo accumulando <strong class="highlight-yellow">Punti Rango</strong>.</p>
+                  <p>I punti si ottengono principalmente completando <strong class="highlight-green">Dungeon e killando Boss</strong>, oppure usando <strong class="text-white bold">Frutti Speciali</strong>.</p>
+                  <br>
+
+                  <!-- Dettaglio Livelli Rango e Bonus (dal contenuto di rangi.png) -->
+                  <div class="rank-levels-container" style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">RECLUTA</h4>
+                          <p>DA: 20.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +10%</li>
+                              <li>Forte contro Mezziuomini +10%</li>
+                              <li>Max. HP +2.500</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">VALOROSO</h4>
+                          <p>DA: 50.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +15%</li>
+                              <li>Forte contro Mezziuomini +15%</li>
+                              <li>Max. HP +5.000</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">POSSENTE</h4>
+                          <p>DA: 150.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +25%</li>
+                              <li>Forte contro Mezziuomini +25%</li>
+                              <li>Max. HP +10.000</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">POTENTE</h4>
+                          <p>DA: 250.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +35%</li>
+                              <li>Forte contro Mezziuomini +35%</li>
+                              <li>Max. HP +15.000</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">SOVRANO</h4>
+                          <p>DA: 350.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +50%</li>
+                              <li>Forte contro Mezziuomini +50%</li>
+                              <li>Danni Finali +3%</li>
+                              <li>Max. HP +20.000</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 45%;">
+                          <h4 style="color: #f0e68c; font-weight: bold;">ARCIMAESTRO</h4>
+                          <p>DA: 450.000 PUNTI</p>
+                          <ul class="rank-bonuses">
+                              <li>Forte contro Mostri +75%</li>
+                              <li>Forte contro Mezziuomini +75%</li>
+                              <li>Danni Finali +5%</li>
+                              <li>Max. HP +30.000</li>
+                          </ul>
+                      </div>
+
+                      <div class="rank-level" style="border: 1px solid #776; padding: 10px; margin: 10px; width: 92%; text-align:center;">
+                          <h4 style="color: #ffd700; font-weight: bold; font-size: 1.3em;">LEGGENDA HUNTER</h4>
+                          <p>DA: 500.000 PUNTI</p>
+                          <ul class="rank-bonuses" style="list-style: none; padding: 0;">
+                              <li>Forte contro Mostri +100%</li>
+                              <li>Forte contro Mezziuomini +100%</li>
+                              <li>Danni Finali +10%</li>
+                              <li>Max. HP +40.000</li>
+                          </ul>
+                      </div>
+                  </div>
+                  <br>
+
+                  <!-- Frutti per aumentare il rango (testo esistente leggermente adattato) -->
+                  <h3 class="section-subtitle">Frutti del Prestigio</h3>
+                  <p>Puoi aumentare il rango anche consumando <strong class="text-white bold">Frutti Speciali</strong> (droppabili o craftabili):</p>
+                  <ul style="list-style: none; padding-left: 20px;">
+                      <li><strong style="color:#ff6347;">Mela:</strong> 0 -> 50k Punti</li>
+                      <li><strong style="color:#9acd32;">Pera:</strong> 50k -> 100k Punti</li>
+                      <li><strong style="color:#8a2be2;">Uva:</strong> 100k -> 200k Punti</li>
+                      <li><strong style="color:#32cd32;">Anguria:</strong> 200k -> 300k Punti</li>
+                      <li><strong style="color:#ffc107;">Ananas:</strong> 300k -> 400k Punti</li>
+                      <li><strong style="color:#ff69b4;">Fragola:</strong> 400k -> 500k Punti (Craftabile da Andastra, Capitale)</li>
+                  </ul>
+
+                  <p>Ogni livello di Rango raggiunto sblocca <strong class="highlight-yellow">i bonus passivi permanenti</strong> mostrati sopra!</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 29: EVENTI NON-STOP ================= -->
+             <div class="section" id="section_29">
+                 <h2 class="section-title">Eventi Non-Stop: Azione Costante</h2>
+                 <p>Su Hunter non ci si annoia mai! Controlla il <strong class="highlight-yellow">Calendario Eventi</strong> (pannello laterale) per vedere cosa bolle in pentola.</p>
+                 <p>Eventi EXP, Drop, Pesca, Caccia al GM, Gare OX, Guerre tra Gilde... ce n'è per tutti i gusti, ogni giorno!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/kalendarz_eventowy.png" alt="Interfaccia Calendario Eventi"></p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+            <!-- ================= SEZIONE 30: PASS BATTAGLIA RICCO ================= -->
+            <div class="section" id="section_30">
+                 <h2 class="section-title">Pass Battaglia: Sfide e Ricompense</h2>
+                 <p>Affronta le missioni del <strong class="text-white bold">Battle Pass</strong>, accumula esperienza e sblocca premi esclusivi!</p>
+                 <p>Livello massimo: <strong class="highlight-yellow">20</strong>. Durata: <strong class="highlight-yellow">15 giorni</strong> (poi reset con nuovi premi!).</p>
+                 <br>
+                 <p>Guadagna EXP Battle Pass completando obiettivi giornalieri/settimanali:</p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Killare Boss: <strong class="highlight-green">2 punti</strong>.</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Spaccare Metin: <strong class="highlight-green">1 punto</strong>.</span></p>
+                 <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Completare Dungeon: <strong class="highlight-green">2 punti</strong>.</span></p>
+                 <br>
+                 <p>Sblocca la traccia <strong class="highlight-yellow">Premium</strong> (costo: <strong class="bold">1.100 Monete Drago</strong>) per premi ancora più ricchi!</p>
+                 <p><img src="./Hunter - Presentazione Server_files/battlepass.png" alt="Interfaccia Battle Pass con Premi"></p>
+                 <p>All'ultimo livello ti aspettano <strong class="highlight-yellow">costumi e assistenti limitati ed esclusivi</strong> del Battle Pass!</p>
+                 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+            </div>
+
+            <!-- ================= SEZIONE 31: ANIME CRISTALLIZZATE: PIETRE ================= -->
+             <div class="section" id="section_31">
+                  <h2 class="section-title">Anime Cristallizzate: Pietre +5 a +9 e Leggendarie</h2>
+                  <p>Le <strong class="text-white bold">Pietre delle Anime</strong> sono fondamentali. Le ottieni dalle <strong class="text-white bold">Sacche</strong>, droppate dai Metin:</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/sakiewka_0.png" alt="Sacca +5"><span>Sacca Pietre +5 <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Drop: Mappe Base.</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/sakiewka_1.png" alt="Sacca +6"><span>Sacca Pietre +6 <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Drop: Ciclopi (75), Faraoni (100).</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/sakiewka_2.png" alt="Sacca +7"><span>Sacca Pietre +7 <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Drop: Terra Gelida (125).</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/sakiewka_3.png" alt="Sacca +8"><span>Sacca Pietre +8 <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Drop: Terra Infuocata (150).</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/sakiewka_4.png" alt="Sacca +9"><span>Sacca Pietre +9 <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Drop: Foresta Incantata (175).</span></p>
+                  <br>
+                  <h3 class="section-subtitle">Pietre Leggendarie: Potere Supremo</h3>
+                  <p>Vai da <strong class="text-white bold">Seon-Pyeong</strong> (Capitale) per creare le potentissime <strong class="text-red bold">Pietre Leggendarie</strong>.</p>
+                  <p>Queste pietre non solo hanno <strong class="bold">valori base altissimi</strong>, ma possiedono anche un <strong class="highlight-green">bonus unico aggiuntivo</strong>!</p>
+                  <p>Inoltre, la Pietra della Magia è stata potenziata: ora dà <strong class="highlight-yellow">Valore d'Attacco</strong> invece di Magia.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/wytwarzanie_kd.png" alt="Creazione Pietre Leggendarie"></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>La chance di inserire le Pietre Leggendarie nell'equip è del <strong class="highlight-yellow">100%</strong>! Niente rotture.</span></p>
+                  <br>
+                  <h3 class="section-subtitle">Frammenti Leggendari</h3>
+                  <p>Per creare le Pietre Leggendarie servono i <strong class="text-white bold">Frammenti</strong> specifici. Anche questi si craftano da Seon-Pyeong.</p>
+                  <p><img src="./Hunter - Presentazione Server_files/odlamki_panel.png" alt="Creazione Frammenti per Pietre Leggendarie"></p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+             </div>
+
+             <!-- ================= SEZIONE 32: MISSIONI: LA VIA DELL'EROE ================= -->
+              <div class="section" id="section_32">
+                  <h2 class="section-title">Missioni: La Via dell'Eroe</h2>
+                  <p>Tutte le missioni principali sono raccolte in un unico, comodo <strong class="highlight-yellow">Pannello Missioni(F11)</strong>:</p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Ricerche del <strong class="bold">Biologo</strong></span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Missioni del <strong class="bold">Collezionista</strong></span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Missioni di <strong class="bold">Caccia</strong></span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> <strong class="bold">Bossologia</strong> (Uccidi X boss)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> <strong class="bold">Metinologia</strong> (Spacca X Metin)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/panel_misji.png" alt="Pannello Missioni Integrato"></p>
+                  <p>Usa gli <strong class="text-white bold">Elisir</strong> e le <strong class="text-white bold">Spirali</strong> per aumentare la chance di consegna degli item e ridurre il tempo di attesa:</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/eliksir_biologa.png" alt="Elisir Biologo"><span>Elisir Biologo (+25% Chance)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/eliksir_kolekcjonera.png" alt="Elisir Collezionista"><span>Elisir Collezionista (+25% Chance)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> (Acquistabili nel negozio per PO)</span></p>
+                  <br><br>
+                  <p><img src="./Hunter - Presentazione Server_files/spirala0.png" alt="Spirale Biologo"><span>Spirale Biologo (-25% Tempo)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/spirala1.png" alt="Spirale Collezionista"><span>Spirale Collezionista (-25% Tempo)</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> (Ottenibili dai Dungeon)</span></p>
+                  <br><br>
+                  <p><strong class="highlight-yellow">Novità Collezionista:</strong> Puoi scegliere quale missione completare, indipendentemente dal tuo livello!</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+              </div>
+
+              <!-- ================= SEZIONE 33: EQUIP: UPP & BONUS PERFETTI ================= -->
+              <div class="section" id="section_33">
+                  <h2 class="section-title">Equip: Upp & Bonus Perfetti</h2>
+                  <h3 class="section-subtitle">Potenziare l'Equipaggiamento (Upp)</h3>
+                  <p>Oltre al classico Metallo Magico, usa le <strong class="text-white bold">Pietre Mistiche</strong> per aumentare la % di successo dell'upp:</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/metal10.png" alt="Pietra Mistica 10%"><span>Pietra Mistica (+10% Chance) <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Ottenibile dai <strong class="highlight-green">Dungeon</strong>.</span></p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/metal20.png" alt="Pietra Mistica 20%"><span>Pietra Mistica (+20% Chance) <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> <strong class="highlight-green">Craftabile dal Fabbro</strong> (Capitale).</span></p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/metal_wytwarzanie.png" alt="Crafting Pietra Mistica 20%"></p>
+                  <br>
+                  <h3 class="section-subtitle">Minerali Preziosi (Bonus Gioielli)</h3>
+                  <p>Usa i <strong class="text-white bold">Minerali</strong> specifici per aggiungere bonus ai tuoi gioielli (Bracciali, Collane, Orecchini).</p>
+                  <p>Si acquistano nel negozio per <strong class="highlight-yellow">Punti Hunter (PH)</strong>.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop50.png" alt="Tormalina"><span>Tormalina <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 50</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop75.png" alt="Ambra"><span>Ambra <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 75</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop100.png" alt="Zaffiro"><span>Zaffiro <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 100</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop125.png" alt="Topazio"><span>Topazio <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 125</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop150.png" alt="Agata"><span>Agata <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 150</span></p>
+                  <p><img src="./Hunter - Presentazione Server_files/przetop175.png" alt="Smeraldo"><span>Smeraldo <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Equip Liv. 175</span></p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+              </div>
+
+              <!-- ================= SEZIONE 34: PESCA & MINING ISTANTANEI ================= -->
+<!-- ================= SEZIONE 34: PESCA & MINING ISTANTANEI ================= -->
+				 <div class="section" id="section_34">
+					 <h2 class="section-title">Pesca & Mining? Troppo Lenti!</h2>
+					 <p>Abbiamo <strong class="text-red bold">RIMOSSO</strong> completamente la pesca manuale e l'estrazione mineraria. Chi ha tempo da perdere?</p>
+					 <p>I <strong class="text-white bold">Pesci</strong> con bonus si ottengono aprendo il <strong class="text-white bold">Forziere del Pescatore</strong>, acquistabile nel negozio per PO.</p>
+					 <br>
+					 <p><img src="./Hunter - Presentazione Server_files/szkata_rybaka.png" alt="Forziere del Pescatore"><span>Forziere del Pescatore <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Contiene <strong class="highlight-yellow">5 pesci casuali</strong> con bonus.</span></p>
+
+					 <!-- INIZIO SOSTITUZIONE IMMAGINE CON TESTO -->
+					 <h3 class="section-subtitle">Bonus dei Pesci (Durata: 10 Minuti)</h3>
+					 <ul class="fish-bonus-list" style="list-style: none; padding-left: 20px; margin-top: 10px;">
+						 <li><span class="highlight-yellow">Forza:</span> +5</li>
+						 <li><span class="highlight-yellow">Forte contro Diavoli:</span> +5%</li>
+						 <li><span class="highlight-yellow">Forte contro Boss:</span> +3%</li>
+						 <li><span class="highlight-yellow">Intelligenza:</span> +5</li>
+						 <li><span class="highlight-yellow">Destrezza:</span> +5</li>
+						 <li><span class="highlight-yellow">Forte contro Mostri:</span> +5%</li>
+						 <li><span class="highlight-yellow">Valore d'Attacco:</span> +50</li>
+						 <li><span class="highlight-yellow">Danni Medi:</span> +5%</li>
+						 <li><span class="highlight-yellow">Possibilità Bonus EXP:</span> +30%</li>
+					 </ul>
+					 <!-- FINE SOSTITUZIONE IMMAGINE CON TESTO -->
+
+					 <p>(I minerali si ottengono da altre fonti, come drop o NPC).</p>
+					 <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+				 </div>
+
+               <!-- ================= SEZIONE 35: SIMBOLI DI POTERE: EMBLEMI ================= -->
+               <div class="section" id="section_35">
+                   <h2 class="section-title">Simboli di Potere: Sistema Emblemi</h2>
+                   <p>Mostra a tutti il tuo status con gli <strong class="text-white bold">Emblemi</strong>! Simboli unici visibili sopra il tuo personaggio.</p>
+                   <p>Non solo ti distinguono dalla massa, ma conferiscono anche <strong class="highlight-green">bonus passivi permanenti</strong>!</p>
+                   <br>
+                   <p><img src="./Hunter - Presentazione Server_files/emblematy_podglad.png" alt="Anteprima Emblemi con Bonus"></p>
+                   <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Gli Emblemi sono disponibili nell'<strong class="highlight-yellow">Item Shop</strong>.</span></p>
+                   <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+               </div>
+
+               <!-- ================= SEZIONE 36: NOCCHE D'ACCIAIO: GUANTI ================= -->
+               <div class="section" id="section_36">
+                   <h2 class="section-title">Nocche d'Acciaio: Guanti da Combattimento</h2>
+                   <p><img src="./Hunter - Presentazione Server_files/rekawiczka.png" alt="Guanto da Combattimento"></p>
+                   <p>I <strong class="text-white bold">Guanti</strong> sono un nuovo slot equip che potenzia drasticamente le tue capacità.</p>
+                   <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Si ottengono completando i <strong class="highlight-green">Dungeon di Gruppo</strong> (come la Nave Fantasma).</span></p>
+                   <br>
+                   <p>Ogni guanto droppato ha da <strong class="highlight-yellow">1 a 3 bonus Fissi</strong> scelti casualmente tra:</p>
+                   <p class="text-green-bonus">Danni Finali +3% | Danni Medi +5% | Forte vs Dungeon +5% | Forte vs Mezzi +5% | Danni Skill +3% | 3% Danni Assorbiti da HP | Max HP +300 | Chance Critici +3% | Velocità Attacco +3% | Velocità Movimento +3% | Chance Rallentamento +3% | Chance Avvelenamento 1% | Difesa vs Mezzi +3%</p>
+                   <br>
+                   <p>Potenziando il guanto (fino a <strong class="highlight-yellow">+5</strong>), i bonus fissi <strong class="bold">aumentano</strong> di valore!</p>
+                   <br>
+                   <p>Oltre ai bonus fissi, puoi aggiungere fino a <strong class="highlight-yellow">2 bonus Casuali</strong> (per un totale di 5 bonus).</p>
+                   <p>Aggiungi e cambia i bonus casuali usando <strong class="text-white bold">Potenziamenti e Incantesimi</strong> specifici per guanti (craftabili dal Fabbro, Capitale).</p>
+                   <br>
+                   <p><img src="./Hunter - Presentazione Server_files/dodanie_rekawica.png" alt="Aggiungi Bonus Guanto"><span>Potenziamento Guanti <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Aggiunge un bonus casuale.</span></p>
+                   <p><img src="./Hunter - Presentazione Server_files/zmianka_rekawica.png" alt="Cambia Bonus Guanto"><span>Incantesimo Guanti <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Cambia i bonus casuali esistenti.</span></p>
+                   <br>
+                   <p>Possibili Bonus Casuali (Valori: Basso / Medio / Alto):</p>
+                   <p class="text-green-bonus">Valore Attacco +25 / +50 / +75 | Stats (STR/INT/DEX/VIT) +3 / +5 / +7 | Forte vs Diavoli +3% / +5% / +7% | Forte vs Metin +3% / +5% / +7% | Max HP +300 / +500 / +700 | Forte vs Zombie +3% / +5% / +7% | Forte vs Orchi +3% / +5% / +7% | Forte vs Esoterici +3% / +5% / +7% | Forte vs Mezzi +3% / +5% / +7%</p>
+                   <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+               </div>
+
+               <!-- ================= SEZIONE 37: CINTURE DA TITANO ================= -->
+                <div class="section" id="section_37">
+                    <h2 class="section-title">Cinture da Titano: Forza Bruta</h2>
+                    <p><img src="./Hunter - Presentazione Server_files/pasek_zdj.png" alt="Cintura da Battaglia"></p>
+                    <p>Le <strong class="text-white bold">Cinture</strong> sono un equip fondamentale per massimizzare i tuoi danni e le tue difese.</p>
+                    <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span>Esistono 2 tipi principali: Cinture da <strong class="highlight-green">EXP/PVM</strong> e Cinture da <strong class="text-red">PVP</strong>.</span></p>
+                    <br>
+                    <p>Cinture da EXP (Esempio):</p>
+                    <p><img src="./Hunter - Presentazione Server_files/pasy_exp.png" alt="Esempi Cinture EXP"></p>
+                    <br>
+                    <p>Cinture da PVP (Esempio):</p>
+                    <p><img src="./Hunter - Presentazione Server_files/pasy_pvp.png" alt="Esempi Cinture PVP"></p>
+                    <br>
+                    <p>Le puoi <strong class="highlight-green">craftare dal Fabbro</strong> nella Capitale.</p>
+                    <p><img src="./Hunter - Presentazione Server_files/wytwarzanie_pasy.png" alt="Crafting Cinture"></p>
+                    <br>
+                    <p>Oltre ai bonus fissi (HP, Difesa, etc.), puoi aggiungere fino a <strong class="highlight-yellow">4 bonus Casuali</strong>.</p>
+                    <p>Aggiungi e cambia i bonus usando <strong class="text-white bold">Potenziamenti e Incantesimi</strong> specifici per cinture (ottenibili da Boss e Metin).</p>
+                    <br>
+                    <p>Possibili Bonus Casuali (Valori: Min / Basso / Medio / Max):</p>
+                    <p class="text-green-bonus">Forte vs Animali +3%/+5%/+8%/+10% | Forte vs Zombie +3%/+5%/+8%/+10% | Forte vs Diavoli +3%/+5%/+8%/+10% | Forte vs Orchi +3%/+5%/+8%/+10% | Valore Attacco +30/+50/+75/+100 | Forza +3/+5/+7/+10 | Destrezza +3/+5/+7/+10 | Intelligenza +3/+5/+7/+10 | Attacco Magico +15/+30/+50/+75 | Forte vs Mezzi +3%/+5%/+10%/+15% | Danni Abilità +3%/+5%/+7%/+10%</p>
+                    <br>
+                    <p><img src="./Hunter - Presentazione Server_files/dodanie_pasa.png" alt="Aggiungi Bonus Cintura"><span>Potenziamento Cinture <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Aggiunge un bonus casuale.</span></p>
+                    <p><img src="./Hunter - Presentazione Server_files/zaczarowanie_pasa.png" alt="Cambia Bonus Cintura"><span>Incantesimo Cinture <img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"> Cambia i bonus casuali esistenti.</span></p>
+                    <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                </div>
+
+                <!-- ================= SEZIONE 38: BAZAR ESCLUSIVO: ITEM SHOP ================= -->
+                 <div class="section" id="section_38">
+                     <h2 class="section-title">Bazar Esclusivo: Item Shop</h2>
+                     <p>Nell'Item Shop trovi una vasta gamma di oggetti per personalizzare la tua esperienza e accelerare la tua crescita:</p>
+                     <p><img src="./Hunter - Presentazione Server_files/itemshop0.png" alt="Item Shop - Categoria Consumabili"></p>
+                     <p><img src="./Hunter - Presentazione Server_files/itemshop1.png" alt="Item Shop - Categoria Estetica"></p>
+                     <p>Costumi, Cavalcature, Pet Estetici, Emblemi, Skin Stola, item di supporto per upp e missioni, VIP e molto altro!</p>
+                     <p>(Interfaccia di acquisto semplice e diretta)</p>
+                     <p><img src="./Hunter - Presentazione Server_files/itemshop_popup.png" alt="Popup Acquisto Item Shop"></p>
+                     <p><strong class="highlight-yellow">Nota:</strong> L'Item Shop è pensato per offrire comodità e personalizzazione, non per dare vantaggi "Pay-to-Win" sbilanciati.</p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+                 <!-- ================= SEZIONE 39: DOMINIO PVM: EQUIP DA EXP ================= -->
+                 <div class="section" id="section_39">
+                     <h2 class="section-title">Dominio PVM: Equip da EXP</h2>
+                     <p>Ecco una panoramica dell'equipaggiamento da PVM che potrai forgiare su Hunter, livello dopo livello:</p>
+                     <h3 class="section-subtitle">Equip EXP Livello 50</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp50.png" alt="Set Equip EXP Livello 50"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip EXP Livello 75</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp75.png" alt="Set Equip EXP Livello 75"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip EXP Livello 100</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp100.png" alt="Set Equip EXP Livello 100"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip EXP Livello 125</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp125.png" alt="Set Equip EXP Livello 125"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip EXP Livello 150</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp150.png" alt="Set Equip EXP Livello 150"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip EXP Livello 175 (Endgame PVM)</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqexp175.png" alt="Set Equip EXP Livello 175"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+                 <!-- ================= SEZIONE 40: ARENA TI CHIAMA: EQUIP DA PVP ================= -->
+                 <div class="section" id="section_40">
+                     <h2 class="section-title">Arena Ti Chiama: Equip da PVP</h2>
+                     <p>Quando il PVM non basta più, è ora di dominare l'arena! Ecco l'equip da PVP:</p>
+                     <h3 class="section-subtitle">Equip PVP Livello 75</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqpvp75.png" alt="Set Equip PVP Livello 75"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip PVP Livello 100</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqpvp100.png" alt="Set Equip PVP Livello 100"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip PVP Livello 125</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqpvp125.png" alt="Set Equip PVP Livello 125"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip PVP Livello 150</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqpvp150.png" alt="Set Equip PVP Livello 150"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                     <h3 class="section-subtitle">Equip PVP Livello 175 (Endgame PVP)</h3>
+                     <p><img src="./Hunter - Presentazione Server_files/eqpvp175.png" alt="Set Equip PVP Livello 175"></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+                 <!-- ================= SEZIONE 41: COMODITÀ DA RE: QoL ================= -->
+                  <div class="section" id="section_41">
+                      <h2 class="section-title">Comodità da Re: Quality of Life</h2>
+                      <p>Piccole (ma fondamentali) aggiunte che rendono il gioco più godibile:</p>
+                      <p><strong class="bold">Cambio Canale (CH) Istantaneo:</strong> Salta da un CH all'altro senza attese.</p>
+                      <p><img src="./Hunter - Presentazione Server_files/szybkiech.png" alt="Interfaccia Cambio CH Rapido"></p>
+                      <p><strong class="bold">Cestino Veloce:</strong> Elimina item inutili con un click.</p>
+                      <p><img src="./Hunter - Presentazione Server_files/kosz.png" alt="Icona Cestino Oggetti"></p>
+                      <p><strong class="bold">Cambio Equip Rapido:</strong> Switcha set al volo (max 4 set salvabili).</p>
+                      <p><img src="./Hunter - Presentazione Server_files/zmianaeq.png" alt="Interfaccia Cambio Equip Rapido"></p>
+                      <p><strong class="bold">Opzioni Interfaccia:</strong> Nascondi descrizioni, effetti altrui, ecc.</p>
+                      <p><img src="./Hunter - Presentazione Server_files/opcjegry.png" alt="Opzioni di Gioco Aggiuntive"></p>
+                      <p><strong class="bold">Auto-Pozioni/Boost:</strong> Imposta l'uso automatico di consumabili.</p>
+                      <p><img src="./Hunter - Presentazione Server_files/dopalacze.png" alt="Interfaccia Auto-Pozioni"></p>
+                      <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                  </div>
+
+                 <!-- ================= SEZIONE 42: VESTI LO STILE: COSTUMI ================= -->
+                 <div class="section" id="section_42">
+                     <h2 class="section-title">Vesti lo Stile: Costumi Unici</h2>
+                     <p>Distinguiti dalla massa con una collezione infinita di Costumi, Armature e Capigliature!</p>
+                     <p><img src="./Hunter - Presentazione Server_files/kostiumy0.png" alt="Esempi Costumi Uomo"></p>
+                     <p><img src="./Hunter - Presentazione Server_files/kostiumy1.png" alt="Esempi Costumi Donna"></p>
+                     <p><img src="./Hunter - Presentazione Server_files/kostiumy2.png" alt="Esempi Costumi Misti e Capigliature"></p>
+                     <p><strong class="text-red">NOTA BENE:</strong> Queste sono solo briciole! Troverai sia set custom spettacolari che i grandi classici (Combattente del Deserto, Smoking, ecc.).</p>
+                     <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Ottienili tramite IS, Eventi, Battle Pass e Dungeon speciali!</span></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+                 <!-- ================= SEZIONE 43: CAVALCA LA FURIA: MOUNTS ================= -->
+                 <div class="section" id="section_43">
+                     <h2 class="section-title">Cavalca la Furia: Cavalcature Epiche</h2>
+                     <p>Domina il campo di battaglia in sella a destrieri leggendari e bestie mitologiche!</p>
+                     <p><img src="./Hunter - Presentazione Server_files/mounty0.png" alt="Esempi Cavalcature Volanti/Terrestri"></p>
+                     <p><img src="./Hunter - Presentazione Server_files/mounty1.png" alt="Esempi Cavalcature Bestiali"></p>
+                     <p><strong class="text-red">NOTA BENE:</strong> Un assaggio della scuderia! Dai lupi infernali ai draghi maestosi, passando per le tigri classiche e i leoni. C'è una mount per ogni guerriero.</p>
+                     <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Ottienile tramite IS, Eventi, Battle Pass e ricompense speciali!</span></p>
+                     <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+                 <!-- ================= SEZIONE 44: MINI LEGGENDE: PET ESTETICI ================= -->
+                 <div class="section" id="section_44">
+                      <h2 class="section-title">Mini Leggende: Pet Estetici</h2>
+                      <p>Anche l'occhio vuole la sua parte! Fatti accompagnare da Pet unici e stilosi (non da combattimento).</p>
+                      <p><img src="./Hunter - Presentazione Server_files/pety0.png" alt="Esempi Pet Estetici Vari 1"></p>
+                      <p><img src="./Hunter - Presentazione Server_files/pety1.png" alt="Esempi Pet Estetici Vari 2"></p>
+                      <p><strong class="text-red">NOTA BENE:</strong> Piccoli compagni di grande stile! Dai cuccioli carini alle creature mistiche, inclusi i classici come Bao-Bao e Porky.</p>
+                      <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="*"><span> Collezionali tramite IS, Eventi, Battle Pass!</span></p>
+                      <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+                 </div>
+
+             <!-- ================= SEZIONE 45: DUBBI? LEGGI LE FAQ! ================= -->
+             <div class="section" id="section_45">
+                  <h2 class="section-title">FAQ: Risposte Rapide ai Tuoi Dubbi</h2>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="?"><strong class="bold"> Il server si complicherà col tempo?</strong></p>
+                  <p>Assolutamente. Non ci fermiamo mai! Introdurremo nuove sfide, dungeon, boss e sistemi per tenere alta l'asticella e rendere Hunter sempre avvincente, anche per i veterani.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="?"><strong class="bold"> Limite Client (Farmblock)?</strong></p>
+                  <p>Partiamo <strong class="text-red bold">SENZA</strong> Farmblock. Ma teniamo d'occhio la situazione: se il multi-account selvaggio dovesse minare l'equilibrio, <strong class="highlight-yellow">potremmo attivarlo</strong> per garantire fair play a tutti. La priorità è un server sano.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="?"><strong class="bold"> Medi / Abilità massimi?</strong></p>
+                  <p>Medi massimi: <strong class="highlight-yellow">60%</strong>. Preparate i papiri per switchare!</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="?"><strong class="bold"> Chi c'è dietro Hunter?</strong></p>
+                  <p>Siamo player appassionati, stanchi dei soliti server. Abbiamo messo insieme la nostra esperienza per creare il Metin2 che abbiamo sempre sognato: divertente, competitivo e duraturo.</p>
+                  <br>
+                  <p><img src="./Hunter - Presentazione Server_files/pointer.png" alt="?"><strong class="bold"> Equilibrio tra Classi (PG)?</strong></p>
+                  <p>Il bilanciamento è un work in progress costante. Abbiamo già fatto degli aggiustamenti e puntiamo a un <strong class="highlight-yellow">PVP e PVM equilibrato</strong> dove ogni classe possa dire la sua, senza snaturarne il ruolo.</p>
+                  <img src="./Hunter - Presentazione Server_files/separator.png" alt="-" class="separator">
+
+                  <!-- *** IMMAGINE SOSTITUITA DAL TESTO SOTTOSTANTE *** -->
+                  <p class="thank-you-text">
+                       RINGRAZIAMO PER AVER GUARDATO LA PRESENTAZIONE<br>
+                       E PER ESSERE ARRIVATI FINO ALLA FINE<br>
+                       ABBIAMO CERCATO DI FARE IN MODO CHE LA PRESENTAZIONE NON FOSSE TROPPO LUNGA<br>
+                       E CONTENESSE LE INFORMAZIONI ESSENZIALI.<br>
+                       CI VEDIAMO ALLA PARTENZA.
+                  </p>
+                  <!-- *** FINE TESTO SOSTITUTIVO *** -->
+
+                  <p class="bold highlight-yellow" style="font-size: 1.2em; text-align: center;">Ora sai tutto, Predatore. Il campo di battaglia ti aspetta. Unisciti a Hunter e mostra di che pasta sei fatto!</p>
+                  <br>
+                  <div class="socials"> <!-- Rimetto i link alla fine per un ultimo invito -->
+                     <a href="https://discord.gg/Aa9ZT5DfbP" target="_blank" rel="noopener noreferrer" title="Entra nel Discord!"><img src="./Hunter - Presentazione Server_files/dc_button.png" alt="Discord Hunter"></a>
+                     <a href="https://Hunter.pl/" target="_blank" rel="noopener noreferrer" title="Vai al Sito Ufficiale!"><img src="./Hunter - Presentazione Server_files/sito_button.png" alt="Sito Hunter"></a>
+                 </div>
+             </div>
+
+        </div> <!-- Fine .main__content -->
+    </main> <!-- Fine .main -->
+
+    <!-- Script Essenziali -->
+    <script src="./jquery.min.js"></script> <!-- Assicurati che il nome/percorso sia corretto -->
+    <script src="./global.js"></script>   <!-- Assicurati che il nome/percorso sia corretto -->
+
+    <!-- Script Cloudflare Beacon (Opzionale per test locali, necessario se usi Cloudflare in produzione) -->
+    <!-- <script defer src="./Hunter - Presentazione Server_files/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"..."}' crossorigin="anonymous"></script> -->
 </body>
-
 </html>
