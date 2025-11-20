@@ -19,9 +19,14 @@
 		die("The Connection to the database of game is not available.");
 		
 	$item_name_db = get_settings_time(4);
-	
+
 	$current_page = isset($_GET['p']) ? $_GET['p'] : null;
-	
+
+	// Protezione: Shop visibile solo se loggato
+	if(!is_loggedin() && $current_page != 'login') {
+		redirect($shop_url.'login');
+	}
+
 	if($current_page=='items' || $current_page=='add_items' || $current_page=='add_items_bonus')
 		$get_category = isset($_GET['category']) ? $_GET['category'] : 1;
 	

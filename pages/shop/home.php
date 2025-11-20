@@ -16,7 +16,7 @@
 		<h1 class="hero-title">
 			<i class="fa fa-gem"></i> <?php print $lang_shop['site_title']; ?>
 		</h1>
-		<p class="hero-subtitle">Scegli la tua categoria e potenzia il tuo personaggio</p>
+		<p class="hero-subtitle">Categorie dello Shop</p>
 	</div>
 </div>
 
