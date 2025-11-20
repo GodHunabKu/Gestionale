@@ -167,6 +167,160 @@
 				</div>
 				<?php } ?>
 
+		<!-- Bonus Item Section -->
+		<?php
+			$item_bonuses = get_item_bonuses($get_item);
+			if(count($item_bonuses) > 0) {
+		?>
+		<div class="item-bonuses-section mt-4 mb-4">
+			<h3 class="section-title mb-3">
+				<i class="fa fa-magic"></i> Bonus Item
+			</h3>
+			<div class="card">
+				<div class="card-body">
+					<div class="row">
+						<?php foreach($item_bonuses as $bonus) { ?>
+						<div class="col-md-6 col-lg-4 mb-3">
+							<div class="bonus-item">
+								<i class="fa fa-check-circle bonus-icon"></i>
+								<span class="bonus-name"><?php echo htmlspecialchars($bonus['name']); ?></span>
+								<span class="bonus-value"><?php echo htmlspecialchars($bonus['formatted_value']); ?></span>
+							</div>
+						</div>
+						<?php } ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php } ?>
+
+		<!-- Reviews & Rating Section -->
+		<?php
+			$account_login = get_account_name();
+			$item_vnum = $item[0]['vnum'];
+			$has_purchased = has_purchased_item($account_login, $item_vnum);
+			$has_reviewed = has_reviewed_item($get_item, $account_login);
+			$rating_data = get_item_average_rating($get_item);
+			$reviews = get_item_reviews($get_item);
+
+			// Handle review submission
+			if(isset($_POST['submit_review']) && $has_purchased && !$has_reviewed) {
+				$rating = intval($_POST['rating']);
+				$review_text = trim($_POST['review_text']);
+
+				if($rating >= 1 && $rating <= 5) {
+					if(add_item_review($get_item, $account_login, $rating, $review_text)) {
+						echo '<div class="alert alert-success"><i class="fa fa-check"></i> Recensione pubblicata con successo!</div>';
+						// Reload rating data
+						$rating_data = get_item_average_rating($get_item);
+						$reviews = get_item_reviews($get_item);
+						$has_reviewed = true;
+					} else {
+						echo '<div class="alert alert-danger"><i class="fa fa-times"></i> Errore durante la pubblicazione della recensione.</div>';
+					}
+				}
+			}
+		?>
+
+		<div class="reviews-section mt-4 mb-4">
+			<h3 class="section-title mb-3">
+				<i class="fa fa-star"></i> Recensioni & Valutazioni
+			</h3>
+
+			<!-- Rating Summary -->
+			<div class="card mb-4">
+				<div class="card-body">
+					<div class="rating-summary">
+						<div class="rating-average">
+							<div class="rating-number"><?php echo $rating_data['average']; ?></div>
+							<div class="rating-stars">
+								<?php for($i = 1; $i <= 5; $i++) { ?>
+									<i class="fa fa-star<?php echo $i <= round($rating_data['average']) ? '' : '-o'; ?> star-icon"></i>
+								<?php } ?>
+							</div>
+							<div class="rating-count"><?php echo $rating_data['total']; ?> recensioni</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Write Review Form (only if purchased and not reviewed) -->
+			<?php if($has_purchased && !$has_reviewed) { ?>
+			<div class="card mb-4">
+				<div class="card-header bg-primary">
+					<i class="fa fa-pencil"></i> Scrivi una Recensione
+				</div>
+				<div class="card-body">
+					<form method="post" action="">
+						<div class="form-group">
+							<label for="rating">Valutazione:</label>
+							<div class="star-rating-input">
+								<?php for($i = 5; $i >= 1; $i--) { ?>
+								<input type="radio" name="rating" value="<?php echo $i; ?>" id="star<?php echo $i; ?>" required>
+								<label for="star<?php echo $i; ?>"><i class="fa fa-star"></i></label>
+								<?php } ?>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="review_text">La tua recensione:</label>
+							<textarea name="review_text" id="review_text" class="form-control" rows="4" placeholder="Descrivi la tua esperienza con questo item..." maxlength="500"></textarea>
+							<small class="form-text text-muted">Massimo 500 caratteri (opzionale)</small>
+						</div>
+						<button type="submit" name="submit_review" class="btn btn-primary">
+							<i class="fa fa-check"></i> Pubblica Recensione
+						</button>
+					</form>
+				</div>
+			</div>
+			<?php } elseif(!$has_purchased) { ?>
+			<div class="alert alert-info">
+				<i class="fa fa-info-circle"></i> Devi acquistare questo item per lasciare una recensione.
+			</div>
+			<?php } elseif($has_reviewed) { ?>
+			<div class="alert alert-success">
+				<i class="fa fa-check-circle"></i> Hai già recensito questo item.
+			</div>
+			<?php } ?>
+
+			<!-- Reviews List -->
+			<?php if(count($reviews) > 0) { ?>
+			<div class="reviews-list">
+				<?php foreach($reviews as $review) { ?>
+				<div class="card mb-3">
+					<div class="card-body">
+						<div class="review-header">
+							<div class="review-author">
+								<i class="fa fa-user-circle"></i>
+								<strong><?php echo htmlspecialchars($review['account_login']); ?></strong>
+							</div>
+							<div class="review-rating">
+								<?php for($i = 1; $i <= 5; $i++) { ?>
+									<i class="fa fa-star<?php echo $i <= $review['rating'] ? '' : '-o'; ?> star-small"></i>
+								<?php } ?>
+							</div>
+							<div class="review-date">
+								<small class="text-muted">
+									<i class="fa fa-clock-o"></i>
+									<?php echo date('d/m/Y H:i', strtotime($review['created_at'])); ?>
+								</small>
+							</div>
+						</div>
+						<?php if($review['review_text']) { ?>
+						<div class="review-text">
+							<?php echo nl2br(htmlspecialchars($review['review_text'])); ?>
+						</div>
+						<?php } ?>
+					</div>
+				</div>
+				<?php } ?>
+			</div>
+			<?php } else { ?>
+			<div class="alert alert-secondary">
+				<i class="fa fa-comment-o"></i> Nessuna recensione disponibile. Sii il primo a recensire questo item!
+			</div>
+			<?php } ?>
+		</div>
+
 		<!-- Item Correlati dalla Stessa Categoria -->
 		<?php
 			$related_items = is_get_related_items($item[0]['category'], $get_item, 6);
