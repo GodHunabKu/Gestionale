@@ -366,9 +366,11 @@ class ItemShopApp {
     }
 
     setupGlobalEvents() {
-        // Handle AJAX errors globally
-        $(document).ajaxError((event, jqxhr, settings, thrownError) => {
-            console.error('AJAX Error:', thrownError);
+        // Handle AJAX errors globally (modern approach)
+        $.ajaxSetup({
+            error: function(jqxhr, settings, thrownError) {
+                console.error('AJAX Error:', thrownError);
+            }
         });
 
         // Handle window resize with debounce
