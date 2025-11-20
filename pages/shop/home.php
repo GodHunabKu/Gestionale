@@ -24,7 +24,7 @@
 										<div class="card-block">
 											<div class="min-image-item">
 												<center>
-													<img class="image-item" src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['img']); ?>.png">
+													<img class="image-item" src="<?php print $shop_url; ?>images/items/img_categorie/<?php print $row['img']; ?>.png">
 												</center>
 											</div>
 											<?php if(checkForPromotions($row['id'])) { ?>

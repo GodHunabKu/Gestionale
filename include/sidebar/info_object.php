@@ -54,14 +54,14 @@
 											<?php } ?>
 						<li class="list-group-item">
 											<?php if(is_loggedin()) { ?>
-											<button type="button" class="btn btn-success btn-block<?php if(is_coins($item[0]['pay_type']-1)<$total) print ' disabled'; ?>" data-toggle="modal" data-target="#myModal">
-												<img src="<?php print $shop_url; ?>images/<?php if($item[0]['pay_type']==1) print 'md'; else print 'jd'; ?>.png" title="MD"> 
+											<button type="button" class="btn btn-success btn-block<?php if(is_coins(0)<$total) print ' disabled'; ?>" data-toggle="modal" data-target="#myModal">
+												<img src="<?php print $shop_url; ?>images/md.png" title="MD">
 												<?php
 													print $lang_shop['buy'].' (';
 													if($item[0]['discount']>0)
-														print $total.' <span style="text-decoration: line-through;">'.$price1.'</span>';
+														print $total.' <span class="price-strikethrough">'.$price1.'</span>';
 													else print $price1;
-													print ' '; if($item[0]['pay_type']==1) print 'MD'; else print 'JD'; ?>)
+													print ' MD'; ?>)
 											</button>
 											<?php } if(!is_loggedin()) { ?>
 												<div class="alert alert-dismissible alert-danger">

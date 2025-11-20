@@ -74,17 +74,12 @@
 
 					<div class="form-group">
 						<label class="control-label" for="price">
-							<?php print $lang_shop['price_object']; ?>
+							<?php print $lang_shop['price_object']; ?> (MD)
 						</label>
 
 						<div class="row">
-							<div class="col-md-9">
-								<select class="form-control" name="method_pay">
-									<option value="1">MD</option>
-									<option value="2">JD</option>
-								</select>
-							</div>
-							<div class="col-md-3">
+							<div class="col-md-12">
+								<input type="hidden" name="method_pay" value="1">
 								<input class="form-control" name="coins" id="coins" type="number" value="10" required>
 							</div>
 						</div>

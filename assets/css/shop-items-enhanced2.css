@@ -1,7 +1,39 @@
 /* ============================================
-   ITEMSHOP - ITEMS SPECIFIC STYLING
-   Stili specifici per la visualizzazione degli items
+   ITEMSHOP - ITEMS SPECIFIC STYLING 2025
+   Stili moderni per la visualizzazione degli items
+   Con effetti avanzati e animazioni fluide
    ============================================ */
+
+/* Performance optimizations */
+.item-card-enhanced,
+.item-detail-image,
+.purchase-button {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* GPU Acceleration per animazioni */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 
 /* Item Detail Page */
 .item-detail-page {
@@ -279,7 +311,7 @@
     box-shadow: var(--shadow-primary);
 }
 
-/* Item Card Enhanced (per lista items) */
+/* Item Card Enhanced (per lista items) - 2025 Edition */
 .item-card-enhanced {
     position: relative;
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(40, 40, 40, 0.9) 100%);
@@ -287,8 +319,20 @@
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    transition: var(--transition-smooth);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     overflow: hidden;
+    animation: fadeInUp 0.5s ease-out;
+    cursor: pointer;
+    container-type: inline-size;
+}
+
+/* 3D Transform effect on hover */
+.item-card-enhanced:hover {
+    transform: translateY(-12px) rotateX(2deg);
+    box-shadow:
+        0 20px 40px rgba(231, 76, 60, 0.4),
+        0 0 0 1px rgba(231, 76, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .item-card-enhanced::after {
