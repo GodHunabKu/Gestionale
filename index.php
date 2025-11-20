@@ -38,16 +38,7 @@
 </head>
 
 <body>
-    <!-- Logo Bar - Separate from Navigation -->
-    <div class="logo-bar">
-        <div class="container">
-            <a href="<?php print $shop_url; ?>" class="logo-link">
-                <img class="site-logo pulse" src="<?php print $shop_url; ?>images/logo.png" alt="<?php print $server_name; ?>">
-            </a>
-        </div>
-    </div>
-
-    <!-- Navigation Bar - Clean and Compact -->
+    <!-- Navigation Bar - Clean and Compact (TOP) -->
     <div class="header">
         <div class="container">
             <nav class="main-navigation">
@@ -93,6 +84,15 @@
 					</li>
                 </ul>
             </nav>
+        </div>
+    </div>
+
+    <!-- Logo Bar - Below Navigation (NO PULSE EFFECT) -->
+    <div class="logo-bar-bottom">
+        <div class="container">
+            <a href="<?php print $shop_url; ?>" class="logo-link">
+                <img class="site-logo" src="<?php print $shop_url; ?>images/logo.png" alt="ONE Server">
+            </a>
         </div>
     </div>
 
@@ -213,17 +213,8 @@
         <div class="container">
             <div class="copyright">
 				<div class="col-md-12 p-info">
-					<p class="pull-left">
-							&copy; Copyright <?php 
-													$copyright_year = date('Y');
-													if($copyright_year > 2017)
-														print '2017 - '.$copyright_year;
-													else print $copyright_year;
-													print ' '.$server_name;
-												?>
-					</p>
-					<p class="pull-right">
-						Powered by <a href="https://metin2cms.cf/">Metin2CMS</a>
+					<p class="text-center">
+						&copy; <?php print date('Y'); ?> ONE Server - Tutti i diritti riservati
 					</p>
 				</div>
             </div>
