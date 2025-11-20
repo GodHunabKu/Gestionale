@@ -672,11 +672,16 @@
 	{
 		global $database;
 
-		$sth = $database->runQuerySqlite('SELECT MAX(id) as max_id FROM item_shop_items');
-		$sth->execute();
-		$result = $sth->fetch();
+		try {
+			$sth = $database->runQuerySqlite('SELECT MAX(id) as max_id FROM item_shop_items');
+			$sth->execute();
+			$result = $sth->fetch();
 
-		return $result['max_id'];
+			return $result && isset($result['max_id']) ? intval($result['max_id']) : 0;
+		} catch (Exception $e) {
+			error_log("Error in is_get_max_item_id: " . $e->getMessage());
+			return 0;
+		}
 	}
 
 	// Controlla se un item è "nuovo" (aggiunto negli ultimi 20 item)
@@ -684,12 +689,17 @@
 	{
 		static $max_id = null;
 
-		if ($max_id === null) {
-			$max_id = is_get_max_item_id();
-		}
+		try {
+			if ($max_id === null) {
+				$max_id = is_get_max_item_id();
+			}
 
-		// Gli ultimi 20 item sono considerati "nuovi"
-		return ($item_id > ($max_id - 20));
+			// Gli ultimi 20 item sono considerati "nuovi"
+			return ($max_id > 0 && $item_id > ($max_id - 20));
+		} catch (Exception $e) {
+			error_log("Error in is_item_new: " . $e->getMessage());
+			return false;
+		}
 	}
 
 	// Ottieni item più recenti per homepage
@@ -697,14 +707,20 @@
 	{
 		global $database;
 
-		$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount, category
-			FROM item_shop_items
-			ORDER BY id DESC
-			LIMIT ?');
-		$sth->bindParam(1, $limit, PDO::PARAM_INT);
-		$sth->execute();
+		try {
+			$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount, category
+				FROM item_shop_items
+				ORDER BY id DESC
+				LIMIT ?');
+			$sth->bindParam(1, $limit, PDO::PARAM_INT);
+			$sth->execute();
 
-		return $sth->fetchAll();
+			$results = $sth->fetchAll();
+			return is_array($results) ? $results : array();
+		} catch (Exception $e) {
+			error_log("Error in is_get_newest_items: " . $e->getMessage());
+			return array();
+		}
 	}
 
 	function is_edit_category($id, $name, $img)
