@@ -58,10 +58,10 @@
                                         <td>
                                             <div class="row">
                                                 <div class="col-md-3">
-                                                    <img src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['img']); ?>.png">
+                                                    <img src="<?php print $shop_url; ?>images/items/img_categorie/<?php print $row['img']; ?>.png">
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <input style="max-width: 100px;" class="form-control" name="img<?php print $row['id']; ?>" type="number" value="<?php print $row['img']; ?>">
+                                                    <input style="max-width: 200px;" class="form-control" name="img<?php print $row['id']; ?>" type="text" value="<?php print $row['img']; ?>" placeholder="es: Cavalcature">
                                                 </div>
                                             </div>
                                         </td>
@@ -99,7 +99,8 @@
                                         <label class="control-label" for="focusedInput">
                                             <?php print $lang_shop['is_image_representative']; ?>
                                         </label>
-                                        <input class="form-control" name="img" type="number">
+                                        <input class="form-control" name="img" type="text" placeholder="es: Cavalcature, Rune, Spiriti...">
+                                        <small class="form-text text-muted">Immagini disponibili: Cavalcature, Rune, Spiriti, anelli_potere, anelli_speciali, anime, buoni_moneta, cinture, generale, miglioramento, pietre, premium, titoli, trofei</small>
                                     </div>
                                     <div class="form-group">
                                         <input class="btn btn-success btn-block" name="add" value="<?php print $lang_shop['add_category']; ?>" type="submit">

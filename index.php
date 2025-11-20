@@ -55,9 +55,9 @@
                     <li>
                         <a href="<?php print $shop_url; ?>logout"><i class="fa fa-user-times fa-2x"></i><span><?php print $lang_shop['logout']; ?></span></a>
                     </li>
-					<?php } if(is_loggedin() && is_paypal_list()) { ?>
+					<?php } if(is_loggedin()) { ?>
                     <li>
-                        <a href="<?php print $shop_url; ?>buy/coins"><i class="fa fa-hand-holding-usd fa-2x"></i><span><?php print $lang_shop['pay']; ?></span></a>
+                        <a href="<?php print $shop_url; ?>donations"><i class="fa fa-hand-holding-heart fa-2x"></i><span>Donazioni</span></a>
                     </li>
 					<?php } ?>
 					<li class="nav-item dropdown">
@@ -78,7 +78,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-<?php if(is_loggedin() || $current_page=='item') print 9; else print 12; ?>">
-                <div class="homepage-content" style="background: #fff; padding: 20px 10px;">
+                <div class="homepage-content" >
 					<?php
 						switch ($current_page) {
 							case 'home':
@@ -114,6 +114,9 @@
 							case 'coins':
 								include 'pages/shop/coins.php';
 								break;
+							case 'donations':
+								include 'pages/shop/donations-page-bigsmoke.php';
+								break;
 							case 'pay':
 								include 'pages/shop/pay.php';
 								break;
@@ -145,19 +148,16 @@
                 <div class="sidebar">
 				<?php
 					$padding_md='';
-					
-					$donate = false;
-					
-					if(is_paypal_list())
+
+					if(is_loggedin())
 					{
-						print '<a href="'.$shop_url.'buy/coins" data-toggle="tooltip" data-placement="left" title="" data-original-title="'.$lang_shop['pay'].'">';
+						print '<a href="'.$shop_url.'donations" data-toggle="tooltip" data-placement="left" title="" data-original-title="Dona per ricevere MD Coins">';
 						$padding_md = ' style="padding-top:11px;"';
 					}
 					if(is_loggedin()) {
 				?>
                     <div class="info-coins-button">
 						<img src="<?php print $shop_url; ?>images/md.png" data-toggle="tooltip" data-placement="right" title="" data-original-title="MD"<?php print $padding_md; ?>> <?php print number_format(is_coins(), 0, '', '.'); ?>
-						<!-- JD RIMOSSO - Solo MD come richiesto -->
 					</div>
 				<?php
 					}
