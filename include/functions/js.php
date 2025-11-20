@@ -23,6 +23,9 @@
 
 <!-- Configurazione dinamica -->
 <script>
+// Shop base URL for AJAX calls
+window.SHOP_BASE_URL = '<?php print $shop_url; ?>';
+
 if (typeof SHOP_CONFIG !== 'undefined') {
     SHOP_CONFIG.countdownFormat = '%D <?php print $lang_shop['days']; ?> %H:%M:%S';
 }

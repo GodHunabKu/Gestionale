@@ -71,6 +71,11 @@ switch($action) {
             $sth->execute();
             $history = $sth->fetchAll();
 
+            // Aggiungi nome item per ogni acquisto
+            foreach($history as &$item) {
+                $item['item_name'] = get_item_name($item['vnum']);
+            }
+
             echo json_encode(['success' => true, 'history' => $history]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => 'Errore caricamento storico']);

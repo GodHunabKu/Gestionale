@@ -5,7 +5,7 @@
 
 class ShopAJAXFeatures {
     constructor() {
-        this.apiUrl = 'api/shop_api.php';
+        this.apiUrl = (window.SHOP_BASE_URL || '') + 'api/shop_api.php';
         this.init();
     }
 
@@ -193,9 +193,13 @@ class ShopAJAXFeatures {
 
     // Purchase History
     setupHistory() {
-        const historyBtn = document.getElementById('showHistoryBtn');
+        // Supporta sia showHistoryBtn che btn-show-history
+        const historyBtn = document.getElementById('showHistoryBtn') || document.getElementById('btn-show-history');
         if (historyBtn) {
-            historyBtn.addEventListener('click', () => this.showHistory());
+            historyBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showHistory();
+            });
         }
     }
 
@@ -233,8 +237,8 @@ class ShopAJAXFeatures {
                 historyHTML += `
                     <tr>
                         <td>${item.id}</td>
-                        <td>${item.vnum}</td>
-                        <td>${item.count}</td>
+                        <td><strong>${item.item_name || 'Item #' + item.vnum}</strong><br><small class="text-muted">vnum: ${item.vnum}</small></td>
+                        <td>${item.count}x</td>
                         <td>${item.given_time}</td>
                         <td>${takenStatus}</td>
                         <td><small>${item.why || '-'}</small></td>
@@ -256,7 +260,7 @@ class ShopAJAXFeatures {
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Vnum</th>
+                                        <th>Item</th>
                                         <th>Qta</th>
                                         <th>Data</th>
                                         <th>Stato</th>
