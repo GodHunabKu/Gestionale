@@ -22,6 +22,7 @@ class ShoppingCart {
         this.renderCartButton();
         this.setupAddToCartButtons();
         this.updateCartBadge();
+        this.setupEscKey();
     }
 
     // Carica carrello da localStorage
@@ -171,12 +172,33 @@ class ShoppingCart {
     // Toggle sidebar carrello
     toggleCartSidebar() {
         let sidebar = document.getElementById('cart-sidebar');
+        let overlay = document.getElementById('cart-overlay');
 
-        if (sidebar) {
-            sidebar.classList.toggle('active');
+        if (sidebar && sidebar.classList.contains('active')) {
+            // Chiudi il carrello
+            sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+
+            // Rimuovi elementi dopo l'animazione
+            setTimeout(() => {
+                if (sidebar) sidebar.remove();
+                if (overlay) overlay.remove();
+            }, 300);
         } else {
             this.renderCartSidebar();
         }
+    }
+
+    // Chiudi carrello con tasto ESC
+    setupEscKey() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('cart-sidebar');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    this.toggleCartSidebar();
+                }
+            }
+        });
     }
 
     // Renderizza sidebar carrello
@@ -198,6 +220,11 @@ class ShoppingCart {
 
                 return `
                     <div class="cart-item">
+                        <div class="cart-item-image">
+                            <img src="${window.SHOP_BASE_URL}images/items/${item.vnum}.png"
+                                 alt="${item.name}"
+                                 onerror="this.src='${window.SHOP_BASE_URL}images/items/0.png'">
+                        </div>
                         <div class="cart-item-info">
                             <strong>${item.name}</strong>
                             <small>vnum: ${item.vnum}</small>

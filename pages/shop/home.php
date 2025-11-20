@@ -84,10 +84,7 @@
 						</div>
 					</div>
 				</a>
-				<!-- Quick View & Add to Cart Buttons -->
-				<button class="btn btn-sm btn-info btn-block mt-2 btn-quick-view" data-item-id="<?php echo $row['id']; ?>">
-					<i class="fa fa-eye"></i> Anteprima Veloce
-				</button>
+				<!-- Add to Cart Button -->
 				<button class="btn btn-sm btn-warning btn-block mt-2 btn-add-to-cart"
 				        data-item-id="<?php echo $row['id']; ?>"
 				        data-item-vnum="<?php echo $row['vnum']; ?>"

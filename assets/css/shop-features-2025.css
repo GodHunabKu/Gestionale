@@ -583,14 +583,21 @@
 }
 
 .popular-item-icon {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     image-rendering: crisp-edges;
     flex-shrink: 0;
-    border: 1px solid rgba(231, 76, 60, 0.3);
-    border-radius: 4px;
-    padding: 2px;
-    background: rgba(20, 20, 20, 0.8);
+    border: 2px solid rgba(231, 76, 60, 0.4);
+    border-radius: 6px;
+    padding: 4px;
+    background: rgba(20, 20, 20, 0.9);
+    transition: all 0.3s ease;
+}
+
+.popular-item-link:hover .popular-item-icon {
+    border-color: rgba(231, 76, 60, 0.8);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
+    transform: scale(1.05);
 }
 
 .popular-item-name {
@@ -1905,6 +1912,9 @@ img[src*="loading-placeholder.png"] {
     padding: 15px;
     margin-bottom: 15px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .cart-item:hover {
@@ -1912,8 +1922,28 @@ img[src*="loading-placeholder.png"] {
     box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
 }
 
+.cart-item-image {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border: 2px solid rgba(231, 76, 60, 0.3);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-item-image img {
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: crisp-edges;
+}
+
 .cart-item-info {
-    margin-bottom: 10px;
+    flex: 1;
+    margin-bottom: 0;
 }
 
 .cart-item-info strong {
@@ -1934,6 +1964,7 @@ img[src*="loading-placeholder.png"] {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: nowrap;
 }
 
 .cart-quantity {
@@ -2011,4 +2042,38 @@ img[src*="loading-placeholder.png"] {
         width: 100%;
         right: -100%;
     }
+}
+
+/* ============================================
+   MODAL Z-INDEX FIX - Sempre sopra header
+   ============================================ */
+.modal-backdrop {
+    z-index: 10400 !important;
+}
+
+.modal {
+    z-index: 10500 !important;
+}
+
+.modal-dialog {
+    margin: 30px auto !important;
+}
+
+/* Centra modal verticalmente */
+.modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+/* Header z-index */
+.header {
+    z-index: 1000 !important;
+}
+
+.search-bar-container {
+    z-index: 999 !important;
 }
