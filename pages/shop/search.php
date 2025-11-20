@@ -52,7 +52,20 @@
 						$original_price = $row['coins'];
 						$final_price = $row['discount'] > 0 ? $row['coins'] - ($row['coins'] * $row['discount'] / 100) : $row['coins'];
 					?>
-						<div class="col-md-3">
+						<div class="col-md-3 item-with-wishlist">
+							<?php
+								// Wishlist button
+								require_once __DIR__ . '/../../include/functions/wishlist.php';
+								$account_id = get_account_id();
+								$in_wishlist = wishlist_has($account_id, $row['id']);
+								$item_name = !$item_name_db ? get_item_name($row['vnum']) : get_item_name_locale_name($row['vnum']);
+							?>
+							<a href="<?php print $shop_url.'wishlist?action='.($in_wishlist ? 'remove' : 'add').'&item_id='.$row['id'].'&vnum='.$row['vnum'].'&name='.urlencode($item_name).'&price='.$row['coins']; ?>"
+							   class="wishlist-heart-btn <?php echo $in_wishlist ? 'in-wishlist' : ''; ?>"
+							   onclick="return confirm('<?php echo $in_wishlist ? 'Rimuovere dai preferiti?' : 'Aggiungere ai preferiti?'; ?>')">
+								<i class="fa fa-heart<?php echo $in_wishlist ? '' : '-o'; ?>"></i>
+							</a>
+
 							<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
 								<div class="card mb-3 text-center">
 									<div class="card-block">

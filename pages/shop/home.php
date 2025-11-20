@@ -35,15 +35,30 @@
 	</div>
 
 	<div class="row">
-		<?php foreach($newest_items as $row) { ?>
+		<?php
+			require_once __DIR__ . '/../../include/functions/wishlist.php';
+			$account_id = get_account_id();
+
+			foreach($newest_items as $row) {
+				$in_wishlist = wishlist_has($account_id, $row['id']);
+				$item_name = !$item_name_db ? get_item_name($row['vnum']) : get_item_name_locale_name($row['vnum']);
+		?>
 		<div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-			<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
-				<div class="card newest-item-card text-center">
-					<div class="card-block">
-						<!-- Badge NUOVO sempre visibile qui -->
-						<span class="badge badge-new-item">
-							<i class="fa fa-star"></i> NUOVO
-						</span>
+			<div class="newest-item-card item-with-wishlist">
+				<!-- Bottone Wishlist -->
+				<a href="<?php print $shop_url.'wishlist?action='.($in_wishlist ? 'remove' : 'add').'&item_id='.$row['id'].'&vnum='.$row['vnum'].'&name='.urlencode($item_name).'&price='.$row['coins']; ?>"
+				   class="wishlist-heart-btn <?php echo $in_wishlist ? 'in-wishlist' : ''; ?>"
+				   onclick="return confirm('<?php echo $in_wishlist ? 'Rimuovere dai preferiti?' : 'Aggiungere ai preferiti?'; ?>')">
+					<i class="fa fa-heart<?php echo $in_wishlist ? '' : '-o'; ?>"></i>
+				</a>
+
+				<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
+					<div class="card text-center">
+						<div class="card-block">
+							<!-- Badge NUOVO sempre visibile qui -->
+							<span class="badge badge-new-item">
+								<i class="fa fa-star"></i> NUOVO
+							</span>
 
 						<div class="min-image-item">
 							<center>
@@ -64,11 +79,12 @@
 						<p class="card-text"><small class="font-weight-bold strong pull-right text-danger"><?php print $lang_shop['bonus_selection']; ?></small></p>
 						<?php } ?>
 					</div>
-					<div class="card-footer text-muted">
-						<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>"><?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?></a>
+						<div class="card-footer text-muted">
+							<?php echo $item_name; ?>
+						</div>
 					</div>
-				</div>
-			</a>
+				</a>
+			</div>
 		</div>
 		<?php } ?>
 	</div>
