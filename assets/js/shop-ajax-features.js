@@ -5,14 +5,24 @@
 
 class ShopAJAXFeatures {
     constructor() {
-        this.apiUrl = (window.SHOP_BASE_URL || '') + 'api/shop_api.php';
+        // Usa path assoluto definito in js.php
+        this.apiUrl = window.SHOP_API_URL || '/api/shop_api.php';
         this.init();
     }
 
     init() {
-        this.setupQuickView();
-        this.setupGiftSystem();
-        this.setupHistory();
+        // Aspetta che il DOM sia completamente caricato
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.setupQuickView();
+                this.setupGiftSystem();
+                this.setupHistory();
+            });
+        } else {
+            this.setupQuickView();
+            this.setupGiftSystem();
+            this.setupHistory();
+        }
     }
 
     // Quick View Modal
