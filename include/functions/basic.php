@@ -79,18 +79,23 @@
 		redirect($shop_url.'login');
 	}
 
+	function get_account_id()
+	{
+		return isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+	}
+
 	function get_account_name()
 	{
-		
+
 		global $database;
-		
+
 		$sth = $database->runQueryAccount('SELECT login
 			FROM account
 			WHERE id = ? LIMIT 1');
 		$sth->bindParam(1, $_SESSION['id'], PDO::PARAM_INT);
 		$sth->execute();
 		$result = $sth->fetchAll();
-		
+
 		return $result[0]['login'];
 	}
 
