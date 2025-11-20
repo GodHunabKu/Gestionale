@@ -46,12 +46,20 @@
 						
 			</br></br>
 		<?php } ?>
+
+			<!-- Breadcrumbs 2025 -->
+			<nav aria-label="breadcrumb" class="breadcrumb-modern mb-4">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="<?php print $shop_url; ?>"><i class="fa fa-home"></i> Home</a></li>
+					<li class="breadcrumb-item"><a href="<?php print $shop_url.'category/'.$item[0]['category'].'/'; ?>"><i class="fa fa-tag"></i> <?php print is_get_category_name($item[0]['category']); ?></a></li>
+					<li class="breadcrumb-item active"><i class="fa fa-cube"></i> <?php if(!$item_name_db) print $item_name = get_item_name($item[0]['vnum']); else print $item_name = get_item_name_locale_name($item[0]['vnum']); ?></li>
+				</ol>
+			</nav>
+
 			<div class="media-section">
 				<div class="images">
-					<h3 class="section-title"><i class="fa fa-list-ul"></i> <a href="<?php print $shop_url; ?>"><?php print $lang_shop['site_title']; ?></a> / 
-					<a href="<?php print $shop_url.'category/'.$item[0]['category'].'/'; ?>"><?php print is_get_category_name($item[0]['category']); ?></a> / 
-					<?php if(!$item_name_db) print $item_name = get_item_name($item[0]['vnum']); else print $item_name = get_item_name_locale_name($item[0]['vnum']); ?>
-					
+					<h3 class="section-title">
+						<i class="fa fa-cube"></i> <?php if(!$item_name_db) print get_item_name($item[0]['vnum']); else print get_item_name_locale_name($item[0]['vnum']); ?>
 					</h3>
 					<?php
 						if(is_loggedin())
@@ -83,6 +91,11 @@
 									{
 										is_pay_coins(0, $total);
 										$ok = 1;
+
+										// Traccia l'acquisto per statistiche "Più Popolari"
+										require_once __DIR__ . '/../../include/functions/popular_items.php';
+										$item_name = $item_name_db ? get_item_name_locale_name($item[0]['vnum']) : get_item_name($item[0]['vnum']);
+										track_purchase($item[0]['vnum'], $item_name, $total);
 									} else { $ok=2; ?>
 										<div class="alert alert-dismissible alert-danger">
 											<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -153,3 +166,52 @@
 					</div>
 				</div>
 				<?php } ?>
+
+		<!-- Item Correlati dalla Stessa Categoria -->
+		<?php
+			$related_items = is_get_related_items($item[0]['category'], $get_item, 6);
+			if(count($related_items) > 0) {
+		?>
+		<div class="related-items-section mt-5">
+			<h3 class="section-title mb-4">
+				<i class="fa fa-cubes"></i> Altri Item di <?php print is_get_category_name($item[0]['category']); ?>
+			</h3>
+			<div class="row">
+				<?php foreach($related_items as $row) {
+					$original_price = $row['coins'];
+					$final_price = $row['discount'] > 0 ? $row['coins'] - ($row['coins'] * $row['discount'] / 100) : $row['coins'];
+				?>
+				<div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+					<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>" class="item-link">
+						<div class="card item-card item-card-small text-center">
+							<div class="card-block">
+								<div class="min-image-item">
+									<center>
+										<img class="image-item-small"
+											 src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['vnum']); ?>.png"
+											 alt="<?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?>">
+									</center>
+								</div>
+								<?php if($row['discount']>0) { ?>
+								<span class="badge badge-danger discount-badge-small">
+									-<?php print $row['discount']; ?>%
+								</span>
+								<?php } ?>
+								<div class="item-price-small mt-2">
+									<?php if($row['discount'] > 0) { ?>
+										<span class="price-final-small"><i class="fa fa-money"></i> <?php echo round($final_price); ?> MD</span>
+									<?php } else { ?>
+										<span class="price-final-small"><i class="fa fa-money"></i> <?php echo $final_price; ?> MD</span>
+									<?php } ?>
+								</div>
+							</div>
+							<div class="card-footer card-footer-small text-muted">
+								<small><?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?></small>
+							</div>
+						</div>
+					</a>
+				</div>
+				<?php } ?>
+			</div>
+		</div>
+		<?php } ?>

@@ -26,6 +26,7 @@
     <!-- CSS Nuovo Design Ultra Fedele -->
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/master3.css?v=<?php echo time(); ?>" />
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/shop-items-enhanced2.css?v=<?php echo time(); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/shop-features-2025.css?v=<?php echo time(); ?>" />
 
     <!-- Font Awesome e Animazioni -->
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/font-awesome.min.css" />
@@ -87,6 +88,30 @@
         </div>
     </div>
 
+    <!-- Barra di Ricerca Globale 2025 -->
+    <?php if(is_loggedin() && $current_page != 'login' && $current_page != 'register') { ?>
+    <div class="search-bar-container">
+        <div class="container">
+            <form method="get" action="" class="global-search-form">
+                <input type="hidden" name="p" value="search">
+                <div class="search-input-wrapper">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text"
+                           name="q"
+                           class="search-input"
+                           placeholder="Cerca item per nome o vnum..."
+                           value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>"
+                           autocomplete="off"
+                           required>
+                    <button type="submit" class="search-button">
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php } ?>
+
     <div class="container">
         <div class="row">
             <div class="col-md-<?php if(is_loggedin() || $current_page=='item') print 9; else print 12; ?>">
@@ -128,6 +153,9 @@
 								break;
 							case 'donations':
 								include 'pages/shop/donations-page-bigsmoke.php';
+								break;
+							case 'search':
+								include 'pages/shop/search.php';
 								break;
 							case 'pay':
 								include 'pages/shop/pay.php';
@@ -192,7 +220,12 @@
                         <a class="color" href="<?php print $shop_url; ?>donations"><i class="fa fa-heart"></i>Dona</a>
                         <div class="clear"></div>
                     </div>
-				<?php } if(is_loggedin()) include 'include/sidebar/last_bought.php'; ?>
+				<?php }
+                    if(is_loggedin()) {
+                        include 'include/sidebar/last_bought.php';
+                        include 'include/sidebar/most_bought.php';
+                    }
+                ?>
                 </div>
             </div>
 			<?php } ?>
@@ -225,6 +258,7 @@
     <script src="<?php print $shop_url; ?>assets/js/jquery.js"></script>
     <script src="<?php print $shop_url; ?>assets/js/tether.min.js"></script>
     <script src="<?php print $shop_url; ?>assets/js/bootstrap.min.js"></script>
-	
+    <script src="<?php print $shop_url; ?>assets/js/shop-lazyload-2025.js?v=<?php echo time(); ?>"></script>
+
 	<?php include 'include/functions/js.php'; ?>
 </html>
