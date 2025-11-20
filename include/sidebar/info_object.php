@@ -59,7 +59,7 @@
 												<?php
 													print $lang_shop['buy'].' (';
 													if($item[0]['discount']>0)
-														print $total.' <span style="text-decoration: line-through;">'.$price1.'</span>';
+														print $total.' <span class="price-strikethrough">'.$price1.'</span>';
 													else print $price1;
 													print ' MD'; ?>)
 											</button>

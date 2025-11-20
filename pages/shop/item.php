@@ -59,7 +59,7 @@
 							{
 								$ok = 0;
 								
-								if($total<=is_coins($item[0]['pay_type']-1))
+								if($total<=is_coins(0))
 								{
 									$buy_bonuses = array();
 									$bonuses_ok = true;
@@ -81,7 +81,7 @@
 										
 									if($bonuses_ok && is_buy_item($get_item, $buy_bonuses))
 									{
-										is_pay_coins($item[0]['pay_type']-1, $total);
+										is_pay_coins(0, $total);
 										$ok = 1;
 									} else { $ok=2; ?>
 										<div class="alert alert-dismissible alert-danger">
@@ -131,7 +131,7 @@
 						<?php } ?>
 				</div>
 			</div>
-				<?php if(is_loggedin() && is_coins($item[0]['pay_type']-1)>=$total) { ?>
+				<?php if(is_loggedin() && is_coins(0)>=$total) { ?>
 				<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 					<div class="modal-dialog" role="document">
 						<div class="modal-content">

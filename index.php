@@ -41,7 +41,7 @@
     <div class="header">
         <div class="container">
             <div class="navigation">
-                <a href="<?php print $shop_url; ?>"><img class="logo pulse" style="padding-top: 48px;" src="<?php print $shop_url; ?>images/logo.png">
+                <a href="<?php print $shop_url; ?>"><img class="logo pulse" class="logo-spacing" src="<?php print $shop_url; ?>images/logo.png">
                 </a>
                 <ul>
                     <li>
@@ -65,7 +65,7 @@
 						<div class="dropdown-menu">
 								<?php
 									foreach($language_codes as $key => $value)
-										print '<a href="'.$shop_url.'?lang='.$key.'" data-toggle="tooltip" data-placement="right" title="" data-original-title="'.$value.'"><img src="'.$shop_url.'assets/img/language/'.$key.'.png" style="width: 50px;"></a>';
+										print '<a href="'.$shop_url.'?lang='.$key.'" data-toggle="tooltip" data-placement="right" title="" data-original-title="'.$value.'"><img src="'.$shop_url.'assets/img/language/'.$key.'.png" class="lang-flag"></a>';
 								?>
 						</div>
 					</li>
@@ -152,7 +152,7 @@
 					if(is_loggedin())
 					{
 						print '<a href="'.$shop_url.'donations" data-toggle="tooltip" data-placement="left" title="" data-original-title="Dona per ricevere MD Coins">';
-						$padding_md = ' style="padding-top:11px;"';
+						$padding_md = ' class="md-coins-spacing"';
 					}
 					if(is_loggedin()) {
 				?>
@@ -171,10 +171,10 @@
 				?>
 					<ul class="list-group">
 						<li class="list-group-item">
-							<center><p style="color: white;"><?php print get_account_name(); ?></p></center>
+							<center><p class="account-name"><?php print get_account_name(); ?></p></center>
 						</li>
 					</ul>
-				<?php } print '<div style="margin-bottom: 30px;"></div>'; if(is_loggedin() && web_admin_level()>=9) { ?>
+				<?php } print '<div class="spacer-md"></div>'; if(is_loggedin() && web_admin_level()>=9) { ?>
                     <div class="action-box">
                         <a href="<?php print $shop_url; ?>settings"><i class="fa fa-cogs"></i>Admin</a>
                         <a class="color" href="<?php print $shop_url; ?>admin/paypal"><i class="fa fa-money"></i>PayPal</a>
