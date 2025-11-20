@@ -6,46 +6,8 @@
 (function() {
     'use strict';
 
-    // Lazy Loading con IntersectionObserver
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    const src = img.getAttribute('data-src');
-
-                    if (src) {
-                        img.src = src;
-                        img.classList.add('loaded');
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
-                    }
-                }
-            });
-        }, {
-            rootMargin: '50px 0px',
-            threshold: 0.01
-        });
-
-        // Osserva tutte le immagini con classe lazyload
-        document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('.lazyload');
-            lazyImages.forEach(img => imageObserver.observe(img));
-        });
-
-    } else {
-        // Fallback per browser vecchi
-        document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('.lazyload');
-            lazyImages.forEach(img => {
-                const src = img.getAttribute('data-src');
-                if (src) {
-                    img.src = src;
-                    img.classList.add('loaded');
-                }
-            });
-        });
-    }
+    // Lazy Loading DISABILITATO per user feedback - preferisce caricamento diretto
+    // (codice commentato ma lasciato per reference futura)
 
     // Smooth scroll per paginazione
     document.addEventListener('DOMContentLoaded', () => {

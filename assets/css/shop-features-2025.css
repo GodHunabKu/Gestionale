@@ -258,144 +258,9 @@
 }
 
 /* ============================================
-   ITEM CARDS CON PREVIEW HOVER
+   ITEM CARDS - DESIGN CLASSICO
    ============================================ */
-.item-card-container {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.item-link {
-    text-decoration: none;
-    display: block;
-}
-
-.item-card {
-    position: relative;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    overflow: visible;
-}
-
-.item-card:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 12px 35px rgba(231, 76, 60, 0.4);
-    border-color: rgba(231, 76, 60, 0.7);
-    z-index: 100;
-}
-
-/* Quick View Badge */
-.quick-view-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(231, 76, 60, 0.95);
-    color: #fff;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.item-card:hover .quick-view-badge {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Discount Badge Pulse */
-.pulse-badge {
-    animation: pulse-discount 2s ease-in-out infinite;
-}
-
-@keyframes pulse-discount {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 15px 5px rgba(231, 76, 60, 0.3);
-    }
-}
-
-/* Hover Preview Popup */
-.item-hover-preview {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    background: linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
-    border: 2px solid rgba(231, 76, 60, 0.6);
-    border-radius: 12px;
-    padding: 1.5rem;
-    min-width: 250px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    pointer-events: none;
-    z-index: 1000;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-}
-
-.item-card:hover .item-hover-preview {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(-10px);
-}
-
-.item-hover-preview::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 10px solid transparent;
-    border-top-color: rgba(231, 76, 60, 0.6);
-}
-
-.item-hover-preview h4 {
-    color: #fff;
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-}
-
-.item-hover-preview .preview-price {
-    color: #e74c3c;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.item-hover-preview .preview-category {
-    color: #aaa;
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-}
-
-.item-hover-preview .btn {
-    width: 100%;
-}
-
-/* Item Price Styling */
-.item-price {
-    margin-top: 1rem;
-}
-
-.price-original {
-    color: #888;
-    font-size: 0.85rem;
-}
-
-.price-final {
-    color: #e74c3c;
-    font-size: 1.2rem;
-    font-weight: 700;
-}
+/* Preview hover rimosso per user feedback - design classico preferito */
 
 /* ============================================
    ITEM CORRELATI - SMALL CARDS
@@ -526,14 +391,7 @@
 /* ============================================
    LAZY LOADING IMAGES
    ============================================ */
-.lazyload {
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.lazyload.loaded {
-    opacity: 1;
-}
+/* Lazy load disabilitato - ritorno a caricamento diretto */
 
 /* ============================================
    ANIMAZIONI SMOOTH

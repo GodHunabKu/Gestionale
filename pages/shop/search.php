@@ -52,80 +52,35 @@
 						$original_price = $row['coins'];
 						$final_price = $row['discount'] > 0 ? $row['coins'] - ($row['coins'] * $row['discount'] / 100) : $row['coins'];
 					?>
-						<div class="col-lg-3 col-md-4 col-sm-6 mb-4 item-card-container">
-							<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>" class="item-link">
-								<div class="card item-card text-center">
-									<!-- Preview Hover Badge -->
-									<div class="quick-view-badge">
-										<i class="fa fa-search-plus"></i> Anteprima
-									</div>
-
-									<!-- Categoria Badge -->
-									<span class="category-badge-small">
-										<i class="fa fa-tag"></i> <?php echo is_get_category_name($row['category']); ?>
-									</span>
-
+						<div class="col-md-3">
+							<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
+								<div class="card mb-3 text-center">
 									<div class="card-block">
+										<!-- Categoria Badge (ricerca) -->
+										<span class="category-badge-small">
+											<i class="fa fa-tag"></i> <?php echo is_get_category_name($row['category']); ?>
+										</span>
+
 										<div class="min-image-item">
 											<center>
-												<img class="image-item lazyload"
-													 data-src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['vnum']); ?>.png"
-													 src="<?php print $shop_url; ?>images/loading-placeholder.png"
-													 alt="<?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?>">
+												<img class="image-item" src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['vnum']); ?>.png">
 											</center>
 										</div>
 										<?php if($row['discount']>0) { ?>
-										<span class="badge badge-danger discount-badge pulse-badge">
-											<i class="fa fa-percent"></i> -<?php print $row['discount']; ?>%
-										</span>
+										<span class="badge badge-danger font-weight-bold strong pull-right">- <?php print $row['discount']; ?>%</span>
 										<?php }
 											if($row['expire']>0) {
 												$expire = date("Y-m-d H:i:s", $row['expire']);
 										?>
-										<p class="card-text">
-											<small class="font-weight-bold strong pull-right text-danger" data-countdown="<?php print $expire; ?>">
-												<i class="fa fa-clock-o"></i>
-											</small>
-										</p>
+										<p class="card-text"><small class="font-weight-bold strong pull-right text-danger" data-countdown="<?php print $expire; ?>"></small></p>
 										<?php }
 											if($row['type']==3) {
 										?>
-										<p class="card-text">
-											<small class="font-weight-bold strong text-warning">
-												<i class="fa fa-star"></i> <?php print $lang_shop['bonus_selection']; ?>
-											</small>
-										</p>
+										<p class="card-text"><small class="font-weight-bold strong pull-right text-danger"><?php print $lang_shop['bonus_selection']; ?></small></p>
 										<?php } ?>
-
-										<!-- Prezzo con icona -->
-										<div class="item-price mt-2">
-											<?php if($row['discount'] > 0) { ?>
-												<span class="price-original"><del><?php echo $original_price; ?> MD</del></span><br>
-												<span class="price-final"><i class="fa fa-money"></i> <?php echo round($final_price); ?> MD</span>
-											<?php } else { ?>
-												<span class="price-final"><i class="fa fa-money"></i> <?php echo $final_price; ?> MD</span>
-											<?php } ?>
-										</div>
 									</div>
 									<div class="card-footer text-muted">
-										<?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?>
-									</div>
-
-									<!-- Hover Preview Popup -->
-									<div class="item-hover-preview">
-										<h4><?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?></h4>
-										<p class="preview-category"><i class="fa fa-tag"></i> <?php echo is_get_category_name($row['category']); ?></p>
-										<p class="preview-price">
-											<i class="fa fa-money"></i>
-											<?php if($row['discount'] > 0) { ?>
-												<del><?php echo $original_price; ?> MD</del> <strong><?php echo round($final_price); ?> MD</strong>
-											<?php } else { ?>
-												<strong><?php echo $final_price; ?> MD</strong>
-											<?php } ?>
-										</p>
-										<button class="btn btn-sm btn-primary">
-											<i class="fa fa-eye"></i> Vedi Dettagli
-										</button>
+										<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>"><?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?></a>
 									</div>
 								</div>
 							</a>
