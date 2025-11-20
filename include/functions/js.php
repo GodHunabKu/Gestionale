@@ -1,5 +1,5 @@
 <?php
-	if(($current_page=='item' && $item[0]['expire']>0) || ($current_page=='item' && $item[0]['discount']>0) || $current_page=='items')
+	if(($current_page=='item' && isset($item[0]) && ($item[0]['expire']>0 || $item[0]['discount']>0)) || $current_page=='items')
 	{
 ?>
     <script src="<?php print $shop_url; ?>assets/js/jquery.countdown.min.js"></script>
