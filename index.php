@@ -87,15 +87,6 @@
         </div>
     </div>
 
-    <!-- Logo Bar - Below Navigation (NO PULSE EFFECT) -->
-    <div class="logo-bar-bottom">
-        <div class="container">
-            <a href="<?php print $shop_url; ?>" class="logo-link">
-                <img class="site-logo" src="<?php print $shop_url; ?>images/logo.png" alt="ONE Server">
-            </a>
-        </div>
-    </div>
-
     <div class="container">
         <div class="row">
             <div class="col-md-<?php if(is_loggedin() || $current_page=='item') print 9; else print 12; ?>">
@@ -206,6 +197,15 @@
             </div>
 			<?php } ?>
             <div class="clearfix"></div>
+        </div>
+    </div>
+
+    <!-- Logo Bar - At Bottom -->
+    <div class="logo-bar-bottom">
+        <div class="container">
+            <a href="<?php print $shop_url; ?>" class="logo-link">
+                <img class="site-logo" src="<?php print $shop_url; ?>images/logo.png" alt="ONE Server">
+            </a>
         </div>
     </div>
 
