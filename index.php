@@ -65,6 +65,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>wishlist" class="nav-link">
+                            <i class="fa fa-heart-o"></i>
+                            <span>Preferiti <?php
+                                require_once __DIR__ . '/include/functions/wishlist.php';
+                                $wcount = wishlist_count(get_account_id());
+                                if($wcount > 0) echo '<span class="badge badge-danger">'.$wcount.'</span>';
+                            ?></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="<?php print $shop_url; ?>logout" class="nav-link">
                             <i class="fa fa-sign-out"></i>
                             <span><?php print $lang_shop['logout']; ?></span>
@@ -159,6 +169,9 @@
 								break;
 							case 'search':
 								include 'pages/shop/search.php';
+								break;
+							case 'wishlist':
+								include 'pages/shop/wishlist.php';
 								break;
 							case 'pay':
 								include 'pages/shop/pay.php';
