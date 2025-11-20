@@ -38,40 +38,61 @@
 </head>
 
 <body>
+    <!-- Logo Bar - Separate from Navigation -->
+    <div class="logo-bar">
+        <div class="container">
+            <a href="<?php print $shop_url; ?>" class="logo-link">
+                <img class="site-logo pulse" src="<?php print $shop_url; ?>images/logo.png" alt="<?php print $server_name; ?>">
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Bar - Clean and Compact -->
     <div class="header">
         <div class="container">
-            <div class="navigation">
-                <a href="<?php print $shop_url; ?>"><img class="logo pulse logo-spacing" src="<?php print $shop_url; ?>images/logo.png">
-                </a>
-                <ul>
-                    <li>
-                        <a href="<?php print $shop_url; ?>"><i class="fa fa-shopping-cart fa-2x"></i> <span><?php print $lang_shop['site_title']; ?></span></a>
+            <nav class="main-navigation">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>" class="nav-link">
+                            <i class="fa fa-shopping-cart"></i>
+                            <span><?php print $lang_shop['site_title']; ?></span>
+                        </a>
                     </li>
 					<?php if(!is_loggedin()) { ?>
-                    <li>
-                        <a href="<?php print $shop_url; ?>login"><i class="fa fa-user fa-2x"></i><span><?php print $lang_shop['login']; ?></span></a>
+                    <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>login" class="nav-link">
+                            <i class="fa fa-user"></i>
+                            <span><?php print $lang_shop['login']; ?></span>
+                        </a>
                     </li>
 					<?php } else { ?>
-                    <li>
-                        <a href="<?php print $shop_url; ?>logout"><i class="fa fa-user-times fa-2x"></i><span><?php print $lang_shop['logout']; ?></span></a>
+                    <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>donations" class="nav-link highlight">
+                            <i class="fa fa-heart"></i>
+                            <span>Dona</span>
+                        </a>
                     </li>
-					<?php } if(is_loggedin()) { ?>
-                    <li>
-                        <a href="<?php print $shop_url; ?>donations"><i class="fa fa-hand-holding-heart fa-2x"></i><span>Donazioni</span></a>
+                    <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>logout" class="nav-link">
+                            <i class="fa fa-sign-out"></i>
+                            <span><?php print $lang_shop['logout']; ?></span>
+                        </a>
                     </li>
 					<?php } ?>
 					<li class="nav-item dropdown">
-						<a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="true"><i class="fa fa-language fa-2x"></i><span><?php print $language_codes[$language_code]; ?></span></a>
+						<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-language"></i>
+                            <span><?php print $language_codes[$language_code]; ?></span>
+                        </a>
 						<div class="dropdown-menu">
-								<?php
-									foreach($language_codes as $key => $value)
-										print '<a href="'.$shop_url.'?lang='.$key.'" data-toggle="tooltip" data-placement="right" title="" data-original-title="'.$value.'"><img src="'.$shop_url.'assets/img/language/'.$key.'.png" class="lang-flag"></a>';
-								?>
+							<?php
+								foreach($language_codes as $key => $value)
+									print '<a href="'.$shop_url.'?lang='.$key.'" class="dropdown-item">'.$value.'</a>';
+							?>
 						</div>
 					</li>
                 </ul>
-                <div class="clearfix"></div>
-            </div>
+            </nav>
         </div>
     </div>
 
@@ -177,7 +198,7 @@
 				<?php } print '<div class="spacer-md"></div>'; if(is_loggedin() && web_admin_level()>=9) { ?>
                     <div class="action-box">
                         <a href="<?php print $shop_url; ?>settings"><i class="fa fa-cogs"></i>Admin</a>
-                        <a class="color" href="<?php print $shop_url; ?>admin/paypal"><i class="fa fa-money"></i>PayPal</a>
+                        <a class="color" href="<?php print $shop_url; ?>donations"><i class="fa fa-heart"></i>Dona</a>
                         <div class="clear"></div>
                     </div>
 				<?php } if(is_loggedin()) include 'include/sidebar/last_bought.php'; ?>

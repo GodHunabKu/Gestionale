@@ -356,7 +356,7 @@ class ItemShopApp {
                 this.modules.perfMonitor = new PerformanceMonitor();
             }
 
-            // Global event listeners
+            // Global event listeners - Simple resize handler
             this.setupGlobalEvents();
 
             console.log('ItemShop App initialized successfully');
@@ -366,13 +366,6 @@ class ItemShopApp {
     }
 
     setupGlobalEvents() {
-        // Handle AJAX errors globally (modern approach)
-        $.ajaxSetup({
-            error: function(jqxhr, settings, thrownError) {
-                console.error('AJAX Error:', thrownError);
-            }
-        });
-
         // Handle window resize with debounce
         let resizeTimeout;
         window.addEventListener('resize', () => {
