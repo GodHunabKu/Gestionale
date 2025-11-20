@@ -192,12 +192,7 @@
                         <a class="color" href="<?php print $shop_url; ?>donations"><i class="fa fa-heart"></i>Dona</a>
                         <div class="clear"></div>
                     </div>
-				<?php }
-					if(is_loggedin()) {
-						include 'include/sidebar/last_bought.php';
-						include 'include/sidebar/most_bought.php';
-					}
-				?>
+				<?php } if(is_loggedin()) include 'include/sidebar/last_bought.php'; ?>
                 </div>
             </div>
 			<?php } ?>
