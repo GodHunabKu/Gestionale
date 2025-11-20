@@ -17,9 +17,12 @@
     RewriteRule ^coins/?$ index.php?p=coins [L,QSA]
     RewriteRule ^categories/?$ index.php?p=categories [L,QSA]
     RewriteRule ^settings/?$ index.php?p=settings [L,QSA]
+    RewriteRule ^wishlist/?$ index.php?p=wishlist [L,QSA]
+    RewriteRule ^search/?$ index.php?p=search [L,QSA]
 
     # Admin routes
     RewriteRule ^admin/paypal/?$ index.php?p=paypal [L,QSA]
+    RewriteRule ^dashboard/?$ index.php?p=dashboard [L,QSA]
 
     # Category listing with ID
     RewriteRule ^category/([0-9]+)/?$ index.php?p=items&category=$1 [L,QSA]
