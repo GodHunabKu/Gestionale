@@ -1370,7 +1370,7 @@
 	function get_coins_paypal($id_account, $id_paypal)
 	{
 		global $database;
-		
+
 		$sth = $database->runQuerySqlite('SELECT coins
 			FROM paypal
 			WHERE id = ? LIMIT 1');
@@ -1382,4 +1382,268 @@
 		$stmt->bindParam(1, $result[0]['coins'], PDO::PARAM_INT);
 		$stmt->bindParam(2, $id_account, PDO::PARAM_INT);
 		$stmt->execute();
+	}
+
+	// ============================================
+	// SISTEMA REVIEWS & RATINGS 2025
+	// ============================================
+
+	// Verifica se un utente ha acquistato un item (controlla item_award nel database player)
+	function has_purchased_item($account_login, $item_vnum)
+	{
+		global $database;
+
+		try {
+			$sth = $database->runQueryPlayer('SELECT COUNT(*) as count FROM item_award WHERE login = ? AND vnum = ? AND taken_time IS NOT NULL');
+			$sth->bindParam(1, $account_login, PDO::PARAM_STR);
+			$sth->bindParam(2, $item_vnum, PDO::PARAM_INT);
+			$sth->execute();
+			$result = $sth->fetch();
+
+			return $result && $result['count'] > 0;
+		} catch (Exception $e) {
+			error_log("Error in has_purchased_item: " . $e->getMessage());
+			return false;
+		}
+	}
+
+	// Aggiungi review per un item
+	function add_item_review($item_id, $account_login, $rating, $review_text)
+	{
+		global $database;
+
+		try {
+			// Verifica che non abbia già recensito
+			$sth = $database->runQuerySqlite('SELECT COUNT(*) as count FROM item_reviews WHERE item_id = ? AND account_login = ?');
+			$sth->bindParam(1, $item_id, PDO::PARAM_INT);
+			$sth->bindParam(2, $account_login, PDO::PARAM_STR);
+			$sth->execute();
+			$result = $sth->fetch();
+
+			if ($result && $result['count'] > 0) {
+				return false; // Già recensito
+			}
+
+			// Inserisci review
+			$created_at = date('Y-m-d H:i:s');
+			$stmt = $database->runQuerySqlite('INSERT INTO item_reviews (item_id, account_login, rating, review_text, created_at) VALUES (?, ?, ?, ?, ?)');
+			$stmt->bindParam(1, $item_id, PDO::PARAM_INT);
+			$stmt->bindParam(2, $account_login, PDO::PARAM_STR);
+			$stmt->bindParam(3, $rating, PDO::PARAM_INT);
+			$stmt->bindParam(4, $review_text, PDO::PARAM_STR);
+			$stmt->bindParam(5, $created_at, PDO::PARAM_STR);
+			$stmt->execute();
+
+			return true;
+		} catch (Exception $e) {
+			error_log("Error in add_item_review: " . $e->getMessage());
+			return false;
+		}
+	}
+
+	// Ottieni reviews di un item
+	function get_item_reviews($item_id)
+	{
+		global $database;
+
+		try {
+			$sth = $database->runQuerySqlite('SELECT * FROM item_reviews WHERE item_id = ? ORDER BY created_at DESC');
+			$sth->bindParam(1, $item_id, PDO::PARAM_INT);
+			$sth->execute();
+
+			return $sth->fetchAll();
+		} catch (Exception $e) {
+			error_log("Error in get_item_reviews: " . $e->getMessage());
+			return array();
+		}
+	}
+
+	// Ottieni rating medio di un item
+	function get_item_average_rating($item_id)
+	{
+		global $database;
+
+		try {
+			$sth = $database->runQuerySqlite('SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM item_reviews WHERE item_id = ?');
+			$sth->bindParam(1, $item_id, PDO::PARAM_INT);
+			$sth->execute();
+			$result = $sth->fetch();
+
+			return array(
+				'average' => $result && $result['avg_rating'] ? round($result['avg_rating'], 1) : 0,
+				'total' => $result && $result['total_reviews'] ? $result['total_reviews'] : 0
+			);
+		} catch (Exception $e) {
+			error_log("Error in get_item_average_rating: " . $e->getMessage());
+			return array('average' => 0, 'total' => 0);
+		}
+	}
+
+	// Verifica se un utente ha già recensito un item
+	function has_reviewed_item($item_id, $account_login)
+	{
+		global $database;
+
+		try {
+			$sth = $database->runQuerySqlite('SELECT COUNT(*) as count FROM item_reviews WHERE item_id = ? AND account_login = ?');
+			$sth->bindParam(1, $item_id, PDO::PARAM_INT);
+			$sth->bindParam(2, $account_login, PDO::PARAM_STR);
+			$sth->execute();
+			$result = $sth->fetch();
+
+			return $result && $result['count'] > 0;
+		} catch (Exception $e) {
+			error_log("Error in has_reviewed_item: " . $e->getMessage());
+			return false;
+		}
+	}
+
+	// ============================================
+	// SISTEMA BONUS ITEM DISPLAY
+	// ============================================
+
+	// Ottieni tutti i bonus di un item
+	function get_item_bonuses($item_id)
+	{
+		global $database;
+
+		try {
+			$sth = $database->runQuerySqlite('SELECT * FROM item_shop_items WHERE id = ? LIMIT 1');
+			$sth->bindParam(1, $item_id, PDO::PARAM_INT);
+			$sth->execute();
+			$item = $sth->fetch();
+
+			if (!$item) {
+				return array();
+			}
+
+			$bonuses = array();
+
+			// Processa attrtype (0-6) - Attributi base
+			for ($i = 0; $i <= 6; $i++) {
+				$type_key = 'attrtype' . $i;
+				$value_key = 'attrvalue' . $i;
+
+				if (isset($item[$type_key]) && isset($item[$value_key]) && $item[$type_key] != 0 && $item[$value_key] != 0) {
+					$bonuses[] = array(
+						'category' => 'attribute',
+						'type' => $item[$type_key],
+						'value' => $item[$value_key],
+						'name' => get_item_bonus_name('attr', $item[$type_key]),
+						'formatted_value' => format_item_bonus_value('attr', $item[$type_key], $item[$value_key])
+					);
+				}
+			}
+
+			// Processa applytype (0-7) - Bonus applicati
+			if (isset($item['applytype0'])) {
+				for ($i = 0; $i <= 7; $i++) {
+					$type_key = 'applytype' . $i;
+					$value_key = 'applyvalue' . $i;
+
+					if (isset($item[$type_key]) && isset($item[$value_key]) && $item[$type_key] != 0 && $item[$value_key] != 0) {
+						$bonuses[] = array(
+							'category' => 'apply',
+							'type' => $item[$type_key],
+							'value' => $item[$value_key],
+							'name' => get_item_bonus_name('apply', $item[$type_key]),
+							'formatted_value' => format_item_bonus_value('apply', $item[$type_key], $item[$value_key])
+						);
+					}
+				}
+			}
+
+			return $bonuses;
+		} catch (Exception $e) {
+			error_log("Error in get_item_bonuses: " . $e->getMessage());
+			return array();
+		}
+	}
+
+	// Ottieni nome bonus (traduzione codici Metin2)
+	function get_item_bonus_name($category, $type)
+	{
+		// Attributi base (attrtype)
+		$attr_names = array(
+			1 => 'STR',
+			2 => 'DEX',
+			3 => 'VIT',
+			4 => 'INT',
+			5 => 'HP Max',
+			6 => 'SP Max',
+			7 => 'Velocità Movimento'
+		);
+
+		// Bonus applicati (applytype)
+		$apply_names = array(
+			1 => 'HP Max',
+			2 => 'SP Max',
+			3 => 'Costituzione',
+			4 => 'Intelligenza',
+			5 => 'Forza',
+			6 => 'Destrezza',
+			7 => 'Velocità Attacco',
+			8 => 'Velocità Movimento',
+			9 => 'Velocità Lancio',
+			10 => 'Rigenerazione HP',
+			11 => 'Rigenerazione SP',
+			12 => 'Assorbimento Veleno',
+			13 => 'Resistenza Stordimento',
+			14 => 'Resistenza Lentezza',
+			15 => 'Colpo Critico',
+			16 => 'Colpo Penetrante',
+			17 => 'Danni contro Boss',
+			18 => 'Danni contro Mostri',
+			19 => 'Danni contro Guerrieri',
+			20 => 'Danni contro Ninja',
+			21 => 'Danni contro Sura',
+			22 => 'Danni contro Sciamani',
+			23 => 'Danni contro Mostri',
+			24 => 'Resistenza contro Guerrieri',
+			25 => 'Resistenza contro Ninja',
+			26 => 'Resistenza contro Sura',
+			27 => 'Resistenza contro Sciamani',
+			28 => 'Resistenza Danni Freccia',
+			29 => 'Resistenza Danni Spada',
+			30 => 'Resistenza Danni Spadone',
+			31 => 'Resistenza Danni Pugnale',
+			32 => 'Resistenza Danni Campana',
+			33 => 'Resistenza Danni Ventaglio',
+			34 => 'Resistenza Fuoco',
+			35 => 'Resistenza Elettricità',
+			36 => 'Resistenza Magia',
+			37 => 'Resistenza Vento',
+			38 => 'Rifletti Danno Diretto',
+			39 => 'Rifletti Maledizione',
+			40 => 'Resistenza Veleno',
+			41 => 'EXP Bonus',
+			42 => 'Yang Bonus',
+			43 => 'Drop Item Bonus',
+			44 => 'Danni Medi',
+			45 => 'Difesa Fisica',
+			46 => 'Difesa Magica',
+			53 => 'Recupero HP',
+			54 => 'Recupero SP'
+		);
+
+		if ($category == 'attr' && isset($attr_names[$type])) {
+			return $attr_names[$type];
+		} elseif ($category == 'apply' && isset($apply_names[$type])) {
+			return $apply_names[$type];
+		}
+
+		return 'Bonus Sconosciuto';
+	}
+
+	// Formatta valore bonus (aggiunge + o %)
+	function format_item_bonus_value($category, $type, $value)
+	{
+		// Bonus in percentuale
+		$percentage_bonuses = array(7, 8, 9, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43);
+
+		if (in_array($type, $percentage_bonuses)) {
+			return '+' . $value . '%';
+		}
+
+		return '+' . $value;
 	}

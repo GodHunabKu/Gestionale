@@ -163,6 +163,10 @@
 										</div>
 									</div>
 								</a>
+								<!-- Quick View Button -->
+								<button class="btn btn-sm btn-info btn-block mt-2 btn-quick-view" data-item-id="<?php echo $row['id']; ?>">
+									<i class="fa fa-eye"></i> Anteprima Veloce
+								</button>
 							</div>
 						<?php } } ?>
 					</div>

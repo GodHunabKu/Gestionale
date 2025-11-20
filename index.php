@@ -75,6 +75,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="#" class="nav-link" id="btn-show-history">
+                            <i class="fa fa-history"></i>
+                            <span>Storico</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="<?php print $shop_url; ?>logout" class="nav-link">
                             <i class="fa fa-sign-out"></i>
                             <span><?php print $lang_shop['logout']; ?></span>
