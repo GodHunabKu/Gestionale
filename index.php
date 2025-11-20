@@ -196,8 +196,19 @@
 					}
 					if(is_loggedin()) {
 				?>
-                    <div class="info-coins-button">
-						<img src="<?php print $shop_url; ?>images/md.png" data-toggle="tooltip" data-placement="right" title="" data-original-title="MD"<?php print $padding_md; ?>> <?php print number_format(is_coins(), 0, '', '.'); ?>
+                    <div class="wallet-balance-card">
+						<div class="wallet-header">
+							<i class="fa fa-wallet"></i>
+							<span class="wallet-label">Saldo Disponibile</span>
+						</div>
+						<div class="wallet-amount">
+							<img src="<?php print $shop_url; ?>images/md.png" class="wallet-coin-icon" alt="MD Coins">
+							<span class="amount-value"><?php print number_format(is_coins(), 0, '', '.'); ?></span>
+							<span class="amount-currency">MD</span>
+						</div>
+						<div class="wallet-action">
+							<i class="fa fa-info-circle"></i> Clicca per ricaricare
+						</div>
 					</div>
 				<?php
 					}
