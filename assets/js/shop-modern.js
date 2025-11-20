@@ -358,8 +358,6 @@ class ItemShopApp {
 
             // Global event listeners - Simple resize handler
             this.setupGlobalEvents();
-
-            console.log('ItemShop App initialized successfully');
         } catch (error) {
             console.error('ItemShop initialization error:', error);
         }
