@@ -41,7 +41,7 @@
     <div class="header">
         <div class="container">
             <div class="navigation">
-                <a href="<?php print $shop_url; ?>"><img class="logo pulse" class="logo-spacing" src="<?php print $shop_url; ?>images/logo.png">
+                <a href="<?php print $shop_url; ?>"><img class="logo pulse logo-spacing" src="<?php print $shop_url; ?>images/logo.png">
                 </a>
                 <ul>
                     <li>

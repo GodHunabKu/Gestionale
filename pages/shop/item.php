@@ -114,11 +114,11 @@
 						</div>
 						<?php } if($item[0]['type']==3) { ?>
 						<div class="card">
-							<div class="card-header bg-success" style="color: white;"><?php print $lang_shop['bonus_selection']; ?></div>
+							<div class="card-header bg-success card-header-white"><?php print $lang_shop['bonus_selection']; ?></div>
 							<div class="card-block">
 								<div class="form-group">
 									<?php for($i=0;$i<$count;$i++) { ?>
-										<select onChange="use(this)" class="form-control" name="attrtype<?php print $i ?>" id="attrtype<?php print $i ?>" style="margin-bottom: 1rem;" form="buy_item" required>
+										<select onChange="use(this)" class="form-control select-spacing" name="attrtype<?php print $i ?>" id="attrtype<?php print $i ?>" form="buy_item" required>
 											<option value="" selected="selected"><?php print $lang_shop['bonus_selection'].' #'.$i; ?></option>
 											<?php foreach($available_bonuses as $key => $bonus) { ?>
 											<option value="<?php print $key; ?>"><?php print str_replace("[n]", $bonus, $bonuses_name[$key]); ?></option>
@@ -137,7 +137,7 @@
 						<div class="modal-content">
 							<div class="modal-header">
 								<h4 class="modal-title" id="myModalLabel"><?php print $lang_shop['buy']; ?></h4>
-								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color: red;">&times;</span></button>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="close-red">&times;</span></button>
 							</div>
 							<div class="modal-body">
 								<?php print $lang_shop['sure']; ?>

@@ -1136,3 +1136,23 @@ body.modal-open {
     text-decoration: line-through;
     opacity: 0.7;
 }
+
+/* Admin form inputs */
+.admin-input-width {
+    max-width: 200px;
+}
+
+/* Card header white text */
+.card-header-white {
+    color: white !important;
+}
+
+/* Select spacing */
+.select-spacing {
+    margin-bottom: 1rem;
+}
+
+/* Close button red */
+.close-red {
+    color: red !important;
+}

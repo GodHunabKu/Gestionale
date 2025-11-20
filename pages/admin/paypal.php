@@ -57,9 +57,9 @@
 								<tr>
 									<input type="hidden" name="id" value="<?php print $row['id']; ?>">
 									
-									<td><input style="max-width: 200px;" class="form-control" name="price<?php print $row['id']; ?>" type="text" value="<?php print $row['price']; ?>"></td>
+									<td><input class="admin-input-width" class="form-control" name="price<?php print $row['id']; ?>" type="text" value="<?php print $row['price']; ?>"></td>
 									
-									<td><input style="max-width: 200px;" class="form-control" name="coins<?php print $row['id']; ?>" type="text" value="<?php print $row['coins']; ?>"></td>
+									<td><input class="admin-input-width" class="form-control" name="coins<?php print $row['id']; ?>" type="text" value="<?php print $row['coins']; ?>"></td>
 									
 									<td><input class="btn btn-primary btn-sm" name="edit" value="<?php print $lang_shop['edit']; ?>" type="submit"></td>
 									<td><a href="<?php print $shop_url; ?>admin/paypal/<?php print $row['id']; ?>" class="btn btn-danger btn-sm"><?php print $lang_shop['item_remove']; ?></a></td>

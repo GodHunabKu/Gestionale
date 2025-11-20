@@ -61,12 +61,12 @@
                                                     <img src="<?php print $shop_url; ?>images/items/img_categorie/<?php print $row['img']; ?>.png">
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <input style="max-width: 200px;" class="form-control" name="img<?php print $row['id']; ?>" type="text" value="<?php print $row['img']; ?>" placeholder="es: Cavalcature">
+                                                    <input class="admin-input-width form-control" name="img<?php print $row['id']; ?>" type="text" value="<?php print $row['img']; ?>" placeholder="es: Cavalcature">
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <input style="max-width: 200px;" class="form-control" name="name<?php print $row['id']; ?>" type="text" value="<?php print $row['name']; ?>">
+                                            <input class="admin-input-width form-control" name="name<?php print $row['id']; ?>" type="text" value="<?php print $row['name']; ?>">
                                         </td>
                                         <td>
                                             <input class="btn btn-primary btn-sm" name="edit" value="<?php print $lang_shop['edit']; ?>" type="submit">
