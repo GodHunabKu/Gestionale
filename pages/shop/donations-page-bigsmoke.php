@@ -2,7 +2,7 @@
 <?php if(is_loggedin() && web_admin_level()>=9) { ?>
 <div class="admin-quick-access">
     <a href="<?php print $shop_url.'admin/paypal'; ?>" class="admin-btn">
-        <i class="fas fa-cog"></i>
+        <i class="fa fa-cog"></i>
         <span>Gestione Donazioni</span>
     </a>
 </div>
@@ -12,7 +12,7 @@
     <!-- Hero Header -->
     <div class="donations-hero">
         <div class="hero-icon-circle">
-            <i class="fas fa-hand-holding-heart"></i>
+            <i class="fa fa-heart"></i>
         </div>
         <h1>Supporta ONE Server</h1>
         <p>Dona per mantenere il server attivo e ottieni MD Coins esclusivi</p>
@@ -21,24 +21,24 @@
     <!-- Metodi di Pagamento -->
     <div class="content-card">
         <div class="card-header">
-            <i class="fas fa-credit-card"></i>
+            <i class="fa fa-credit-card"></i>
             <h2>Metodi di Pagamento Accettati</h2>
         </div>
         <div class="payment-methods">
             <div class="payment-card">
-                <i class="fas fa-money-check-alt"></i>
+                <i class="fa fa-credit-card"></i>
                 <span>Postepay</span>
             </div>
             <div class="payment-card">
-                <i class="fab fa-paypal"></i>
+                <i class="fa fa-paypal"></i>
                 <span>PayPal</span>
             </div>
             <div class="payment-card">
-                <i class="fas fa-university"></i>
+                <i class="fa fa-university"></i>
                 <span>Bonifico</span>
             </div>
             <div class="payment-card">
-                <i class="fas fa-exchange-alt"></i>
+                <i class="fa fa-exchange"></i>
                 <span>Revolut</span>
             </div>
         </div>
@@ -47,7 +47,7 @@
     <!-- Come Donare -->
     <div class="content-card">
         <div class="card-header">
-            <i class="fas fa-list-ol"></i>
+            <i class="fa fa-list-ol"></i>
             <h2>Come Effettuare una Donazione</h2>
         </div>
         <div class="donation-steps">
@@ -57,7 +57,7 @@
                     <h3>Contatta il Game Master</h3>
                     <p>Invia un messaggio a <strong>[GF]BigSmoke</strong> su Discord o contattalo in-game</p>
                     <div class="contact-badge discord">
-                        <i class="fab fa-discord"></i>
+                        <i class="fa fa-discord"></i>
                         <span>[GF]BigSmoke</span>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
     <!-- Listino Prezzi -->
     <div class="content-card">
         <div class="card-header">
-            <i class="fas fa-tags"></i>
+            <i class="fa fa-tags"></i>
             <h2>Listino Prezzi MD Coins</h2>
         </div>
 
@@ -109,7 +109,7 @@
             <div class="price-card">
                 <div class="package-label">STARTER</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">125</span>
                     <span class="label">MD Coins</span>
                 </div>
@@ -120,7 +120,7 @@
             <div class="price-card">
                 <div class="package-label">BASE</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">250</span>
                     <span class="label">MD Coins</span>
                 </div>
@@ -131,7 +131,7 @@
             <div class="price-card">
                 <div class="package-label">PREMIUM</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">750</span>
                     <span class="label">MD Coins</span>
                 </div>
@@ -143,7 +143,7 @@
                 <div class="popular-badge">BEST VALUE</div>
                 <div class="package-label gold">GOLD +5%</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">1,312</span>
                     <span class="label">MD Coins</span>
                     <span class="bonus">+62 BONUS</span>
@@ -157,7 +157,7 @@
                 <div class="popular-badge">BEST VALUE</div>
                 <div class="package-label platinum">PLATINUM +10%</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">4,125</span>
                     <span class="label">MD Coins</span>
                     <span class="bonus">+375 BONUS</span>
@@ -171,7 +171,7 @@
                 <div class="popular-badge">BEST VALUE</div>
                 <div class="package-label diamond">DIAMOND +20%</div>
                 <div class="coin-display">
-                    <i class="fas fa-coins"></i>
+                    <i class="fa fa-money"></i>
                     <span class="amount">9,000</span>
                     <span class="label">MD Coins</span>
                     <span class="bonus">+1,500 BONUS</span>
@@ -182,7 +182,7 @@
         </div>
 
         <div class="bonus-info-box">
-            <i class="fas fa-gift"></i>
+            <i class="fa fa-gift"></i>
             <p>I pacchetti da 50€ in su includono MD Coins bonus! Più doni, più ricevi!</p>
         </div>
     </div>
@@ -190,36 +190,36 @@
     <!-- Note Importanti -->
     <div class="content-card alert-card">
         <div class="card-header">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fa fa-exclamation-circle"></i>
             <h2>Note Importanti</h2>
         </div>
         <ul class="info-list">
-            <li><i class="fas fa-check-circle"></i> Le donazioni sono <strong>volontarie</strong> e supportano i costi del server</li>
-            <li><i class="fas fa-check-circle"></i> I MD Coins vengono accreditati <strong>manualmente</strong> dopo la verifica</li>
-            <li><i class="fas fa-check-circle"></i> Tempo di accredito: <strong>da pochi minuti a max 24 ore</strong></li>
-            <li><i class="fas fa-check-circle"></i> Conserva sempre la <strong>ricevuta del pagamento</strong></li>
-            <li><i class="fas fa-check-circle"></i> Per problemi, contatta <strong>[GF]BigSmoke</strong> su Discord</li>
-            <li><i class="fas fa-check-circle"></i> Le donazioni <strong>NON sono rimborsabili</strong></li>
+            <li><i class="fa fa-check-circle"></i> Le donazioni sono <strong>volontarie</strong> e supportano i costi del server</li>
+            <li><i class="fa fa-check-circle"></i> I MD Coins vengono accreditati <strong>manualmente</strong> dopo la verifica</li>
+            <li><i class="fa fa-check-circle"></i> Tempo di accredito: <strong>da pochi minuti a max 24 ore</strong></li>
+            <li><i class="fa fa-check-circle"></i> Conserva sempre la <strong>ricevuta del pagamento</strong></li>
+            <li><i class="fa fa-check-circle"></i> Per problemi, contatta <strong>[GF]BigSmoke</strong> su Discord</li>
+            <li><i class="fa fa-check-circle"></i> Le donazioni <strong>NON sono rimborsabili</strong></li>
         </ul>
     </div>
 
     <!-- Contatti -->
     <div class="content-card contact-card">
         <div class="card-header">
-            <i class="fas fa-headset"></i>
+            <i class="fa fa-headset"></i>
             <h2>Hai Domande?</h2>
         </div>
         <p class="contact-desc">Non esitare a contattare il nostro staff per assistenza:</p>
         <div class="contact-grid">
             <div class="contact-box">
-                <i class="fab fa-discord"></i>
+                <i class="fa fa-discord"></i>
                 <div class="contact-info">
                     <span class="label">Discord</span>
                     <span class="value">[GF]BigSmoke</span>
                 </div>
             </div>
             <div class="contact-box">
-                <i class="fas fa-gamepad"></i>
+                <i class="fa fa-gamepad"></i>
                 <div class="contact-info">
                     <span class="label">In-Game</span>
                     <span class="value">[GF]BigSmoke</span>
