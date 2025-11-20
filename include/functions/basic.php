@@ -667,6 +667,46 @@
 		return $sth->fetchAll();
 	}
 
+	// Ottieni ID massimo per determinare item "nuovi"
+	function is_get_max_item_id()
+	{
+		global $database;
+
+		$sth = $database->runQuerySqlite('SELECT MAX(id) as max_id FROM item_shop_items');
+		$sth->execute();
+		$result = $sth->fetch();
+
+		return $result['max_id'];
+	}
+
+	// Controlla se un item è "nuovo" (aggiunto negli ultimi 20 item)
+	function is_item_new($item_id)
+	{
+		static $max_id = null;
+
+		if ($max_id === null) {
+			$max_id = is_get_max_item_id();
+		}
+
+		// Gli ultimi 20 item sono considerati "nuovi"
+		return ($item_id > ($max_id - 20));
+	}
+
+	// Ottieni item più recenti per homepage
+	function is_get_newest_items($limit = 12)
+	{
+		global $database;
+
+		$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount, category
+			FROM item_shop_items
+			ORDER BY id DESC
+			LIMIT ?');
+		$sth->bindParam(1, $limit, PDO::PARAM_INT);
+		$sth->execute();
+
+		return $sth->fetchAll();
+	}
+
 	function is_edit_category($id, $name, $img)
 	{
 		global $database;

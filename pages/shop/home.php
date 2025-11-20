@@ -20,6 +20,60 @@
 	</div>
 </div>
 
+<!-- Nuovi Arrivi Section -->
+<?php
+	$newest_items = is_get_newest_items(8);
+	if(count($newest_items) > 0) {
+?>
+<div class="newest-items-section mb-5">
+	<div class="section-header mb-4">
+		<h2 class="section-title-large">
+			<i class="fa fa-star"></i> Nuovi Arrivi
+		</h2>
+		<p class="section-subtitle">Gli ultimi item aggiunti al nostro shop</p>
+	</div>
+
+	<div class="row">
+		<?php foreach($newest_items as $row) { ?>
+		<div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+			<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
+				<div class="card newest-item-card text-center">
+					<div class="card-block">
+						<!-- Badge NUOVO sempre visibile qui -->
+						<span class="badge badge-new-item">
+							<i class="fa fa-star"></i> NUOVO
+						</span>
+
+						<div class="min-image-item">
+							<center>
+								<img class="image-item" src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['vnum']); ?>.png">
+							</center>
+						</div>
+
+						<?php if($row['discount']>0) { ?>
+						<span class="badge badge-danger font-weight-bold strong pull-right">- <?php print $row['discount']; ?>%</span>
+						<?php }
+							if($row['expire']>0) {
+								$expire = date("Y-m-d H:i:s", $row['expire']);
+						?>
+						<p class="card-text"><small class="font-weight-bold strong pull-right text-danger" data-countdown="<?php print $expire; ?>"></small></p>
+						<?php }
+							if($row['type']==3) {
+						?>
+						<p class="card-text"><small class="font-weight-bold strong pull-right text-danger"><?php print $lang_shop['bonus_selection']; ?></small></p>
+						<?php } ?>
+					</div>
+					<div class="card-footer text-muted">
+						<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>"><?php if(!$item_name_db) print get_item_name($row['vnum']); else print get_item_name_locale_name($row['vnum']); ?></a>
+					</div>
+				</div>
+			</a>
+		</div>
+		<?php } ?>
+	</div>
+</div>
+<?php } ?>
+
 <!-- Categories Grid - Professional MMORPG Layout -->
 <div class="categories-showcase">
 	<div class="row justify-content-center g-4">

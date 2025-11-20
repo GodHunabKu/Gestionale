@@ -56,6 +56,13 @@
 							<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
 								<div class="card mb-3 text-center">
 									<div class="card-block">
+										<!-- Badge NUOVO per item recenti -->
+										<?php if(is_item_new($row['id'])) { ?>
+										<span class="badge badge-new-item">
+											<i class="fa fa-star"></i> NUOVO
+										</span>
+										<?php } ?>
+
 										<!-- Categoria Badge (ricerca) -->
 										<span class="category-badge-small">
 											<i class="fa fa-tag"></i> <?php echo is_get_category_name($row['category']); ?>

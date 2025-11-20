@@ -120,6 +120,13 @@
 								<a href="<?php print $shop_url.'item/'.$row['id'].'/'; ?>">
 									<div class="card mb-3 text-center">
 										<div class="card-block">
+											<!-- Badge NUOVO per item recenti -->
+											<?php if(is_item_new($row['id'])) { ?>
+											<span class="badge badge-new-item">
+												<i class="fa fa-star"></i> NUOVO
+											</span>
+											<?php } ?>
+
 											<div class="min-image-item">
 												<center>
 													<img class="image-item" src="<?php print $shop_url; ?>images/items/<?php print get_item_image($row['vnum']); ?>.png">

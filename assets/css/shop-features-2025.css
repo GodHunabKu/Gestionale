@@ -262,6 +262,97 @@
    ============================================ */
 /* Preview hover rimosso per user feedback - design classico preferito */
 
+/* Badge NUOVO per item recenti */
+.badge-new-item {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: #fff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+    animation: badge-new-pulse 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+.badge-new-item i {
+    margin-right: 3px;
+    animation: star-rotate 3s linear infinite;
+}
+
+@keyframes badge-new-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+    }
+}
+
+@keyframes star-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   NUOVI ARRIVI SECTION - HOMEPAGE
+   ============================================ */
+.newest-items-section {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+    border: 2px solid rgba(243, 156, 18, 0.3);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 40px rgba(243, 156, 18, 0.1);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.section-title-large {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f39c12;
+    text-shadow: 0 2px 10px rgba(243, 156, 18, 0.4);
+    margin-bottom: 0.5rem;
+}
+
+.section-title-large i {
+    margin-right: 0.75rem;
+    animation: star-rotate 3s linear infinite;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #aaa;
+    font-weight: 400;
+}
+
+.newest-item-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid rgba(243, 156, 18, 0.3);
+    background: linear-gradient(145deg, rgba(25, 25, 25, 0.9) 0%, rgba(20, 20, 20, 0.9) 100%);
+}
+
+.newest-item-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(243, 156, 18, 0.4);
+    border-color: rgba(243, 156, 18, 0.7);
+}
+
 /* ============================================
    ITEM CORRELATI - SMALL CARDS
    ============================================ */
@@ -631,4 +722,288 @@ img[src*="loading-placeholder.png"] {
     );
     background-size: 200px 100%;
     animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   ADMIN DASHBOARD - STATISTICHE AVANZATE
+   ============================================ */
+.admin-dashboard {
+    padding: 2rem 0;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid rgba(231, 76, 60, 0.3);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #e74c3c;
+    text-shadow: 0 2px 10px rgba(231, 76, 60, 0.4);
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: #aaa;
+}
+
+/* Stat Cards */
+.stat-card {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+    border: 2px solid;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card.stat-primary {
+    border-color: rgba(52, 152, 219, 0.5);
+}
+
+.stat-card.stat-primary:hover {
+    border-color: rgba(52, 152, 219, 0.8);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+}
+
+.stat-card.stat-success {
+    border-color: rgba(46, 204, 113, 0.5);
+}
+
+.stat-card.stat-success:hover {
+    border-color: rgba(46, 204, 113, 0.8);
+    box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+}
+
+.stat-card.stat-warning {
+    border-color: rgba(243, 156, 18, 0.5);
+}
+
+.stat-card.stat-warning:hover {
+    border-color: rgba(243, 156, 18, 0.8);
+    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+}
+
+.stat-card.stat-danger {
+    border-color: rgba(231, 76, 60, 0.5);
+}
+
+.stat-card.stat-danger:hover {
+    border-color: rgba(231, 76, 60, 0.8);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    opacity: 0.7;
+}
+
+.stat-card.stat-primary .stat-icon {
+    color: #3498db;
+}
+
+.stat-card.stat-success .stat-icon {
+    color: #2ecc71;
+}
+
+.stat-card.stat-warning .stat-icon {
+    color: #f39c12;
+}
+
+.stat-card.stat-danger .stat-icon {
+    color: #e74c3c;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin: 0.5rem 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dashboard Panels */
+.dashboard-panel {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+    border: 2px solid rgba(231, 76, 60, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.panel-header {
+    background: rgba(231, 76, 60, 0.2);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.panel-header i {
+    margin-right: 0.5rem;
+}
+
+.panel-body {
+    padding: 1.5rem;
+}
+
+.panel-body .table {
+    margin-bottom: 0;
+}
+
+.panel-body .table thead th {
+    border-top: none;
+    border-bottom: 2px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.panel-body .table tbody tr {
+    border-bottom: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+.panel-body .table tbody tr:hover {
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.panel-body .table td {
+    vertical-align: middle;
+    color: #ddd;
+}
+
+/* Newest Item Preview */
+.newest-item-preview {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.newest-item-preview:hover {
+    border-color: rgba(231, 76, 60, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+}
+
+.newest-item-preview img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 0.5rem;
+    image-rendering: crisp-edges;
+}
+
+.newest-item-preview .item-name {
+    font-size: 0.85rem;
+    color: #ddd;
+    margin: 0.5rem 0;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.newest-item-preview .item-price {
+    font-size: 0.9rem;
+    color: #e74c3c;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Quick Actions Panel */
+.quick-actions-panel {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+    border: 2px solid rgba(231, 76, 60, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.quick-actions-panel h3 {
+    color: #e74c3c;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.btn-group-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn-group-actions .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-group-actions .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem;
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+    }
+
+    .btn-group-actions {
+        flex-direction: column;
+    }
+
+    .btn-group-actions .btn {
+        width: 100%;
+    }
 }

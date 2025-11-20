@@ -145,6 +145,9 @@
 							case 'settings':
 								include 'pages/admin/settings.php';
 								break;
+							case 'dashboard':
+								include 'pages/admin/dashboard.php';
+								break;
 							case 'paypal':
 								include 'pages/admin/paypal.php';
 								break;
@@ -227,7 +230,7 @@
 					</ul>
 				<?php } print '<div class="spacer-md"></div>'; if(is_loggedin() && web_admin_level()>=9) { ?>
                     <div class="action-box">
-                        <a href="<?php print $shop_url; ?>settings"><i class="fa fa-cogs"></i>Admin</a>
+                        <a href="<?php print $shop_url; ?>dashboard"><i class="fa fa-tachometer"></i>Dashboard</a>
                         <a class="color" href="<?php print $shop_url; ?>donations"><i class="fa fa-heart"></i>Dona</a>
                         <div class="clear"></div>
                     </div>
