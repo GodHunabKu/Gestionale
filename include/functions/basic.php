@@ -437,15 +437,274 @@
 	function is_items_list($category)
 	{
 		global $database;
-		
+
 		$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount
 			FROM item_shop_items
 			WHERE category = ? ORDER BY id ASC');
 		$sth->bindParam(1, $category, PDO::PARAM_INT);
 		$sth->execute();
 		$result = $sth->fetchAll();
-		
+
 		return $result;
+	}
+
+	// Nuova funzione con paginazione, filtri e ordinamento
+	function is_items_list_paginated($category, $page = 1, $per_page = 12, $filters = [])
+	{
+		global $database;
+
+		$offset = ($page - 1) * $per_page;
+
+		// Build query dinamica
+		$where = ['category = ?'];
+		$params = [$category];
+		$param_types = [PDO::PARAM_INT];
+
+		// Filtro prezzo minimo
+		if (!empty($filters['price_min'])) {
+			$where[] = 'coins >= ?';
+			$params[] = $filters['price_min'];
+			$param_types[] = PDO::PARAM_INT;
+		}
+
+		// Filtro prezzo massimo
+		if (!empty($filters['price_max'])) {
+			$where[] = 'coins <= ?';
+			$params[] = $filters['price_max'];
+			$param_types[] = PDO::PARAM_INT;
+		}
+
+		// Filtro solo scontati
+		if (!empty($filters['only_discount'])) {
+			$where[] = 'discount > 0';
+		}
+
+		// Ricerca per nome
+		if (!empty($filters['search'])) {
+			$where[] = 'vnum IN (SELECT vnum FROM item_proto WHERE name LIKE ?)';
+			$params[] = '%' . $filters['search'] . '%';
+			$param_types[] = PDO::PARAM_STR;
+		}
+
+		$where_clause = implode(' AND ', $where);
+
+		// Ordinamento
+		$order = 'id DESC'; // Default: più recenti
+		if (!empty($filters['order_by'])) {
+			switch($filters['order_by']) {
+				case 'price_asc':
+					$order = 'coins ASC';
+					break;
+				case 'price_desc':
+					$order = 'coins DESC';
+					break;
+				case 'discount':
+					$order = 'discount DESC';
+					break;
+				case 'name':
+					$order = 'vnum ASC';
+					break;
+				default:
+					$order = 'id DESC';
+			}
+		}
+
+		$sql = "SELECT id, type, pay_type, coins, vnum, expire, discount
+				FROM item_shop_items
+				WHERE $where_clause
+				ORDER BY $order
+				LIMIT ? OFFSET ?";
+
+		$sth = $database->runQuerySqlite($sql);
+
+		// Bind parametri dinamicamente
+		foreach ($params as $i => $param) {
+			$sth->bindParam($i + 1, $params[$i], $param_types[$i]);
+		}
+		$sth->bindParam(count($params) + 1, $per_page, PDO::PARAM_INT);
+		$sth->bindParam(count($params) + 2, $offset, PDO::PARAM_INT);
+
+		$sth->execute();
+		return $sth->fetchAll();
+	}
+
+	// Conta totale item per paginazione
+	function is_items_count($category, $filters = [])
+	{
+		global $database;
+
+		$where = ['category = ?'];
+		$params = [$category];
+		$param_types = [PDO::PARAM_INT];
+
+		if (!empty($filters['price_min'])) {
+			$where[] = 'coins >= ?';
+			$params[] = $filters['price_min'];
+			$param_types[] = PDO::PARAM_INT;
+		}
+
+		if (!empty($filters['price_max'])) {
+			$where[] = 'coins <= ?';
+			$params[] = $filters['price_max'];
+			$param_types[] = PDO::PARAM_INT;
+		}
+
+		if (!empty($filters['only_discount'])) {
+			$where[] = 'discount > 0';
+		}
+
+		if (!empty($filters['search'])) {
+			$where[] = 'vnum IN (SELECT vnum FROM item_proto WHERE name LIKE ?)';
+			$params[] = '%' . $filters['search'] . '%';
+			$param_types[] = PDO::PARAM_STR;
+		}
+
+		$where_clause = implode(' AND ', $where);
+		$sql = "SELECT COUNT(*) as total FROM item_shop_items WHERE $where_clause";
+
+		$sth = $database->runQuerySqlite($sql);
+		foreach ($params as $i => $param) {
+			$sth->bindParam($i + 1, $params[$i], $param_types[$i]);
+		}
+		$sth->execute();
+		$result = $sth->fetch();
+
+		return $result['total'];
+	}
+
+	// Ricerca globale item
+	function is_search_items_global($search_term, $page = 1, $per_page = 12)
+	{
+		global $database, $item_name_db;
+
+		$offset = ($page - 1) * $per_page;
+		$results = [];
+
+		// Cerca per vnum
+		if (is_numeric($search_term)) {
+			$sql = "SELECT id, type, pay_type, coins, vnum, expire, discount, category
+					FROM item_shop_items
+					WHERE vnum = ?
+					ORDER BY id DESC
+					LIMIT ? OFFSET ?";
+			$sth = $database->runQuerySqlite($sql);
+			$sth->bindParam(1, $search_term, PDO::PARAM_INT);
+			$sth->bindParam(2, $per_page, PDO::PARAM_INT);
+			$sth->bindParam(3, $offset, PDO::PARAM_INT);
+			$sth->execute();
+			$results = $sth->fetchAll();
+		}
+
+		// Se non trova per vnum o non è numerico, cerca tutti e filtra per nome
+		if (empty($results)) {
+			$sql = "SELECT id, type, pay_type, coins, vnum, expire, discount, category
+					FROM item_shop_items
+					ORDER BY id DESC";
+			$sth = $database->runQuerySqlite($sql);
+			$sth->execute();
+			$all_items = $sth->fetchAll();
+
+			// Filtra per nome item
+			foreach ($all_items as $item) {
+				$item_name = $item_name_db ? get_item_name_locale_name($item['vnum']) : get_item_name($item['vnum']);
+				if (stripos($item_name, $search_term) !== false) {
+					$results[] = $item;
+				}
+			}
+
+			// Paginazione manuale
+			$results = array_slice($results, $offset, $per_page);
+		}
+
+		return $results;
+	}
+
+	// Conta risultati ricerca globale
+	function is_search_items_count($search_term)
+	{
+		global $database, $item_name_db;
+
+		if (is_numeric($search_term)) {
+			$sql = "SELECT COUNT(*) as total FROM item_shop_items WHERE vnum = ?";
+			$sth = $database->runQuerySqlite($sql);
+			$sth->bindParam(1, $search_term, PDO::PARAM_INT);
+			$sth->execute();
+			$result = $sth->fetch();
+			return $result['total'];
+		}
+
+		$sql = "SELECT id, vnum FROM item_shop_items";
+		$sth = $database->runQuerySqlite($sql);
+		$sth->execute();
+		$all_items = $sth->fetchAll();
+
+		$count = 0;
+		foreach ($all_items as $item) {
+			$item_name = $item_name_db ? get_item_name_locale_name($item['vnum']) : get_item_name($item['vnum']);
+			if (stripos($item_name, $search_term) !== false) {
+				$count++;
+			}
+		}
+
+		return $count;
+	}
+
+	// Item correlati dalla stessa categoria
+	function is_get_related_items($category, $current_item_id, $limit = 6)
+	{
+		global $database;
+
+		$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount
+			FROM item_shop_items
+			WHERE category = ? AND id != ?
+			ORDER BY RANDOM()
+			LIMIT ?');
+		$sth->bindParam(1, $category, PDO::PARAM_INT);
+		$sth->bindParam(2, $current_item_id, PDO::PARAM_INT);
+		$sth->bindParam(3, $limit, PDO::PARAM_INT);
+		$sth->execute();
+
+		return $sth->fetchAll();
+	}
+
+	// Ottieni ID massimo per determinare item "nuovi"
+	function is_get_max_item_id()
+	{
+		global $database;
+
+		$sth = $database->runQuerySqlite('SELECT MAX(id) as max_id FROM item_shop_items');
+		$sth->execute();
+		$result = $sth->fetch();
+
+		return $result['max_id'];
+	}
+
+	// Controlla se un item è "nuovo" (aggiunto negli ultimi 20 item)
+	function is_item_new($item_id)
+	{
+		static $max_id = null;
+
+		if ($max_id === null) {
+			$max_id = is_get_max_item_id();
+		}
+
+		// Gli ultimi 20 item sono considerati "nuovi"
+		return ($item_id > ($max_id - 20));
+	}
+
+	// Ottieni item più recenti per homepage
+	function is_get_newest_items($limit = 12)
+	{
+		global $database;
+
+		$sth = $database->runQuerySqlite('SELECT id, type, pay_type, coins, vnum, expire, discount, category
+			FROM item_shop_items
+			ORDER BY id DESC
+			LIMIT ?');
+		$sth->bindParam(1, $limit, PDO::PARAM_INT);
+		$sth->execute();
+
+		return $sth->fetchAll();
 	}
 
 	function is_edit_category($id, $name, $img)

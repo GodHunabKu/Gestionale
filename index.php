@@ -26,6 +26,7 @@
     <!-- CSS Nuovo Design Ultra Fedele -->
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/master3.css?v=<?php echo time(); ?>" />
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/shop-items-enhanced2.css?v=<?php echo time(); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/shop-features-2025.css?v=<?php echo time(); ?>" />
 
     <!-- Font Awesome e Animazioni -->
     <link rel="stylesheet" type="text/css" href="<?php print $shop_url; ?>assets/css/font-awesome.min.css" />
@@ -64,6 +65,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="<?php print $shop_url; ?>wishlist" class="nav-link">
+                            <i class="fa fa-heart-o"></i>
+                            <span>Preferiti <?php
+                                require_once __DIR__ . '/include/functions/wishlist.php';
+                                $wcount = wishlist_count(get_account_id());
+                                if($wcount > 0) echo '<span class="badge badge-danger">'.$wcount.'</span>';
+                            ?></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="<?php print $shop_url; ?>logout" class="nav-link">
                             <i class="fa fa-sign-out"></i>
                             <span><?php print $lang_shop['logout']; ?></span>
@@ -86,6 +97,30 @@
             </nav>
         </div>
     </div>
+
+    <!-- Barra di Ricerca Globale 2025 -->
+    <?php if(is_loggedin() && $current_page != 'login' && $current_page != 'register') { ?>
+    <div class="search-bar-container">
+        <div class="container">
+            <form method="get" action="" class="global-search-form">
+                <input type="hidden" name="p" value="search">
+                <div class="search-input-wrapper">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text"
+                           name="q"
+                           class="search-input"
+                           placeholder="Cerca item per nome o vnum..."
+                           value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>"
+                           autocomplete="off"
+                           required>
+                    <button type="submit" class="search-button">
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php } ?>
 
     <div class="container">
         <div class="row">
@@ -120,6 +155,9 @@
 							case 'settings':
 								include 'pages/admin/settings.php';
 								break;
+							case 'dashboard':
+								include 'pages/admin/dashboard.php';
+								break;
 							case 'paypal':
 								include 'pages/admin/paypal.php';
 								break;
@@ -128,6 +166,12 @@
 								break;
 							case 'donations':
 								include 'pages/shop/donations-page-bigsmoke.php';
+								break;
+							case 'search':
+								include 'pages/shop/search.php';
+								break;
+							case 'wishlist':
+								include 'pages/shop/wishlist.php';
 								break;
 							case 'pay':
 								include 'pages/shop/pay.php';
@@ -168,8 +212,19 @@
 					}
 					if(is_loggedin()) {
 				?>
-                    <div class="info-coins-button">
-						<img src="<?php print $shop_url; ?>images/md.png" data-toggle="tooltip" data-placement="right" title="" data-original-title="MD"<?php print $padding_md; ?>> <?php print number_format(is_coins(), 0, '', '.'); ?>
+                    <div class="wallet-balance-card">
+						<div class="wallet-header">
+							<i class="fa fa-wallet"></i>
+							<span class="wallet-label">Saldo Disponibile</span>
+						</div>
+						<div class="wallet-amount">
+							<img src="<?php print $shop_url; ?>images/md.png" class="wallet-coin-icon" alt="MD Coins">
+							<span class="amount-value"><?php print number_format(is_coins(), 0, '', '.'); ?></span>
+							<span class="amount-currency">MD</span>
+						</div>
+						<div class="wallet-action">
+							<i class="fa fa-info-circle"></i> Clicca per ricaricare
+						</div>
 					</div>
 				<?php
 					}
@@ -188,11 +243,16 @@
 					</ul>
 				<?php } print '<div class="spacer-md"></div>'; if(is_loggedin() && web_admin_level()>=9) { ?>
                     <div class="action-box">
-                        <a href="<?php print $shop_url; ?>settings"><i class="fa fa-cogs"></i>Admin</a>
+                        <a href="<?php print $shop_url; ?>dashboard"><i class="fa fa-tachometer"></i>Dashboard</a>
                         <a class="color" href="<?php print $shop_url; ?>donations"><i class="fa fa-heart"></i>Dona</a>
                         <div class="clear"></div>
                     </div>
-				<?php } if(is_loggedin()) include 'include/sidebar/last_bought.php'; ?>
+				<?php }
+                    if(is_loggedin()) {
+                        include 'include/sidebar/last_bought.php';
+                        include 'include/sidebar/most_bought.php';
+                    }
+                ?>
                 </div>
             </div>
 			<?php } ?>
@@ -225,6 +285,7 @@
     <script src="<?php print $shop_url; ?>assets/js/jquery.js"></script>
     <script src="<?php print $shop_url; ?>assets/js/tether.min.js"></script>
     <script src="<?php print $shop_url; ?>assets/js/bootstrap.min.js"></script>
-	
+    <script src="<?php print $shop_url; ?>assets/js/shop-lazyload-2025.js?v=<?php echo time(); ?>"></script>
+
 	<?php include 'include/functions/js.php'; ?>
 </html>
