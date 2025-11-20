@@ -22,8 +22,9 @@
 
 <!-- Nuovi Arrivi Section -->
 <?php
-	$newest_items = is_get_newest_items(8);
-	if(count($newest_items) > 0) {
+	try {
+		$newest_items = is_get_newest_items(8);
+		if(is_array($newest_items) && count($newest_items) > 0) {
 ?>
 <div class="newest-items-section mb-5">
 	<div class="section-header mb-4">
@@ -72,7 +73,13 @@
 		<?php } ?>
 	</div>
 </div>
-<?php } ?>
+<?php
+		}
+	} catch (Exception $e) {
+		// Silently skip if there's an error loading newest items
+		error_log("Error loading newest items: " . $e->getMessage());
+	}
+?>
 
 <!-- Categories Grid - Professional MMORPG Layout -->
 <div class="categories-showcase">
