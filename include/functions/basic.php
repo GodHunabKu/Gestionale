@@ -870,20 +870,8 @@
 	{
 		global $database;
 		global $language_code;
-
+		
 		$sth = $database->runQuerySqlite('SELECT id, vnum, pay_type, coins FROM item_shop_items WHERE last_bought != 0 ORDER BY last_bought DESC LIMIT 5');
-		$sth->execute();
-		$result = $sth->fetchAll();
-
-		return $result;
-	}
-
-	function most_bought()
-	{
-		global $database;
-		global $language_code;
-
-		$sth = $database->runQuerySqlite('SELECT id, vnum, pay_type, coins, bought_times FROM item_shop_items WHERE bought_times > 0 ORDER BY bought_times DESC LIMIT 5');
 		$sth->execute();
 		$result = $sth->fetchAll();
 
