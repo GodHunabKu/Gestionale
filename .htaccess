@@ -2,12 +2,13 @@
     RewriteEngine On
     RewriteBase /
 
-    # Prevent access to hidden files
-    RewriteRule ^(.*/)?\.(.*)$ - [F,L]
+    # Prevent access to hidden files (except .well-known for SSL)
+    RewriteRule ^(.*/)?\.(?!well-known)(.*)$ - [F,L]
 
-    # Preserve existing query strings (language switching, etc.)
-    RewriteCond %{QUERY_STRING} !^$
-    RewriteRule ^(.*)$ index.php?$1&%{QUERY_STRING} [L,QSA]
+    # Skip rewriting for existing files (CSS, JS, images, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
     # Static pages - Simple routing
     RewriteRule ^donations/?$ index.php?p=donations [L,QSA]
