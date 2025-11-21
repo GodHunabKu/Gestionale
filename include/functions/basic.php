@@ -1394,7 +1394,8 @@
 		global $database;
 
 		try {
-			$sth = $database->runQueryPlayer('SELECT COUNT(*) as count FROM item_award WHERE login = ? AND vnum = ? AND taken_time IS NOT NULL');
+			// Verifica solo se esiste l'acquisto, non se è stato ritirato
+			$sth = $database->runQueryPlayer('SELECT COUNT(*) as count FROM item_award WHERE login = ? AND vnum = ?');
 			$sth->bindParam(1, $account_login, PDO::PARAM_STR);
 			$sth->bindParam(2, $item_vnum, PDO::PARAM_INT);
 			$sth->execute();

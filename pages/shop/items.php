@@ -163,9 +163,14 @@
 										</div>
 									</div>
 								</a>
-								<!-- Quick View Button -->
-								<button class="btn btn-sm btn-info btn-block mt-2 btn-quick-view" data-item-id="<?php echo $row['id']; ?>">
-									<i class="fa fa-eye"></i> Anteprima Veloce
+								<!-- Add to Cart Button -->
+								<button class="btn btn-sm btn-warning btn-block mt-2 btn-add-to-cart"
+								        data-item-id="<?php echo $row['id']; ?>"
+								        data-item-vnum="<?php echo $row['vnum']; ?>"
+								        data-item-name="<?php echo htmlspecialchars(!$item_name_db ? get_item_name($row['vnum']) : get_item_name_locale_name($row['vnum'])); ?>"
+								        data-item-price="<?php echo $row['coins']; ?>"
+								        data-item-discount="<?php echo $row['discount']; ?>">
+									<i class="fa fa-shopping-cart"></i> Aggiungi al Carrello
 								</button>
 							</div>
 						<?php } } ?>

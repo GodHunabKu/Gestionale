@@ -24,41 +24,6 @@ $action = isset($_POST['action']) ? $_POST['action'] : '';
 
 switch($action) {
 
-    // Quick View - Ottieni dettagli item
-    case 'quick_view':
-        $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
-
-        if($item_id > 0) {
-            $item = is_item_select($item_id);
-
-            if($item && count($item) > 0) {
-                $item_data = $item[0];
-                $item_name = get_item_name($item_data['vnum']);
-                $bonuses = get_item_bonuses($item_id);
-                $rating = get_item_average_rating($item_id);
-
-                echo json_encode([
-                    'success' => true,
-                    'item' => [
-                        'id' => $item_data['id'],
-                        'vnum' => $item_data['vnum'],
-                        'name' => $item_name,
-                        'coins' => $item_data['coins'],
-                        'discount' => $item_data['discount'],
-                        'description' => $item_data['description'],
-                        'category' => is_get_category_name($item_data['category']),
-                        'bonuses' => $bonuses,
-                        'rating' => $rating
-                    ]
-                ]);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'Item non trovato']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'error' => 'ID item non valido']);
-        }
-        break;
-
     // Purchase History - Ottieni storico acquisti
     case 'get_history':
         $account_login = get_account_name();

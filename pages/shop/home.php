@@ -84,6 +84,15 @@
 						</div>
 					</div>
 				</a>
+				<!-- Add to Cart Button -->
+				<button class="btn btn-sm btn-warning btn-block mt-2 btn-add-to-cart"
+				        data-item-id="<?php echo $row['id']; ?>"
+				        data-item-vnum="<?php echo $row['vnum']; ?>"
+				        data-item-name="<?php echo htmlspecialchars($item_name); ?>"
+				        data-item-price="<?php echo $row['coins']; ?>"
+				        data-item-discount="<?php echo $row['discount']; ?>">
+					<i class="fa fa-shopping-cart"></i> Aggiungi al Carrello
+				</button>
 			</div>
 		</div>
 		<?php } ?>

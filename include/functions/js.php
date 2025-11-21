@@ -16,6 +16,9 @@
 <!-- AJAX Features: Quick View, Gift, History -->
 <script src="<?php print $shop_url; ?>assets/js/shop-ajax-features.js?v=1.0.0"></script>
 
+<!-- Shopping Cart System -->
+<script src="<?php print $shop_url; ?>assets/js/shopping-cart.js?v=1.0.0"></script>
+
 <!-- Real-time Filters -->
 <?php if($current_page == 'items') { ?>
 <script src="<?php print $shop_url; ?>assets/js/filters-realtime.js?v=1.0.0"></script>
@@ -23,8 +26,9 @@
 
 <!-- Configurazione dinamica -->
 <script>
-// Shop base URL for AJAX calls
-window.SHOP_BASE_URL = '<?php print $shop_url; ?>';
+// Shop base URL for AJAX calls (assoluto)
+window.SHOP_BASE_URL = '<?php echo rtrim($shop_url, '/') . '/'; ?>';
+window.SHOP_API_URL = '<?php echo rtrim($shop_url, '/') . '/api/shop_api.php'; ?>';
 
 if (typeof SHOP_CONFIG !== 'undefined') {
     SHOP_CONFIG.countdownFormat = '%D <?php print $lang_shop['days']; ?> %H:%M:%S';
