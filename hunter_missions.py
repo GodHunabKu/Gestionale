@@ -144,7 +144,7 @@ class DailyMissionsWindow(ui.Window, DraggableMixin):
         self.malusDesc = ui.TextLine()
         self.malusDesc.SetParent(self)
         self.malusDesc.SetPosition(70, 265)
-        self.malusDesc.SetText(T("MALUS_DESC", "Non completare: -Gloria (vedi penalita)"))
+        self.malusDesc.SetText(T("MALUS_DESC", "Not complete: -Glory (see penalty)"))
         self.malusDesc.SetPackedFontColor(0xFFAAAAAA)
         self.malusDesc.Show()
         
@@ -153,7 +153,7 @@ class DailyMissionsWindow(ui.Window, DraggableMixin):
         self.resetInfo.SetParent(self)
         self.resetInfo.SetPosition(170, 290)
         self.resetInfo.SetHorizontalAlignCenter()
-        self.resetInfo.SetText(T("RESET_INFO", "Reset giornaliero alle 05:00"))
+        self.resetInfo.SetText(T("RESET_INFO", "Daily reset at 05:00"))
         self.resetInfo.SetPackedFontColor(0xFF888888)
         self.resetInfo.Show()
         
@@ -314,7 +314,7 @@ class DailyMissionsWindow(ui.Window, DraggableMixin):
                     slot["statusText"].SetText("")
                     slot["barFill"].SetColor(self.theme["accent"] if self.theme else 0xFF00CCFF)
             else:
-                slot["nameText"].SetText(T("NO_MISSION", "Nessuna missione"))
+                slot["nameText"].SetText(T("NO_MISSION", "No mission"))
                 slot["progressText"].SetText("")
                 slot["rewardText"].SetText("")
                 slot["penaltyText"].SetText("")
@@ -365,13 +365,13 @@ class DailyMissionsWindow(ui.Window, DraggableMixin):
     def SetBonusActive(self, active):
         """Mostra/nasconde l'avviso bonus attivo"""
         if active:
-            self.bonusActiveText.SetText(T("BONUS_GLORY_ACTIVE", ">>> BONUS GLORIA x1.5 ATTIVO! <<<"))
+            self.bonusActiveText.SetText(T("BONUS_GLORY_ACTIVE", ">>> GLORY BONUS x1.5 ACTIVE! <<<"))
             self.bonusActiveText.SetPackedFontColor(0xFF00FF00)
-            self.bonusDesc.SetText(T("BONUS_ACTIVE_DESC", "ATTIVO! Gloria x1.5 fino alle 05:00!"))
+            self.bonusDesc.SetText(T("BONUS_ACTIVE_DESC", "ACTIVE! Glory x1.5 until 05:00!"))
             self.bonusDesc.SetPackedFontColor(0xFF00FF00)
         else:
             self.bonusActiveText.SetText("")
-            self.bonusDesc.SetText(T("BONUS_DESC", "Completa tutte: Gloria x1.5 fino al reset!"))
+            self.bonusDesc.SetText(T("BONUS_DESC", "Complete all: Glory x1.5 until reset!"))
             self.bonusDesc.SetPackedFontColor(0xFFFFD700)
     
     def Open(self, missions=None, theme=None):
@@ -727,7 +727,7 @@ class AllMissionsCompleteWindow(ui.Window):
         self.subText.SetParent(self)
         self.subText.SetPosition(screenWidth // 2, boxY + 115)
         self.subText.SetHorizontalAlignCenter()
-        self.subText.SetText(T("GREAT_WORK_HUNTER", "Ottimo lavoro, Cacciatore!"))
+        self.subText.SetText(T("GREAT_WORK_HUNTER", "Great work, Hunter!"))
         self.subText.SetPackedFontColor(0xFFAAAAAA)
         self.subText.Show()
         
@@ -735,13 +735,13 @@ class AllMissionsCompleteWindow(ui.Window):
     
     def ShowBonus(self, bonusGlory, theme=None, hasFractureBonus=False):
         """Mostra effetto bonus completamento totale"""
-        self.rewardText.SetText("+%d %s" % (bonusGlory, T("GLORY_BONUS", "GLORIA BONUS")))
+        self.rewardText.SetText("+%d %s" % (bonusGlory, T("GLORY_BONUS", "GLORY BONUS")))
         
         if hasFractureBonus:
-            self.bonusText.SetText(T("FRACTURE_BONUS_50", "BONUS FRATTURE +50% PER IL RESTO DEL GIORNO!"))
+            self.bonusText.SetText(T("FRACTURE_BONUS_50", "FRACTURE BONUS +50% FOR REST OF DAY!"))
             self.bonusText.SetPackedFontColor(0xFF00FF00)
         else:
-            self.bonusText.SetText(T("COMPLETION_BONUS", "BONUS COMPLETAMENTO x1.5"))
+            self.bonusText.SetText(T("COMPLETION_BONUS", "COMPLETION BONUS x1.5"))
             self.bonusText.SetPackedFontColor(0xFFFFAA00)
         
         self.startTime = app.GetTime()
@@ -827,7 +827,7 @@ class EventSlotHoverArea(ui.Window):
             self.toolTip.ClearToolTip()
             
             # Titolo con nome evento
-            ename = self.eventData.get("name", "Evento")
+            ename = self.eventData.get("name", "Event")
             etype = self.eventData.get("type", "glory_rush")
             self.toolTip.SetTitle(ename)
             self.toolTip.AppendSpace(5)
@@ -971,7 +971,7 @@ class EventsScheduleWindow(ui.Window, DraggableMixin):
         self.noEventsText.SetParent(self)
         self.noEventsText.SetPosition(200, 180)
         self.noEventsText.SetHorizontalAlignCenter()
-        self.noEventsText.SetText(T("NO_EVENTS_TODAY", "Nessun evento programmato oggi"))
+        self.noEventsText.SetText(T("NO_EVENTS_TODAY", "No events scheduled today"))
         self.noEventsText.SetPackedFontColor(0xFF888888)
         self.noEventsText.Hide()
         
@@ -1085,7 +1085,7 @@ class EventsScheduleWindow(ui.Window, DraggableMixin):
         nameText = ui.TextLine()
         nameText.SetParent(self)
         nameText.SetPosition(22, yBase + 5)
-        nameText.SetText("Evento")
+        nameText.SetText("Event")
         nameText.SetPackedFontColor(0xFFFFFFFF)
         nameText.Show()
         slot["nameText"] = nameText
@@ -1176,7 +1176,7 @@ class EventsScheduleWindow(ui.Window, DraggableMixin):
         typeColor = typeColors.get(etype, 0xFFFF6600)
         
         slot["typeBar"].SetColor(typeColor)
-        slot["nameText"].SetText(event.get("name", "Evento")[:40])
+        slot["nameText"].SetText(event.get("name", "Event")[:40])
         slot["timeText"].SetText("%s - %s" % (event.get("start_time", "--:--"), event.get("end_time", "--:--")))
         slot["rewardText"].SetText("+%s" % event.get("reward", "0"))
         

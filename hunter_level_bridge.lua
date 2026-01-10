@@ -539,10 +539,10 @@ when chat."/hunter_request_trial_data" begin
                 if get_time() > lock_time then
                     game.set_event_flag("hq_gate_lock_"..vid, 0) -- Sblocca timeout difesa
                 elseif lock_pid == pid then
-                    syschat("|cffFFFF00[SISTEMA]|r Concentrati sulla difesa! Non distrarti!")
+                    syschat("|cffFFFF00[" .. hg_lib.get_text("SYSTEM", nil, "SYSTEM") .. "]|r " .. hg_lib.get_text("bridge_focus_defense", nil, "Focus on defense! Don't get distracted!"))
                     return
                 else
-                    syschat("|cffFF0000[SISTEMA]|r Un altro Hunter sta gia' sfidando questa frattura.")
+                    syschat("|cffFF0000[" .. hg_lib.get_text("SYSTEM", nil, "SYSTEM") .. "]|r " .. hg_lib.get_text("bridge_another_hunter", nil, "Another Hunter is already challenging this fracture."))
                     return
                 end
             end
@@ -558,7 +558,7 @@ when chat."/hunter_request_trial_data" begin
                 -- Controlla se la prenotazione e' scaduta
                 if get_time() - reserved_time > reservation_timeout then
                     -- Scaduta! Libera la frattura
-                    syschat("|cff00FF00[SISTEMA]|r La prenotazione precedente e' scaduta!")
+                    syschat("|cff00FF00[" .. hg_lib.get_text("SYSTEM", nil, "SYSTEM") .. "]|r " .. hg_lib.get_text("bridge_reservation_expired", nil, "Previous reservation has expired!"))
                     game.set_event_flag("hq_gate_reserved_" .. vid, 0)
                     game.set_event_flag("hq_gate_reserved_time_" .. vid, 0)
                     -- Pulisci anche le flag di touch del party precedente
@@ -645,7 +645,7 @@ when chat."/hunter_request_trial_data" begin
                     end
                 end
                 
-                syschat("|cff00FFFF[PARTY GATE]|r Membri pronti: " .. touched_count .. "/" .. total_members)
+                syschat("|cff00FFFF[PARTY GATE]|r " .. hg_lib.get_text("bridge_members_ready", nil, "Members ready: ") .. touched_count .. "/" .. total_members)
                 
                 -- Se NON tutti hanno toccato, aspetta
                 if touched_count < total_members then
@@ -656,21 +656,21 @@ when chat."/hunter_request_trial_data" begin
                     local remaining = touch_timeout - elapsed
                     if remaining < 0 then remaining = 0 end
                     
-                    syschat("|cffFFFF00[SISTEMA]|r In attesa degli altri membri... (" .. remaining .. "s)")
+                    syschat("|cffFFFF00[" .. hg_lib.get_text("SYSTEM", nil, "SYSTEM") .. "]|r " .. hg_lib.get_text("bridge_waiting_members", nil, "Waiting for other members... (") .. remaining .. "s)")
                     if table.getn(missing_names) > 0 then
                         local missing_str = table.concat(missing_names, ", ")
-                        syschat("|cffFFAA00[MANCANO]|r " .. missing_str)
+                        syschat("|cffFFAA00[" .. hg_lib.get_text("bridge_missing_label", nil, "MISSING") .. "]|r " .. missing_str)
                     end
                     
                     -- Notifica il party
-                    local party_msg = hg_lib.get_text("fracture_party_ready", {NAME = pc.get_name(), CURRENT = touched_count, TOTAL = total_members, REMAINING = remaining}, "[HUNTER] " .. pc.get_name() .. " e' pronto! (" .. touched_count .. "/" .. total_members .. ") - " .. remaining .. "s rimasti")
+                    local party_msg = hg_lib.get_text("fracture_party_ready", {NAME = pc.get_name(), CURRENT = touched_count, TOTAL = total_members, REMAINING = remaining}, "[HUNTER] " .. pc.get_name() .. " is ready! (" .. touched_count .. "/" .. total_members .. ") - " .. remaining .. "s left")
                     party.syschat(party_msg)
                     return
                 end
                 
                 -- TUTTI HANNO TOCCATO! Procedi con l'apertura
-                syschat("|cff00FF00[SISTEMA]|r Tutti i membri sono pronti! Apertura frattura...")
-                party.syschat("[HUNTER] " .. hg_lib.get_text("fracture_all_ready", nil, "Tutti pronti! La frattura si sta aprendo!"))
+                syschat("|cff00FF00[" .. hg_lib.get_text("SYSTEM", nil, "SYSTEM") .. "]|r " .. hg_lib.get_text("bridge_all_ready_opening", nil, "All members ready! Opening fracture..."))
+                party.syschat("[HUNTER] " .. hg_lib.get_text("fracture_all_ready", nil, "Everyone ready! The fracture is opening!"))
                 
                 -- Pulisci le flag di touch e prenotazione (la difesa prendera' il controllo)
                 game.set_event_flag("hq_gate_touch_time_" .. vid, 0)
@@ -778,31 +778,31 @@ when chat."/hunter_request_trial_data" begin
                 
                 -- Se req_points = 0 (GRATUITA) o player ha abbastanza Gloria
                 if freq == 0 or player_pts >= freq then
-                    say(hg_lib.get_text("classic_gate_worthy") or "Il tuo Rango Hunter e' sufficiente.")
-                    say(hg_lib.get_text("classic_gate_ask") or "Vuoi spezzare il sigillo ed entrare?")
+                    say(hg_lib.get_text("classic_gate_worthy", nil, "Your Hunter Rank is sufficient."))
+                    say(hg_lib.get_text("classic_gate_ask", nil, "Do you want to break the seal and enter?"))
                     say("")
-                    if select("Apri Gate", "Chiudi") == 1 then
+                    if select(hg_lib.get_text("bridge_open_gate", nil, "Open Gate"), hg_lib.get_text("UI_CLOSE", nil, "Close")) == 1 then
                         if game.get_event_flag("hq_gate_lock_"..vid) > 0 or game.get_event_flag("hq_gate_conq_"..vid) > 0 then
-                            say_title("Troppo Tardi!")
-                            say("Un altro Hunter e' stato piu' veloce.")
+                            say_title(hg_lib.get_text("bridge_too_late", nil, "Too Late!"))
+                            say(hg_lib.get_text("bridge_hunter_faster", nil, "Another Hunter was faster."))
                             return
                         end
                         hg_lib.open_gate(fname, frank, fcolor, pid)
                     end
                 else
-                    say(hg_lib.get_text("classic_gate_not_worthy") or "Non possiedi abbastanza Gloria.")
-                    say("Gloria Richiesta: " .. freq)
+                    say(hg_lib.get_text("classic_gate_not_worthy", nil, "You don't have enough Glory."))
+                    say(hg_lib.get_text("bridge_glory_required", nil, "Glory Required: ") .. freq)
                     say("")
-                    
+
                     if force_type == "POWER_RANK" then
                         -- Sistema Power Rank per fratture B/A/S/N
-                        say_reward("=== SISTEMA POWER RANK ===")
-                        say("Questa frattura richiede Power Rank!")
+                        say_reward("=== " .. hg_lib.get_text("bridge_power_rank_system", nil, "POWER RANK SYSTEM") .. " ===")
+                        say(hg_lib.get_text("bridge_fracture_requires_pr", nil, "This fracture requires Power Rank!"))
                         say("")
-                        say("Power Rank Party: " .. (total_power or 0) .. " / " .. (required_power or 0))
+                        say(hg_lib.get_text("bridge_party_power_rank", nil, "Party Power Rank: ") .. (total_power or 0) .. " / " .. (required_power or 0))
                         say("")
                         if members and table.getn(members) > 0 then
-                            say("Membri:")
+                            say(hg_lib.get_text("bridge_members", nil, "Members:"))
                             for _, m in ipairs(members) do
                                 say("  - " .. m.name .. " [" .. m.grade .. "-Rank] = " .. m.power .. " PR")
                             end
