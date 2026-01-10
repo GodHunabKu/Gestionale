@@ -463,7 +463,7 @@ class EventStatusWindow(ui.Window, DraggableMixin):
         self.Hide()
     
     def SetEvent(self, eventName, timeInfo=""):
-        if not eventName or eventName == "Nessuno" or eventName == "":
+        if not eventName or eventName == "None" or eventName == "":
             self.currentEvent = ""
             self.Hide()
             return
@@ -484,7 +484,7 @@ class EventStatusWindow(ui.Window, DraggableMixin):
         self.SetTop()
     
     def ShowEvent(self, eventName, duration=0, eventType="default", desc="", reward=""):
-        if not eventName or eventName == "Nessuno" or eventName == "":
+        if not eventName or eventName == "None" or eventName == "":
             self.currentEvent = ""
             self.Hide()
             return
@@ -689,14 +689,14 @@ class RivalTrackerWindow(ui.Window, DraggableMixin):
     def SetEventWindowRef(self, eventWnd):
         self.eventWndRef = eventWnd
         
-    def ShowRival(self, name, diff, label="Gloria", mode="VICINO"):
+    def ShowRival(self, name, diff, label="Glory", mode="NEAR"):
         if not HasSavedPosition("RivalTrackerWindow"):
             self.screenWidth = wndMgr.GetScreenWidth()
             self.SetPosition(self.screenWidth - 210, 80)
         
         self.nameText.SetText(name.replace("+", " "))
         
-        if mode == "SUPERATO":
+        if mode == "OVERTAKEN":
             self.text.SetText(T("UI_OVERTAKEN_BY", "YOU WERE OVERTAKEN!"))
             self.text.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
             overtakeMsg = T("UI_OVERTAKEN_MSG", "{NAME} overtook you by {DIFF} pts!").replace("{NAME}", name.replace("+", " ")).replace("{DIFF}", str(diff))

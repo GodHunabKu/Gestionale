@@ -810,35 +810,35 @@ when chat."/hunter_request_trial_data" begin
                         end
                         
                         if can_force then
-                            say_reward("Power Rank SUFFICIENTE!")
-                            if select("Forza Gate", "Chiudi") == 1 then
+                            say_reward(hg_lib.get_text("bridge_pr_sufficient", nil, "Power Rank SUFFICIENT!"))
+                            if select(hg_lib.get_text("bridge_force_gate", nil, "Force Gate"), hg_lib.get_text("UI_CLOSE", nil, "Close")) == 1 then
                                 if game.get_event_flag("hq_gate_lock_"..vid) > 0 or game.get_event_flag("hq_gate_conq_"..vid) > 0 then
-                                    say_title("Troppo Tardi!")
-                                    say("Un altro Hunter e' stato piu' veloce.")
+                                    say_title(hg_lib.get_text("bridge_too_late", nil, "Too Late!"))
+                                    say(hg_lib.get_text("bridge_another_faster", nil, "Another Hunter was faster."))
                                     return
                                 end
                                 hg_lib.open_gate(fname, frank, fcolor, pid)
                             end
                         else
-                            say("|cffFF0000Power Rank INSUFFICIENTE!|r")
-                            say("Recluta Hunter piu' forti nel party.")
-                            select("Chiudi")
+                            say("|cffFF0000" .. hg_lib.get_text("bridge_pr_insufficient", nil, "Power Rank INSUFFICIENT!") .. "|r")
+                            say(hg_lib.get_text("bridge_recruit_stronger", nil, "Recruit stronger Hunters to your party."))
+                            select(hg_lib.get_text("UI_CLOSE", nil, "Close"))
                         end
                     else
                         -- Sistema classico Party 4+ per fratture E/D/C
                         if can_force then
-                            say_reward("Il tuo Party (4+) puo' forzarlo!")
-                            if select("Forza Gate", "Chiudi") == 1 then
+                            say_reward(hg_lib.get_text("bridge_party_can_force", nil, "Your Party (4+) can force it!"))
+                            if select(hg_lib.get_text("bridge_force_gate", nil, "Force Gate"), hg_lib.get_text("UI_CLOSE", nil, "Close")) == 1 then
                                 if game.get_event_flag("hq_gate_lock_"..vid) > 0 or game.get_event_flag("hq_gate_conq_"..vid) > 0 then
-                                    say_title("Troppo Tardi!")
-                                    say("Un altro Hunter e' stato piu' veloce.")
+                                    say_title(hg_lib.get_text("bridge_too_late", nil, "Too Late!"))
+                                    say(hg_lib.get_text("bridge_another_faster", nil, "Another Hunter was faster."))
                                     return
                                 end
                                 hg_lib.open_gate(fname, frank, fcolor, pid)
                             end
                         else
-                            say("Servono almeno 4 membri nel party.")
-                            select("Chiudi")
+                            say(hg_lib.get_text("bridge_need_4_members", nil, "At least 4 party members required."))
+                            select(hg_lib.get_text("UI_CLOSE", nil, "Close"))
                         end
                     end
                 end
