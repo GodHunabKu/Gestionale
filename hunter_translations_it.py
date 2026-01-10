@@ -725,4 +725,258 @@ TRANSLATIONS = {
     "CLASSIC_GATE_WORTHY": "Il tuo Rango Hunter e' sufficiente.",
     "CLASSIC_GATE_ASK": "Vuoi spezzare il sigillo ed entrare?",
     "CLASSIC_GATE_NOT_WORTHY": "Non possiedi abbastanza Gloria.",
+
+    # ========================================================================
+    # WINDOWS UI - Stringhe per finestre
+    # ========================================================================
+    "UI_CHOICE_REQUIRED": "Una scelta e' richiesta.",
+    "UI_EVENT_IN_PROGRESS": "EVENTO IN CORSO",
+    "UI_TIME_LEFT": "Tempo: {M}:{S}",
+    "UI_RIVAL_TRACKER": "RIVALE DI CLASSIFICA",
+    "UI_NEW_TARGET_ACTIVE": "Nuovo bersaglio attivo.",
+    "UI_OVERTAKEN_BY": "SEI STATO SUPERATO!",
+    "UI_OVERTAKEN_MSG": "{NAME} ti ha superato di {DIFF} pt!",
+    "UI_RIVAL_GAP": "Distacco {LABEL}: {DIFF} pt",
+    "UI_YOU_OVERTOOK": "Hai superato {NAME}!",
+    "UI_NEW_POSITION": "Nuova Posizione: #{POS}",
+    "UI_DESTINY_NOW": "IL DESTINO SI DECIDE ORA!",
+    "UI_MISSION_COMPLETE": "MISSION COMPLETE",
+    "UI_MISSION_FAILED": "MISSION FAILED",
+
+    # Event Types
+    "EVENT_TYPE_DEFAULT": "Evento Standard",
+    "EVENT_TYPE_BOSS_HUNT": "Caccia ai Boss",
+    "EVENT_TYPE_FRACTURE": "Frattura",
+    "EVENT_TYPE_GLORY_RUSH": "Gloria Rush",
+    "EVENT_TYPE_TIME_TRIAL": "Sfida a Tempo",
+    "EVENT_TYPE_CUSTOM": "Evento Speciale",
+    "EVENT_TYPE_LABEL": "Tipo: {TYPE}",
+    "EVENT_REWARD_LABEL": "Reward: {REWARD}",
+
+    # ========================================================================
+    # EFFECTS - Stringhe per effetti a schermo
+    # ========================================================================
+    "EFFECT_ALERT": "! ! !  A L E R T  ! ! !",
+    "EFFECT_BOSS_DETECTED": "B O S S   D E T E C T E D",
+    "EFFECT_SYSTEM": "[ S Y S T E M ]",
+    "EFFECT_INITIALIZING": "I N I T I A L I Z I N G . . .",
+    "EFFECT_LOADING": "Hunter Terminal is loading...",
+    "EFFECT_SYSTEM_READY": "S Y S T E M   R E A D Y",
+    "EFFECT_SYSTEM_LABEL": "[SYSTEM]",
+    "EFFECT_HUNTER_NETWORK": "HUNTER NETWORK",
+    "EFFECT_STATUS_AWAKENING": "STATUS: AWAKENING",
+    "EFFECT_LV_CONFIRMED": "LV.{LV} CONFIRMED",
+    "EFFECT_SYSTEM_NOTIFICATION": "[SYSTEM NOTIFICATION]",
+    "EFFECT_RANK_UP": "R A N K   U P !",
+    "EFFECT_TITLE_EARNED": "Titolo: {TITLE}",
+
+    # ========================================================================
+    # RANK NAMES - Nomi ranghi (per hunter_core.py)
+    # ========================================================================
+    "RANK_NAME_E": "Iniziato",
+    "RANK_NAME_D": "Apprendista",
+    "RANK_NAME_C": "Cacciatore",
+    "RANK_NAME_B": "Veterano",
+    "RANK_NAME_A": "Elite",
+    "RANK_NAME_S": "Campione",
+    "RANK_NAME_N": "Nazionale",
+
+    # ========================================================================
+    # RANK TITLES - Titoli ranghi
+    # ========================================================================
+    "RANK_TITLE_E": "Il Risvegliato",
+    "RANK_TITLE_D": "Il Sopravvissuto",
+    "RANK_TITLE_C": "Il Cacciatore",
+    "RANK_TITLE_B": "L'Elite",
+    "RANK_TITLE_A": "Il Predatore",
+    "RANK_TITLE_S": "La Leggenda",
+    "RANK_TITLE_N": "Il Monarca delle Ombre",
+
+    # ========================================================================
+    # RANK QUOTES - Citazioni ranghi
+    # ========================================================================
+    "RANK_QUOTE_E": '"Ogni viaggio inizia con un passo."',
+    "RANK_QUOTE_D": '"Hai superato i piu deboli."',
+    "RANK_QUOTE_C": '"Il tuo nome inizia a farsi conoscere."',
+    "RANK_QUOTE_B": '"I Gate tremano al tuo arrivo."',
+    "RANK_QUOTE_A": '"Solo i folli osano sfidarti."',
+    "RANK_QUOTE_S": '"Sei tra i piu forti dell\'umanita\'."',
+    "RANK_QUOTE_N": '"IO SONO IL MONARCA."',
+
+    # ========================================================================
+    # RANK THEME LABELS - Etichette temi ranghi
+    # ========================================================================
+    "RANK_THEME_E_TITLE": "Risvegliato",
+    "RANK_THEME_E_SUBTITLE": "Il Piu' Debole",
+    "RANK_THEME_D_TITLE": "Apprendista",
+    "RANK_THEME_D_SUBTITLE": "Il Sopravvissuto",
+    "RANK_THEME_C_TITLE": "Cacciatore",
+    "RANK_THEME_C_SUBTITLE": "Il Riconosciuto",
+    "RANK_THEME_B_TITLE": "Veterano",
+    "RANK_THEME_B_SUBTITLE": "L'Esperto",
+    "RANK_THEME_A_TITLE": "Maestro",
+    "RANK_THEME_A_SUBTITLE": "L'Elite",
+    "RANK_THEME_S_TITLE": "Leggenda",
+    "RANK_THEME_S_SUBTITLE": "Il Prescelto",
+    "RANK_THEME_N_TITLE": "Monarca Nazionale",
+    "RANK_THEME_N_SUBTITLE": "Re delle Ombre",
+
+    # ========================================================================
+    # AWAKENING CONFIG - Configurazioni risveglio
+    # ========================================================================
+    "AWAKENING_5_NAME": "RISVEGLIO",
+    "AWAKENING_5_SUBTITLE": "Il Sistema ti ha scelto",
+    "AWAKENING_5_QUOTE": '"Benvenuto, Cacciatore."',
+    "AWAKENING_5_TIP": "Premi [N] per scegliere le tue abilita'",
+
+    "AWAKENING_10_NAME": "PRIMA EVOLUZIONE",
+    "AWAKENING_10_SUBTITLE": "Il tuo potere si manifesta",
+    "AWAKENING_10_QUOTE": '"Stai diventando piu' forte."',
+
+    "AWAKENING_15_NAME": "ADATTAMENTO",
+    "AWAKENING_15_SUBTITLE": "Il corpo si adatta al potere",
+    "AWAKENING_15_QUOTE": '"Il dolore forgia la forza."',
+
+    "AWAKENING_20_NAME": "RISONANZA",
+    "AWAKENING_20_SUBTITLE": "L'energia fluisce liberamente",
+    "AWAKENING_20_QUOTE": '"Senti il potere dentro di te?"',
+
+    "AWAKENING_25_NAME": "MANIFESTAZIONE",
+    "AWAKENING_25_SUBTITLE": "Il tuo potere prende forma",
+    "AWAKENING_25_QUOTE": '"Non sei piu' un novizio."',
+
+    "AWAKENING_30_NAME": "SISTEMA ATTIVATO",
+    "AWAKENING_30_SUBTITLE": "Accesso al Terminale Hunter",
+    "AWAKENING_30_QUOTE": '"Il Sistema si espande per te."',
+    "AWAKENING_30_TIP": "Il [TERMINALE] e' ora disponibile",
+
+    "AWAKENING_40_NAME": "CONSOLIDAMENTO",
+    "AWAKENING_40_SUBTITLE": "Il potere si stabilizza",
+    "AWAKENING_40_QUOTE": '"La crescita non si ferma mai."',
+
+    "AWAKENING_50_NAME": "META' DEL CAMMINO",
+    "AWAKENING_50_SUBTITLE": "Hai percorso meta' della via",
+    "AWAKENING_50_QUOTE": '"Ma il vero viaggio inizia ora."',
+
+    "AWAKENING_60_NAME": "MATURAZIONE",
+    "AWAKENING_60_SUBTITLE": "Il tuo potere matura",
+    "AWAKENING_60_QUOTE": '"I deboli iniziano a temerti."',
+
+    "AWAKENING_70_NAME": "RISVEGLIO AVANZATO",
+    "AWAKENING_70_SUBTITLE": "Oltre i limiti ordinari",
+    "AWAKENING_70_QUOTE": '"Vedi cose che altri non possono vedere."',
+
+    "AWAKENING_80_NAME": "MAESTRIA",
+    "AWAKENING_80_SUBTITLE": "Il controllo e' assoluto",
+    "AWAKENING_80_QUOTE": '"Il potere e' nulla senza controllo."',
+
+    "AWAKENING_90_NAME": "SOGLIA LEGGENDARIA",
+    "AWAKENING_90_SUBTITLE": "Pochi arrivano fin qui",
+    "AWAKENING_90_QUOTE": '"Sei degno del tuo titolo."',
+
+    "AWAKENING_100_NAME": "CENTENARIO",
+    "AWAKENING_100_SUBTITLE": "Un secolo di potere",
+    "AWAKENING_100_QUOTE": '"ARISE."',
+
+    "AWAKENING_110_NAME": "TRASCENDENZA",
+    "AWAKENING_110_SUBTITLE": "Oltre ogni limite conosciuto",
+    "AWAKENING_110_QUOTE": '"I limiti esistono solo per essere infranti."',
+
+    "AWAKENING_120_NAME": "ASCENSIONE",
+    "AWAKENING_120_SUBTITLE": "Non sei piu' umano",
+    "AWAKENING_120_QUOTE": '"Io solo... avanzo."',
+
+    "AWAKENING_130_NAME": "MONARCA",
+    "AWAKENING_130_SUBTITLE": "Il Re delle Ombre",
+    "AWAKENING_130_QUOTE": '"I ALONE LEVEL UP."',
+
+    "AWAKENING_DEFAULT_NAME": "LEVEL UP",
+    "AWAKENING_DEFAULT_SUBTITLE": "Continua a crescere",
+    "AWAKENING_DEFAULT_QUOTE": '"Il potere non ha limiti."',
+
+    # ========================================================================
+    # MISSIONS WINDOW - Stringhe finestra missioni
+    # ========================================================================
+    "MISSIONS_BONUS_DESC": "Completa tutte: Gloria x1.5 fino al reset!",
+    "MISSIONS_BONUS_ACTIVE": "ATTIVO! Gloria x1.5 fino alle 05:00!",
+    "MISSIONS_MALUS_DESC": "Non completare: -Gloria (vedi penalita')",
+    "MISSIONS_RESET_INFO": "Reset giornaliero alle 05:00",
+    "MISSIONS_BONUS_COMPLETE_X15": ">>> BONUS GLORIA x1.5 ATTIVO! <<<",
+    "MISSIONS_FRACTURE_BONUS_50": "BONUS FRATTURE +50% PER IL RESTO DEL GIORNO!",
+    "MISSIONS_COMPLETION_BONUS_X15": "BONUS COMPLETAMENTO x1.5",
+
+    # ========================================================================
+    # EVENT SLOT - Descrizioni eventi
+    # ========================================================================
+    "EVENT_DESC_GLORY_RUSH_1": "Gloria x2 per ogni kill!",
+    "EVENT_DESC_GLORY_RUSH_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_FIRST_RIFT_1": "Primo a conquistare una frattura VINCE!",
+    "EVENT_DESC_FIRST_RIFT_2": "Non c'e' sorteggio - vince il piu' veloce!",
+    "EVENT_DESC_FIRST_BOSS_1": "Primo a uccidere un boss VINCE!",
+    "EVENT_DESC_FIRST_BOSS_2": "Non c'e' sorteggio - vince il piu' veloce!",
+    "EVENT_DESC_BOSS_MASSACRE_1": "Gloria da boss +50%!",
+    "EVENT_DESC_BOSS_MASSACRE_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_RIFT_HUNT_1": "Spawn fratture aumentato +50%!",
+    "EVENT_DESC_RIFT_HUNT_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_SUPER_METIN_1": "Gloria da metin +50%!",
+    "EVENT_DESC_SUPER_METIN_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_METIN_FRENZY_1": "Bonus metin aumentato!",
+    "EVENT_DESC_METIN_FRENZY_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_TREASURE_RACE_1": "Caccia ai tesori speciali!",
+    "EVENT_DESC_TREASURE_RACE_2": "Chi trova piu' tesori vince.",
+    "EVENT_DESC_DOUBLE_SPAWN_1": "Spawn Elite x2!",
+    "EVENT_DESC_DOUBLE_SPAWN_2": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_PVP_TOURNAMENT_1": "Torneo PvP!",
+    "EVENT_DESC_PVP_TOURNAMENT_2": "Partecipa e combatti!",
+    "EVENT_DESC_SURVIVAL_1": "Sopravvivenza!",
+    "EVENT_DESC_SURVIVAL_2": "Resisti piu' a lungo possibile.",
+    "EVENT_DESC_DEFAULT_1": "Evento speciale!",
+    "EVENT_DESC_DEFAULT_2": "Partecipa per vincere!",
+
+    # Event slot labels
+    "EVENT_SLOT_TYPE": "Tipo: {TYPE}",
+    "EVENT_SLOT_TIME": "Orario: {START} - {END}",
+    "EVENT_SLOT_SCHEDULE": "Orario: {START} - {END}",
+    "EVENT_SLOT_MIN_RANK": "Rank minimo: {RANK}",
+    "EVENT_SLOT_PRIZES": "[PREMI]",
+    "EVENT_SLOT_REWARDS": "[PREMI]",
+    "EVENT_SLOT_PARTICIPATION": "Partecipazione: {REWARD}",
+    "EVENT_SLOT_WINNER": "Vincitore: +{GLORY} Gloria!",
+    "EVENT_SLOT_JOINED": "[SEI ISCRITTO!]",
+    "EVENT_SLOT_ACTIVE": "[EVENTO IN CORSO]",
+    "EVENT_SLOT_IN_PROGRESS": "[EVENTO IN CORSO]",
+    "EVENT_SLOT_PLAY_TO_JOIN": "Gioca per iscriverti!",
+    "EVENT_SLOT_ENDED": "[TERMINATO]",
+    "EVENT_SLOT_NOT_STARTED": "[NON ANCORA INIZIATO]",
+    "EVENT_STATUS_JOINED": "[ISCRITTO]",
+    "EVENT_STATUS_ACTIVE": "[IN CORSO]",
+    "EVENT_STATUS_ENDED": "[TERMINATO]",
+    "EVENTS_STATUS_JOINED": "[ISCRITTO]",
+    "EVENTS_STATUS_ACTIVE": "[IN CORSO]",
+    "EVENTS_STATUS_ENDED": "[TERMINATO]",
+
+    # Event descriptions (for missions popup)
+    "EVENT_DESC_GLORY_RUSH": "Gloria x2 per ogni kill!",
+    "EVENT_DESC_DRAW": "Sorteggio finale tra tutti i partecipanti.",
+    "EVENT_DESC_FIRST_RIFT": "Primo a conquistare una frattura VINCE!",
+    "EVENT_DESC_NO_DRAW": "Non c'e' sorteggio - vince il piu' veloce!",
+    "EVENT_DESC_FIRST_BOSS": "Primo a uccidere un boss VINCE!",
+    "EVENT_DESC_BOSS_MASSACRE": "Gloria da boss +50%!",
+    "EVENT_DESC_RIFT_HUNT": "Spawn fratture aumentato +50%!",
+    "EVENT_DESC_SUPER_METIN": "Gloria da metin +50%!",
+    "EVENT_DESC_METIN_FRENZY": "Bonus metin aumentato!",
+    "EVENT_DESC_TREASURE_RACE": "Caccia ai tesori speciali!",
+    "EVENT_DESC_TREASURE_WIN": "Chi trova piu' tesori vince.",
+    "EVENT_DESC_DOUBLE_SPAWN": "Spawn Elite x2!",
+    "EVENT_DESC_PVP_TOURNAMENT": "Torneo PvP!",
+    "EVENT_DESC_PVP_JOIN": "Partecipa e combatti!",
+    "EVENT_DESC_SURVIVAL": "Sopravvivenza!",
+    "EVENT_DESC_SURVIVAL_TIP": "Resisti piu' a lungo possibile.",
+    "EVENT_DESC_DEFAULT": "Evento speciale!",
+    "EVENT_DESC_DEFAULT_TIP": "Partecipa per vincere!",
+
+    # Events schedule window
+    "EVENTS_AUTO_REGISTRATION": "ISCRIZIONE AUTOMATICA",
+    "EVENTS_AUTO_REG_LINE1": "Conquista fratture, uccidi boss o metinpietra",
+    "EVENTS_AUTO_REG_LINE2": "per iscriverti automaticamente e partecipare!",
 }

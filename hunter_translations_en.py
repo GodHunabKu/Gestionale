@@ -681,4 +681,258 @@ TRANSLATIONS = {
     "CLASSIC_GATE_WORTHY": "Your Hunter Rank is sufficient.",
     "CLASSIC_GATE_ASK": "Do you want to break the seal and enter?",
     "CLASSIC_GATE_NOT_WORTHY": "You don't have enough Glory.",
+
+    # ========================================================================
+    # WINDOWS UI - Window strings
+    # ========================================================================
+    "UI_CHOICE_REQUIRED": "A choice is required.",
+    "UI_EVENT_IN_PROGRESS": "EVENT IN PROGRESS",
+    "UI_TIME_LEFT": "Time: {M}:{S}",
+    "UI_RIVAL_TRACKER": "RANKING RIVAL",
+    "UI_NEW_TARGET_ACTIVE": "New target active.",
+    "UI_OVERTAKEN_BY": "YOU WERE OVERTAKEN!",
+    "UI_OVERTAKEN_MSG": "{NAME} overtook you by {DIFF} pts!",
+    "UI_RIVAL_GAP": "Gap {LABEL}: {DIFF} pts",
+    "UI_YOU_OVERTOOK": "You overtook {NAME}!",
+    "UI_NEW_POSITION": "New Position: #{POS}",
+    "UI_DESTINY_NOW": "DESTINY IS DECIDED NOW!",
+    "UI_MISSION_COMPLETE": "MISSION COMPLETE",
+    "UI_MISSION_FAILED": "MISSION FAILED",
+
+    # Event Types
+    "EVENT_TYPE_DEFAULT": "Standard Event",
+    "EVENT_TYPE_BOSS_HUNT": "Boss Hunt",
+    "EVENT_TYPE_FRACTURE": "Fracture",
+    "EVENT_TYPE_GLORY_RUSH": "Glory Rush",
+    "EVENT_TYPE_TIME_TRIAL": "Time Trial",
+    "EVENT_TYPE_CUSTOM": "Special Event",
+    "EVENT_TYPE_LABEL": "Type: {TYPE}",
+    "EVENT_REWARD_LABEL": "Reward: {REWARD}",
+
+    # ========================================================================
+    # EFFECTS - Fullscreen effect strings
+    # ========================================================================
+    "EFFECT_ALERT": "! ! !  A L E R T  ! ! !",
+    "EFFECT_BOSS_DETECTED": "B O S S   D E T E C T E D",
+    "EFFECT_SYSTEM": "[ S Y S T E M ]",
+    "EFFECT_INITIALIZING": "I N I T I A L I Z I N G . . .",
+    "EFFECT_LOADING": "Hunter Terminal is loading...",
+    "EFFECT_SYSTEM_READY": "S Y S T E M   R E A D Y",
+    "EFFECT_SYSTEM_LABEL": "[SYSTEM]",
+    "EFFECT_HUNTER_NETWORK": "HUNTER NETWORK",
+    "EFFECT_STATUS_AWAKENING": "STATUS: AWAKENING",
+    "EFFECT_LV_CONFIRMED": "LV.{LV} CONFIRMED",
+    "EFFECT_SYSTEM_NOTIFICATION": "[SYSTEM NOTIFICATION]",
+    "EFFECT_RANK_UP": "R A N K   U P !",
+    "EFFECT_TITLE_EARNED": "Title: {TITLE}",
+
+    # ========================================================================
+    # RANK NAMES - Rank names (for hunter_core.py)
+    # ========================================================================
+    "RANK_NAME_E": "Initiate",
+    "RANK_NAME_D": "Apprentice",
+    "RANK_NAME_C": "Hunter",
+    "RANK_NAME_B": "Veteran",
+    "RANK_NAME_A": "Elite",
+    "RANK_NAME_S": "Champion",
+    "RANK_NAME_N": "National",
+
+    # ========================================================================
+    # RANK TITLES - Rank titles
+    # ========================================================================
+    "RANK_TITLE_E": "The Awakened",
+    "RANK_TITLE_D": "The Survivor",
+    "RANK_TITLE_C": "The Hunter",
+    "RANK_TITLE_B": "The Elite",
+    "RANK_TITLE_A": "The Predator",
+    "RANK_TITLE_S": "The Legend",
+    "RANK_TITLE_N": "The Shadow Monarch",
+
+    # ========================================================================
+    # RANK QUOTES - Rank quotes
+    # ========================================================================
+    "RANK_QUOTE_E": '"Every journey starts with a step."',
+    "RANK_QUOTE_D": '"You have surpassed the weakest."',
+    "RANK_QUOTE_C": '"Your name is starting to be known."',
+    "RANK_QUOTE_B": '"Gates tremble at your arrival."',
+    "RANK_QUOTE_A": '"Only fools dare to challenge you."',
+    "RANK_QUOTE_S": '"You are among the strongest of humanity."',
+    "RANK_QUOTE_N": '"I AM THE MONARCH."',
+
+    # ========================================================================
+    # RANK THEME LABELS - Rank theme labels
+    # ========================================================================
+    "RANK_THEME_E_TITLE": "Awakened",
+    "RANK_THEME_E_SUBTITLE": "The Weakest",
+    "RANK_THEME_D_TITLE": "Apprentice",
+    "RANK_THEME_D_SUBTITLE": "The Survivor",
+    "RANK_THEME_C_TITLE": "Hunter",
+    "RANK_THEME_C_SUBTITLE": "The Recognized",
+    "RANK_THEME_B_TITLE": "Veteran",
+    "RANK_THEME_B_SUBTITLE": "The Expert",
+    "RANK_THEME_A_TITLE": "Master",
+    "RANK_THEME_A_SUBTITLE": "The Elite",
+    "RANK_THEME_S_TITLE": "Legend",
+    "RANK_THEME_S_SUBTITLE": "The Chosen",
+    "RANK_THEME_N_TITLE": "National Monarch",
+    "RANK_THEME_N_SUBTITLE": "Shadow King",
+
+    # ========================================================================
+    # AWAKENING CONFIG - Awakening configurations
+    # ========================================================================
+    "AWAKENING_5_NAME": "AWAKENING",
+    "AWAKENING_5_SUBTITLE": "The System has chosen you",
+    "AWAKENING_5_QUOTE": '"Welcome, Hunter."',
+    "AWAKENING_5_TIP": "Press [N] to choose your abilities",
+
+    "AWAKENING_10_NAME": "FIRST EVOLUTION",
+    "AWAKENING_10_SUBTITLE": "Your power manifests",
+    "AWAKENING_10_QUOTE": '"You are getting stronger."',
+
+    "AWAKENING_15_NAME": "ADAPTATION",
+    "AWAKENING_15_SUBTITLE": "The body adapts to power",
+    "AWAKENING_15_QUOTE": '"Pain forges strength."',
+
+    "AWAKENING_20_NAME": "RESONANCE",
+    "AWAKENING_20_SUBTITLE": "Energy flows freely",
+    "AWAKENING_20_QUOTE": '"Can you feel the power within?"',
+
+    "AWAKENING_25_NAME": "MANIFESTATION",
+    "AWAKENING_25_SUBTITLE": "Your power takes form",
+    "AWAKENING_25_QUOTE": '"You are no longer a novice."',
+
+    "AWAKENING_30_NAME": "SYSTEM ACTIVATED",
+    "AWAKENING_30_SUBTITLE": "Access to Hunter Terminal",
+    "AWAKENING_30_QUOTE": '"The System expands for you."',
+    "AWAKENING_30_TIP": "The [TERMINAL] is now available",
+
+    "AWAKENING_40_NAME": "CONSOLIDATION",
+    "AWAKENING_40_SUBTITLE": "Power stabilizes",
+    "AWAKENING_40_QUOTE": '"Growth never stops."',
+
+    "AWAKENING_50_NAME": "HALFWAY THERE",
+    "AWAKENING_50_SUBTITLE": "You have walked half the path",
+    "AWAKENING_50_QUOTE": '"But the real journey starts now."',
+
+    "AWAKENING_60_NAME": "MATURATION",
+    "AWAKENING_60_SUBTITLE": "Your power matures",
+    "AWAKENING_60_QUOTE": '"The weak start to fear you."',
+
+    "AWAKENING_70_NAME": "ADVANCED AWAKENING",
+    "AWAKENING_70_SUBTITLE": "Beyond ordinary limits",
+    "AWAKENING_70_QUOTE": '"You see things others cannot."',
+
+    "AWAKENING_80_NAME": "MASTERY",
+    "AWAKENING_80_SUBTITLE": "Control is absolute",
+    "AWAKENING_80_QUOTE": '"Power is nothing without control."',
+
+    "AWAKENING_90_NAME": "LEGENDARY THRESHOLD",
+    "AWAKENING_90_SUBTITLE": "Few arrive here",
+    "AWAKENING_90_QUOTE": '"You are worthy of your title."',
+
+    "AWAKENING_100_NAME": "CENTENNIAL",
+    "AWAKENING_100_SUBTITLE": "A century of power",
+    "AWAKENING_100_QUOTE": '"ARISE."',
+
+    "AWAKENING_110_NAME": "TRANSCENDENCE",
+    "AWAKENING_110_SUBTITLE": "Beyond all known limits",
+    "AWAKENING_110_QUOTE": '"Limits exist only to be broken."',
+
+    "AWAKENING_120_NAME": "ASCENSION",
+    "AWAKENING_120_SUBTITLE": "You are no longer human",
+    "AWAKENING_120_QUOTE": '"I alone... advance."',
+
+    "AWAKENING_130_NAME": "MONARCH",
+    "AWAKENING_130_SUBTITLE": "The Shadow King",
+    "AWAKENING_130_QUOTE": '"I ALONE LEVEL UP."',
+
+    "AWAKENING_DEFAULT_NAME": "LEVEL UP",
+    "AWAKENING_DEFAULT_SUBTITLE": "Keep growing",
+    "AWAKENING_DEFAULT_QUOTE": '"Power has no limits."',
+
+    # ========================================================================
+    # MISSIONS WINDOW - Mission window strings
+    # ========================================================================
+    "MISSIONS_BONUS_DESC": "Complete all: Glory x1.5 until reset!",
+    "MISSIONS_BONUS_ACTIVE": "ACTIVE! Glory x1.5 until 05:00!",
+    "MISSIONS_MALUS_DESC": "Fail to complete: -Glory (see penalty)",
+    "MISSIONS_RESET_INFO": "Daily reset at 05:00",
+    "MISSIONS_BONUS_COMPLETE_X15": ">>> GLORY BONUS x1.5 ACTIVE! <<<",
+    "MISSIONS_FRACTURE_BONUS_50": "FRACTURE BONUS +50% FOR REST OF THE DAY!",
+    "MISSIONS_COMPLETION_BONUS_X15": "COMPLETION BONUS x1.5",
+
+    # ========================================================================
+    # EVENT SLOT - Event descriptions
+    # ========================================================================
+    "EVENT_DESC_GLORY_RUSH_1": "Glory x2 for every kill!",
+    "EVENT_DESC_GLORY_RUSH_2": "Final lottery among all participants.",
+    "EVENT_DESC_FIRST_RIFT_1": "First to conquer a fracture WINS!",
+    "EVENT_DESC_FIRST_RIFT_2": "No lottery - fastest wins!",
+    "EVENT_DESC_FIRST_BOSS_1": "First to kill a boss WINS!",
+    "EVENT_DESC_FIRST_BOSS_2": "No lottery - fastest wins!",
+    "EVENT_DESC_BOSS_MASSACRE_1": "Boss Glory +50%!",
+    "EVENT_DESC_BOSS_MASSACRE_2": "Final lottery among all participants.",
+    "EVENT_DESC_RIFT_HUNT_1": "Fracture spawn increased +50%!",
+    "EVENT_DESC_RIFT_HUNT_2": "Final lottery among all participants.",
+    "EVENT_DESC_SUPER_METIN_1": "Metin Glory +50%!",
+    "EVENT_DESC_SUPER_METIN_2": "Final lottery among all participants.",
+    "EVENT_DESC_METIN_FRENZY_1": "Metin bonus increased!",
+    "EVENT_DESC_METIN_FRENZY_2": "Final lottery among all participants.",
+    "EVENT_DESC_TREASURE_RACE_1": "Special treasure hunt!",
+    "EVENT_DESC_TREASURE_RACE_2": "Most treasures found wins.",
+    "EVENT_DESC_DOUBLE_SPAWN_1": "Elite Spawn x2!",
+    "EVENT_DESC_DOUBLE_SPAWN_2": "Final lottery among all participants.",
+    "EVENT_DESC_PVP_TOURNAMENT_1": "PvP Tournament!",
+    "EVENT_DESC_PVP_TOURNAMENT_2": "Participate and fight!",
+    "EVENT_DESC_SURVIVAL_1": "Survival!",
+    "EVENT_DESC_SURVIVAL_2": "Survive as long as possible.",
+    "EVENT_DESC_DEFAULT_1": "Special event!",
+    "EVENT_DESC_DEFAULT_2": "Participate to win!",
+
+    # Event slot labels
+    "EVENT_SLOT_TYPE": "Type: {TYPE}",
+    "EVENT_SLOT_TIME": "Time: {START} - {END}",
+    "EVENT_SLOT_SCHEDULE": "Schedule: {START} - {END}",
+    "EVENT_SLOT_MIN_RANK": "Min rank: {RANK}",
+    "EVENT_SLOT_PRIZES": "[PRIZES]",
+    "EVENT_SLOT_REWARDS": "[REWARDS]",
+    "EVENT_SLOT_PARTICIPATION": "Participation: {REWARD}",
+    "EVENT_SLOT_WINNER": "Winner: +{GLORY} Glory!",
+    "EVENT_SLOT_JOINED": "[JOINED!]",
+    "EVENT_SLOT_ACTIVE": "[EVENT IN PROGRESS]",
+    "EVENT_SLOT_IN_PROGRESS": "[IN PROGRESS]",
+    "EVENT_SLOT_PLAY_TO_JOIN": "Play to join!",
+    "EVENT_SLOT_ENDED": "[ENDED]",
+    "EVENT_SLOT_NOT_STARTED": "[NOT STARTED YET]",
+    "EVENT_STATUS_JOINED": "[JOINED]",
+    "EVENT_STATUS_ACTIVE": "[IN PROGRESS]",
+    "EVENT_STATUS_ENDED": "[ENDED]",
+    "EVENTS_STATUS_JOINED": "[JOINED]",
+    "EVENTS_STATUS_ACTIVE": "[ACTIVE]",
+    "EVENTS_STATUS_ENDED": "[ENDED]",
+
+    # Event descriptions (for missions popup)
+    "EVENT_DESC_GLORY_RUSH": "Glory x2 for every kill!",
+    "EVENT_DESC_DRAW": "Final draw among all participants.",
+    "EVENT_DESC_FIRST_RIFT": "First to conquer a rift WINS!",
+    "EVENT_DESC_NO_DRAW": "No draw - fastest wins!",
+    "EVENT_DESC_FIRST_BOSS": "First to kill a boss WINS!",
+    "EVENT_DESC_BOSS_MASSACRE": "Glory from bosses +50%!",
+    "EVENT_DESC_RIFT_HUNT": "Rift spawn increased +50%!",
+    "EVENT_DESC_SUPER_METIN": "Glory from metin +50%!",
+    "EVENT_DESC_METIN_FRENZY": "Metin bonus increased!",
+    "EVENT_DESC_TREASURE_RACE": "Special treasure hunt!",
+    "EVENT_DESC_TREASURE_WIN": "Who finds more treasures wins.",
+    "EVENT_DESC_DOUBLE_SPAWN": "Elite Spawn x2!",
+    "EVENT_DESC_PVP_TOURNAMENT": "PvP Tournament!",
+    "EVENT_DESC_PVP_JOIN": "Join and fight!",
+    "EVENT_DESC_SURVIVAL": "Survival!",
+    "EVENT_DESC_SURVIVAL_TIP": "Survive as long as possible.",
+    "EVENT_DESC_DEFAULT": "Special event!",
+    "EVENT_DESC_DEFAULT_TIP": "Participate to win!",
+
+    # Events schedule window
+    "EVENTS_AUTO_REGISTRATION": "AUTO REGISTRATION",
+    "EVENTS_AUTO_REG_LINE1": "Conquer fractures, kill bosses or metinstones",
+    "EVENTS_AUTO_REG_LINE2": "to auto-register and participate!",
 }

@@ -9,6 +9,12 @@ import wndMgr
 import app
 import math
 
+try:
+    from hunter_translations import T
+except:
+    def T(key, default=""):
+        return default
+
 from hunter_core import (
     AWAKENING_CONFIG, RANK_COLORS, RANK_NAMES, RANK_TITLES, RANK_QUOTES,
     COLOR_SCHEMES, GetAwakeningConfig, IsAwakeningLevel
@@ -100,7 +106,7 @@ class BossAlertWindow(ui.Window):
         self.alertText.SetParent(self)
         self.alertText.SetPosition(self.screenWidth // 2, self.barY + 25)
         self.alertText.SetHorizontalAlignCenter()
-        self.alertText.SetText("! ! !  A L E R T  ! ! !")
+        self.alertText.SetText(T("EFFECT_ALERT", "! ! !  A L E R T  ! ! !"))
         self.alertText.SetPackedFontColor(0xFFFFFFFF)
         self.alertText.SetOutline()
         self.alertText.Show()
@@ -109,7 +115,7 @@ class BossAlertWindow(ui.Window):
         self.subText.SetParent(self)
         self.subText.SetPosition(self.screenWidth // 2, self.barY + 55)
         self.subText.SetHorizontalAlignCenter()
-        self.subText.SetText("B O S S   D E T E C T E D")
+        self.subText.SetText(T("EFFECT_BOSS_DETECTED", "B O S S   D E T E C T E D"))
         self.subText.SetPackedFontColor(0xFFFF4444)
         self.subText.SetOutline()
         self.subText.Show()
@@ -317,7 +323,7 @@ class SystemInitWindow(ui.Window):
         self.titleText.SetParent(self)
         self.titleText.SetPosition(self.screenWidth // 2, boxY + 20)
         self.titleText.SetHorizontalAlignCenter()
-        self.titleText.SetText("[ S Y S T E M ]")
+        self.titleText.SetText(T("EFFECT_SYSTEM", "[ S Y S T E M ]"))
         self.titleText.SetPackedFontColor(0xFF0099FF)
         self.titleText.SetOutline()
         self.titleText.Show()
@@ -326,11 +332,11 @@ class SystemInitWindow(ui.Window):
         self.msgText.SetParent(self)
         self.msgText.SetPosition(self.screenWidth // 2, boxY + 50)
         self.msgText.SetHorizontalAlignCenter()
-        self.msgText.SetText("I N I T I A L I Z I N G . . .")
+        self.msgText.SetText(T("EFFECT_INITIALIZING", "I N I T I A L I Z I N G . . ."))
         self.msgText.SetPackedFontColor(0xFFFFFFFF)
         self.msgText.SetOutline()
         self.msgText.Show()
-        
+
         # Barra di caricamento
         barWidth = 400
         barHeight = 20
@@ -365,7 +371,7 @@ class SystemInitWindow(ui.Window):
         self.subText.SetParent(self)
         self.subText.SetPosition(self.screenWidth // 2, boxY + 120)
         self.subText.SetHorizontalAlignCenter()
-        self.subText.SetText("Hunter Terminal is loading...")
+        self.subText.SetText(T("EFFECT_LOADING", "Hunter Terminal is loading..."))
         self.subText.SetPackedFontColor(0xFF888888)
         self.subText.Show()
         
@@ -400,7 +406,7 @@ class SystemInitWindow(ui.Window):
         self.endTime = self.startTime + self.duration + 1.5
         self.onComplete = callback
         self.completed = False
-        self.msgText.SetText("I N I T I A L I Z I N G . . .")
+        self.msgText.SetText(T("EFFECT_INITIALIZING", "I N I T I A L I Z I N G . . ."))
         self.msgText.SetPackedFontColor(0xFFFFFFFF)
         self.barProgress.SetSize(0, 16)
         self.percentText.SetText("0%")
@@ -439,7 +445,7 @@ class SystemInitWindow(ui.Window):
         # Completato
         if progress >= 1.0 and not self.completed:
             self.completed = True
-            self.msgText.SetText("S Y S T E M   R E A D Y")
+            self.msgText.SetText(T("EFFECT_SYSTEM_READY", "S Y S T E M   R E A D Y"))
             self.msgText.SetPackedFontColor(0xFF00FF00)
             self.boxBorder.SetColor(0xFF00FF00)
 
@@ -711,10 +717,11 @@ class AwakeningEffect(ui.Window):
         self.quoteText.SetText(self.config.get("quote", ""))
         self.tipText.SetText(self.config.get("tip", ""))
 
-        self.cornerTL.SetText("[SYSTEM]")
-        self.cornerTR.SetText("HUNTER NETWORK")
-        self.cornerBL.SetText("STATUS: AWAKENING")
-        self.cornerBR.SetText("LV." + str(level) + " CONFIRMED")
+        self.cornerTL.SetText(T("EFFECT_SYSTEM_LABEL", "[SYSTEM]"))
+        self.cornerTR.SetText(T("EFFECT_HUNTER_NETWORK", "HUNTER NETWORK"))
+        self.cornerBL.SetText(T("EFFECT_STATUS_AWAKENING", "STATUS: AWAKENING"))
+        lvConfirmed = T("EFFECT_LV_CONFIRMED", "LV.{LV} CONFIRMED").replace("{LV}", str(level))
+        self.cornerBR.SetText(lvConfirmed)
 
         self.Show()
         self.SetTop()
@@ -1050,13 +1057,14 @@ class RankUpEffect(ui.Window):
         else:
             self.duration = 7.0
 
-        self.systemText.SetText("[SYSTEM NOTIFICATION]")
-        self.titleText.SetText("R A N K   U P !")
+        self.systemText.SetText(T("EFFECT_SYSTEM_NOTIFICATION", "[SYSTEM NOTIFICATION]"))
+        self.titleText.SetText(T("EFFECT_RANK_UP", "R A N K   U P !"))
         self.oldRankText.SetText(oldRank + "-RANK")
         self.arrowText.SetText(">>> ")
         self.newRankText.SetText(newRank + "-RANK")
         self.rankNameText.SetText(RANK_NAMES.get(newRank, "HUNTER"))
-        self.titleEarnedText.SetText("Titolo: " + RANK_TITLES.get(newRank, ""))
+        titleEarned = T("EFFECT_TITLE_EARNED", "Title: {TITLE}").replace("{TITLE}", RANK_TITLES.get(newRank, ""))
+        self.titleEarnedText.SetText(titleEarned)
         self.quoteText.SetText(RANK_QUOTES.get(newRank, ""))
 
         self.Show()

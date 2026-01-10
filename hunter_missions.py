@@ -129,7 +129,7 @@ class DailyMissionsWindow(ui.Window, DraggableMixin):
         self.bonusDesc = ui.TextLine()
         self.bonusDesc.SetParent(self)
         self.bonusDesc.SetPosition(70, 245)
-        self.bonusDesc.SetText("Completa tutte: Gloria x1.5 fino al reset!")
+        self.bonusDesc.SetText(T("MISSIONS_BONUS_DESC", "Complete all: Glory x1.5 until reset!"))
         self.bonusDesc.SetPackedFontColor(0xFFFFD700)
         self.bonusDesc.Show()
         
@@ -707,7 +707,7 @@ class AllMissionsCompleteWindow(ui.Window):
         self.bonusText.SetParent(self)
         self.bonusText.SetPosition(screenWidth // 2, boxY + 55)
         self.bonusText.SetHorizontalAlignCenter()
-        self.bonusText.SetText("BONUS COMPLETAMENTO x1.5")
+        self.bonusText.SetText(T("COMPLETION_BONUS", "COMPLETION BONUS x1.5"))
         self.bonusText.SetPackedFontColor(0xFFFFAA00)
         self.bonusText.SetOutline()
         self.bonusText.Show()
@@ -787,19 +787,22 @@ class AllMissionsCompleteWindow(ui.Window):
 class EventSlotHoverArea(ui.Window):
     """Area hover per mostrare tooltip dettagli evento"""
     
-    EVENT_TYPE_DESC = {
-        "glory_rush": ("Gloria x2 per ogni kill!", "Sorteggio finale tra tutti i partecipanti."),
-        "first_rift": ("Primo a conquistare una frattura VINCE!", "Non c'e' sorteggio - vince il piu' veloce!"),
-        "first_boss": ("Primo a uccidere un boss VINCE!", "Non c'e' sorteggio - vince il piu' veloce!"),
-        "boss_massacre": ("Gloria da boss +50%!", "Sorteggio finale tra tutti i partecipanti."),
-        "rift_hunt": ("Spawn fratture aumentato +50%!", "Sorteggio finale tra tutti i partecipanti."),
-        "super_metin": ("Gloria da metin +50%!", "Sorteggio finale tra tutti i partecipanti."),
-        "metin_frenzy": ("Bonus metin aumentato!", "Sorteggio finale tra tutti i partecipanti."),
-        "treasure_race": ("Caccia ai tesori speciali!", "Chi trova piu' tesori vince."),
-        "double_spawn": ("Spawn Elite x2!", "Sorteggio finale tra tutti i partecipanti."),
-        "pvp_tournament": ("Torneo PvP!", "Partecipa e combatti!"),
-        "survival": ("Sopravvivenza!", "Resisti piu' a lungo possibile."),
-    }
+    def GetEventTypeDesc(self, etype):
+        """Returns localized event type descriptions"""
+        descs = {
+            "glory_rush": (T("EVENT_DESC_GLORY_RUSH", "Glory x2 for every kill!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "first_rift": (T("EVENT_DESC_FIRST_RIFT", "First to conquer a rift WINS!"), T("EVENT_DESC_NO_DRAW", "No draw - fastest wins!")),
+            "first_boss": (T("EVENT_DESC_FIRST_BOSS", "First to kill a boss WINS!"), T("EVENT_DESC_NO_DRAW", "No draw - fastest wins!")),
+            "boss_massacre": (T("EVENT_DESC_BOSS_MASSACRE", "Glory from bosses +50%!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "rift_hunt": (T("EVENT_DESC_RIFT_HUNT", "Rift spawn increased +50%!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "super_metin": (T("EVENT_DESC_SUPER_METIN", "Glory from metin +50%!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "metin_frenzy": (T("EVENT_DESC_METIN_FRENZY", "Metin bonus increased!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "treasure_race": (T("EVENT_DESC_TREASURE_RACE", "Special treasure hunt!"), T("EVENT_DESC_TREASURE_WIN", "Who finds more treasures wins.")),
+            "double_spawn": (T("EVENT_DESC_DOUBLE_SPAWN", "Elite Spawn x2!"), T("EVENT_DESC_DRAW", "Final draw among all participants.")),
+            "pvp_tournament": (T("EVENT_DESC_PVP_TOURNAMENT", "PvP Tournament!"), T("EVENT_DESC_PVP_JOIN", "Join and fight!")),
+            "survival": (T("EVENT_DESC_SURVIVAL", "Survival!"), T("EVENT_DESC_SURVIVAL_TIP", "Survive as long as possible.")),
+        }
+        return descs.get(etype, (T("EVENT_DESC_DEFAULT", "Special event!"), T("EVENT_DESC_DEFAULT_TIP", "Participate to win!")))
     
     def __init__(self):
         ui.Window.__init__(self)
@@ -841,11 +844,11 @@ class EventSlotHoverArea(ui.Window):
                 "double_spawn": 0xFFFF4444,
             }
             typeColor = typeColors.get(etype, 0xFFFFFFFF)
-            self.toolTip.AppendTextLine("Tipo: %s" % etype.replace("_", " ").upper(), typeColor)
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_TYPE", "Type: {TYPE}").replace("{TYPE}", etype.replace("_", " ").upper()), typeColor)
             self.toolTip.AppendSpace(5)
             
             # Descrizione evento
-            desc1, desc2 = self.EVENT_TYPE_DESC.get(etype, ("Evento speciale!", "Partecipa per vincere!"))
+            desc1, desc2 = self.GetEventTypeDesc(etype)
             self.toolTip.AppendTextLine(desc1, 0xFF00FF00)
             self.toolTip.AppendTextLine(desc2, 0xFFAAAAAA)
             self.toolTip.AppendSpace(5)
@@ -854,33 +857,33 @@ class EventSlotHoverArea(ui.Window):
             self.toolTip.AppendTextLine("--------------------------------", 0xFF444444)
             startTime = self.eventData.get("start_time", "--:--")
             endTime = self.eventData.get("end_time", "--:--")
-            self.toolTip.AppendTextLine("Orario: %s - %s" % (startTime, endTime), 0xFFFFAA00)
-            
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_SCHEDULE", "Schedule: {START} - {END}").replace("{START}", startTime).replace("{END}", endTime), 0xFFFFAA00)
+
             # Requisiti
             minRank = self.eventData.get("min_rank", "E")
-            self.toolTip.AppendTextLine("Rank minimo: %s" % minRank, 0xFFCCCCCC)
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_MIN_RANK", "Min rank: {RANK}").replace("{RANK}", minRank), 0xFFCCCCCC)
             self.toolTip.AppendSpace(5)
-            
+
             # Premi
             self.toolTip.AppendTextLine("--------------------------------", 0xFF444444)
-            self.toolTip.AppendTextLine("[PREMI]", 0xFFFFD700)
-            reward = self.eventData.get("reward", "+50 Gloria")
-            self.toolTip.AppendTextLine("Partecipazione: %s" % reward, 0xFF88FF88)
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_REWARDS", "[REWARDS]"), 0xFFFFD700)
+            reward = self.eventData.get("reward", "+50 Glory")
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_PARTICIPATION", "Participation: {REWARD}").replace("{REWARD}", reward), 0xFF88FF88)
             winnerPrize = self.eventData.get("winner_prize", 200)
-            self.toolTip.AppendTextLine("Vincitore: +%d Gloria!" % winnerPrize, 0xFF00FF00)
+            self.toolTip.AppendTextLine(T("EVENT_SLOT_WINNER", "Winner: +{GLORY} Glory!").replace("{GLORY}", str(winnerPrize)), 0xFF00FF00)
             self.toolTip.AppendSpace(5)
             
             # Status
             status = self.eventData.get("status", "pending")
             if status == "joined":
-                self.toolTip.AppendTextLine("[SEI ISCRITTO!]", 0xFF00FF00)
+                self.toolTip.AppendTextLine(T("EVENT_SLOT_JOINED", "[JOINED!]"), 0xFF00FF00)
             elif status == "active":
-                self.toolTip.AppendTextLine("[EVENTO IN CORSO]", 0xFFFFAA00)
-                self.toolTip.AppendTextLine("Gioca per iscriverti!", 0xFFCCCCCC)
+                self.toolTip.AppendTextLine(T("EVENT_SLOT_IN_PROGRESS", "[IN PROGRESS]"), 0xFFFFAA00)
+                self.toolTip.AppendTextLine(T("EVENT_SLOT_PLAY_TO_JOIN", "Play to join!"), 0xFFCCCCCC)
             elif status == "ended":
-                self.toolTip.AppendTextLine("[TERMINATO]", 0xFF888888)
+                self.toolTip.AppendTextLine(T("EVENT_SLOT_ENDED", "[ENDED]"), 0xFF888888)
             else:
-                self.toolTip.AppendTextLine("[NON ANCORA INIZIATO]", 0xFFAAAAAA)
+                self.toolTip.AppendTextLine(T("EVENT_SLOT_NOT_STARTED", "[NOT YET STARTED]"), 0xFFAAAAAA)
             
             self.toolTip.AppendSpace(3)
             self.toolTip.Show()
@@ -1179,15 +1182,15 @@ class EventsScheduleWindow(ui.Window, DraggableMixin):
         
         status = event.get("status", "pending")
         if status == "joined":
-            slot["statusText"].SetText("[ISCRITTO]")
+            slot["statusText"].SetText(T("EVENTS_STATUS_JOINED", "[JOINED]"))
             slot["statusText"].SetPackedFontColor(0xFF00FF00)
             slot["bg"].SetColor(0x44003300)
         elif status == "active":
-            slot["statusText"].SetText("[IN CORSO]")
+            slot["statusText"].SetText(T("EVENTS_STATUS_ACTIVE", "[ACTIVE]"))
             slot["statusText"].SetPackedFontColor(0xFFFFAA00)
             slot["bg"].SetColor(0x44332200)
         elif status == "ended":
-            slot["statusText"].SetText("[TERMINATO]")
+            slot["statusText"].SetText(T("EVENTS_STATUS_ENDED", "[ENDED]"))
             slot["statusText"].SetPackedFontColor(0xFF888888)
             slot["bg"].SetColor(0x44222222)
         else:
