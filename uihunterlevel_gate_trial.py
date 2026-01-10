@@ -403,9 +403,9 @@ class TrialStatusWindow(ui.Window):
         progressTypes = [
             ("boss", HT.GetText("PROGRESS_BOSS", "Boss"), 0xFFFF0000),
             ("metin", HT.GetText("PROGRESS_METIN", "Metin"), 0xFF00FFFF),
-            ("fracture", HT.GetText("PROGRESS_FRACTURE", "Fratture"), 0xFF9900FF),
-            ("chest", HT.GetText("PROGRESS_CHEST", "Bauli"), 0xFFFFD700),
-            ("mission", HT.GetText("PROGRESS_MISSION", "Missioni"), 0xFF00FF00),
+            ("fracture", HT.GetText("PROGRESS_FRACTURE", "Fractures"), 0xFF9900FF),
+            ("chest", HT.GetText("PROGRESS_CHEST", "Chests"), 0xFFFFD700),
+            ("mission", HT.GetText("PROGRESS_MISSION", "Missions"), 0xFF00FF00),
         ]
         
         yOffset = 295
@@ -529,7 +529,7 @@ class TrialStatusWindow(ui.Window):
         self.btnMissionsEventsText = ui.TextLine()
         self.btnMissionsEventsText.SetParent(self)
         self.btnMissionsEventsText.SetPosition(245, yOffset + 5)
-        self.btnMissionsEventsText.SetText("Missioni")
+        self.btnMissionsEventsText.SetText("Missions")
         self.btnMissionsEventsText.SetPackedFontColor(0xFFFFFFFF)
         self.btnMissionsEventsText.AddFlag("not_pick")
         self.btnMissionsEventsText.Show()
@@ -537,7 +537,7 @@ class TrialStatusWindow(ui.Window):
         self.btnMissionsEventsText2 = ui.TextLine()
         self.btnMissionsEventsText2.SetParent(self)
         self.btnMissionsEventsText2.SetPosition(245, yOffset + 18)
-        self.btnMissionsEventsText2.SetText("& Eventi")
+        self.btnMissionsEventsText2.SetText("& Events")
         self.btnMissionsEventsText2.SetPackedFontColor(0xFF808080)
         self.btnMissionsEventsText2.AddFlag("not_pick")
         self.btnMissionsEventsText2.Show()

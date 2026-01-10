@@ -1362,16 +1362,16 @@ class Interface(object):
 		"""Chiamato quando il player entra nel Gate"""
 		if self.wndHunterLevel:
 			self.wndHunterLevel.HideGateTimer()
-		chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] Sei entrato! Hai %d minuti per completare." % duration)
+		chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] You entered! You have %d minutes to complete." % duration)
 
 	def HunterGateComplete(self, success, gloriaChange):
 		"""Chiamato quando il Gate viene completato o fallito"""
 		if self.wndHunterLevel:
 			self.wndHunterLevel.OnGateComplete(success, gloriaChange)
 		if success:
-			chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] COMPLETATO! +%d Gloria" % gloriaChange)
+			chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] COMPLETED! +%d Glory" % gloriaChange)
 		else:
-			chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] FALLITO! -%d Gloria" % gloriaChange)
+			chat.AppendChat(chat.CHAT_TYPE_INFO, "[GATE] FAILED! -%d Glory" % gloriaChange)
 
 	def HunterTrialStart(self, trialId, trialName, toRank, colorCode):
 		"""Chiamato quando una Trial inizia"""
@@ -3505,7 +3505,7 @@ class Interface(object):
 		if self.wndHunterLevel:
 			self.wndHunterLevel.EndEmergencyQuest(status == "SUCCESS")
 
-	def HunterRivalUpdate(self, name, points, label="Gloria", mode="VICINO"):
+	def HunterRivalUpdate(self, name, points, label="Glory", mode="NEAR"):
 		if self.wndHunterLevel:
 			self.wndHunterLevel.UpdateRival(name, points, label, mode)
 
