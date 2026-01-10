@@ -3519,8 +3519,8 @@ class GameWindow(ui.ScriptWindow):
 			if len(parts) >= 2:
 				name = parts[0].replace("+", " ")
 				points = int(parts[1])
-				label = "Gloria"
-				mode = "VICINO"
+				label = "Glory"
+				mode = "NEAR"
 				if len(parts) >= 3:
 					label = parts[2].replace("+", " ")
 				if len(parts) >= 4:

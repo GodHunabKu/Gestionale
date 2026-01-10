@@ -9,6 +9,12 @@ import net
 import wndMgr
 import app
 
+try:
+    from hunter_translations import T
+except:
+    def T(key, default=""):
+        return default
+
 from hunter_core import (
     DraggableMixin,
     SaveWindowPosition, GetWindowPosition, HasSavedPosition,
@@ -53,7 +59,7 @@ class WhatIfChoiceWindow(SoloLevelingWindow, DraggableMixin):
         self.subHeaderText.SetParent(self)
         self.subHeaderText.SetPosition(200, 30)
         self.subHeaderText.SetHorizontalAlignCenter()
-        self.subHeaderText.SetText("Una scelta è richiesta.")
+        self.subHeaderText.SetText(T("UI_CHOICE_REQUIRED", "A choice is required."))
         self.subHeaderText.SetPackedFontColor(COLOR_TEXT_MUTED)
         self.subHeaderText.AddFlag("not_pick")
         self.subHeaderText.Show()
@@ -335,9 +341,9 @@ class EmergencyQuestWindow(ui.Window, DraggableMixin):
         self.endTime = app.GetTime() + seconds
         self.Show()
         self.SetTop()
-        self.title.SetText("IL DESTINO SI DECIDE ORA!")
+        self.title.SetText(T("UI_DESTINY_NOW", "DESTINY IS DECIDED NOW!"))
         self.title.SetPackedFontColor(COLOR_SCHEMES["GOLD"]["title"])
-        
+
     def UpdateProgress(self, current):
         if self.targetCount > 0:
             self.questName.SetText("%s [%d/%d]" % (self.currentTitle, current, self.targetCount))
@@ -347,13 +353,13 @@ class EmergencyQuestWindow(ui.Window, DraggableMixin):
     def EndMission(self, status, isEmergency=True):
         if isEmergency:
             if status == "SUCCESS":
-                self.title.SetText("MISSION COMPLETE")
+                self.title.SetText(T("UI_MISSION_COMPLETE", "MISSION COMPLETE"))
                 self.title.SetPackedFontColor(COLOR_SCHEMES["GREEN"]["title"])
             elif status == "FAILED":
-                self.title.SetText("MISSION FAILED")
+                self.title.SetText(T("UI_MISSION_FAILED", "MISSION FAILED"))
                 self.title.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
         else:
-            self.title.SetText("IL DESTINO SI DECIDE ORA!")
+            self.title.SetText(T("UI_DESTINY_NOW", "DESTINY IS DECIDED NOW!"))
             self.title.SetPackedFontColor(COLOR_SCHEMES["GOLD"]["title"])
         self.endTime = app.GetTime() + 3.0
 
@@ -426,7 +432,7 @@ class EventStatusWindow(ui.Window, DraggableMixin):
         self.labelText.SetParent(self)
         self.labelText.SetPosition(110, 8)
         self.labelText.SetHorizontalAlignCenter()
-        self.labelText.SetText("EVENTO IN CORSO")
+        self.labelText.SetText(T("UI_EVENT_IN_PROGRESS", "EVENT IN PROGRESS"))
         self.labelText.SetPackedFontColor(0xFF00FF88)
         self.labelText.SetOutline()
         self.labelText.AddFlag("not_pick")
@@ -493,11 +499,12 @@ class EventStatusWindow(ui.Window, DraggableMixin):
             self.endTime = app.GetTime() + duration
             mins = duration // 60
             secs = duration % 60
-            self.timeText.SetText("Tempo: %d:%02d" % (mins, secs))
+            timeStr = T("UI_TIME_LEFT", "Time: {M}:{S}").replace("{M}", str(mins)).replace("{S}", "%02d" % secs)
+            self.timeText.SetText(timeStr)
         else:
             self.endTime = 0
             self.timeText.SetText("")
-        
+
         eventColors = {
             "default": 0xFF00FF88,
             "boss_hunt": 0xFFFF0000,
@@ -535,8 +542,9 @@ class EventStatusWindow(ui.Window, DraggableMixin):
                 return
             mins = int(remaining) // 60
             secs = int(remaining) % 60
-            self.timeText.SetText("Tempo: %d:%02d" % (mins, secs))
-        
+            timeStr = T("UI_TIME_LEFT", "Time: {M}:{S}").replace("{M}", str(mins)).replace("{S}", "%02d" % secs)
+            self.timeText.SetText(timeStr)
+
         # Pulse glow
         alpha = int(abs((ct * 2) % 2 - 1) * 60) + 40
         glowColor = 0x00FF88 | (alpha << 24)
@@ -571,15 +579,16 @@ class EventStatusWindow(ui.Window, DraggableMixin):
             
             # Tipo evento
             eventTypeNames = {
-                "default": "Evento Standard",
-                "boss_hunt": "Caccia ai Boss",
-                "fracture": "Frattura",
-                "glory_rush": "Gloria Rush",
-                "time_trial": "Sfida a Tempo",
-                "custom": "Evento Speciale"
+                "default": T("EVENT_TYPE_DEFAULT", "Standard Event"),
+                "boss_hunt": T("EVENT_TYPE_BOSS_HUNT", "Boss Hunt"),
+                "fracture": T("EVENT_TYPE_FRACTURE", "Fracture"),
+                "glory_rush": T("EVENT_TYPE_GLORY_RUSH", "Glory Rush"),
+                "time_trial": T("EVENT_TYPE_TIME_TRIAL", "Time Trial"),
+                "custom": T("EVENT_TYPE_CUSTOM", "Special Event")
             }
-            typeName = eventTypeNames.get(self.eventType, "Evento")
-            self.toolTip.AppendTextLine("Tipo: %s" % typeName, 0xFFAAAAAA)
+            typeName = eventTypeNames.get(self.eventType, T("EVENT_TYPE_DEFAULT", "Event"))
+            typeLabel = T("EVENT_TYPE_LABEL", "Type: {TYPE}").replace("{TYPE}", typeName)
+            self.toolTip.AppendTextLine(typeLabel, 0xFFAAAAAA)
             
             # Descrizione
             if self.eventDesc:
@@ -589,7 +598,8 @@ class EventStatusWindow(ui.Window, DraggableMixin):
             # Reward
             if self.eventReward:
                 self.toolTip.AppendSpace(5)
-                self.toolTip.AppendTextLine("Reward: %s" % self.eventReward, 0xFF00FF00)
+                rewardLabel = T("EVENT_REWARD_LABEL", "Reward: {REWARD}").replace("{REWARD}", self.eventReward)
+                self.toolTip.AppendTextLine(rewardLabel, 0xFF00FF00)
             
             # Tempo rimasto
             if hasattr(self, 'endTime') and self.endTime > 0:
@@ -598,7 +608,8 @@ class EventStatusWindow(ui.Window, DraggableMixin):
                     mins = int(remaining) // 60
                     secs = int(remaining) % 60
                     self.toolTip.AppendSpace(5)
-                    self.toolTip.AppendTextLine("Tempo: %d:%02d" % (mins, secs), 0xFFFF8800)
+                    timeStr = T("UI_TIME_LEFT", "Time: {M}:{S}").replace("{M}", str(mins)).replace("{S}", "%02d" % secs)
+                    self.toolTip.AppendTextLine(timeStr, 0xFFFF8800)
             
             self.toolTip.ShowToolTip()
         except:
@@ -649,12 +660,12 @@ class RivalTrackerWindow(ui.Window, DraggableMixin):
         self.text.SetParent(self)
         self.text.SetPosition(100, 10)
         self.text.SetHorizontalAlignCenter()
-        self.text.SetText("RIVALE DI CLASSIFICA")
+        self.text.SetText(T("UI_RIVAL_TRACKER", "RANKING RIVAL"))
         self.text.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
         self.text.SetOutline()
         self.text.AddFlag("not_pick")
         self.text.Show()
-        
+
         self.nameText = ui.TextLine()
         self.nameText.SetParent(self)
         self.nameText.SetPosition(100, 30)
@@ -668,7 +679,7 @@ class RivalTrackerWindow(ui.Window, DraggableMixin):
         self.descText.SetParent(self)
         self.descText.SetPosition(100, 50)
         self.descText.SetHorizontalAlignCenter()
-        self.descText.SetText("Nuovo bersaglio attivo.")
+        self.descText.SetText(T("UI_NEW_TARGET_ACTIVE", "New target active."))
         self.descText.SetPackedFontColor(COLOR_TEXT_MUTED)
         self.descText.AddFlag("not_pick")
         self.descText.Show()
@@ -686,14 +697,16 @@ class RivalTrackerWindow(ui.Window, DraggableMixin):
         self.nameText.SetText(name.replace("+", " "))
         
         if mode == "SUPERATO":
-            self.text.SetText("SEI STATO SUPERATO!")
+            self.text.SetText(T("UI_OVERTAKEN_BY", "YOU WERE OVERTAKEN!"))
             self.text.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
-            self.descText.SetText("%s ti ha superato di %s pt!" % (name.replace("+", " "), str(diff)))
+            overtakeMsg = T("UI_OVERTAKEN_MSG", "{NAME} overtook you by {DIFF} pts!").replace("{NAME}", name.replace("+", " ")).replace("{DIFF}", str(diff))
+            self.descText.SetText(overtakeMsg)
             self.descText.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
         else:
-            self.text.SetText("RIVALE DI CLASSIFICA")
+            self.text.SetText(T("UI_RIVAL_TRACKER", "RANKING RIVAL"))
             self.text.SetPackedFontColor(COLOR_SCHEMES["RED"]["title"])
-            self.descText.SetText("Distacco %s: %s pt" % (label, str(diff)))
+            gapMsg = T("UI_RIVAL_GAP", "Gap {LABEL}: {DIFF} pts").replace("{LABEL}", label).replace("{DIFF}", str(diff))
+            self.descText.SetText(gapMsg)
             self.descText.SetPackedFontColor(COLOR_SCHEMES["ORANGE"]["title"])
         
         self.endTime = app.GetTime() + 30.0
@@ -793,8 +806,10 @@ class OvertakeWindow(ui.Window):
         self.eventWndRef = eventWnd
     
     def ShowOvertake(self, overtakenName, newPosition):
-        self.mainText.SetText("Hai superato %s!" % overtakenName)
-        self.posText.SetText("Nuova Posizione: #%d" % newPosition)
+        overtakeMsg = T("UI_YOU_OVERTOOK", "You overtook {NAME}!").replace("{NAME}", overtakenName)
+        self.mainText.SetText(overtakeMsg)
+        posMsg = T("UI_NEW_POSITION", "New Position: #{POS}").replace("{POS}", str(newPosition))
+        self.posText.SetText(posMsg)
         
         yPos = self.defaultY
         if self.eventWndRef and self.eventWndRef.IsShow():

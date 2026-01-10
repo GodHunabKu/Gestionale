@@ -29,17 +29,17 @@ quest hunter_language_npc begin
 
             local current_name = lang_names[current_lang] or "Italiano"
 
-            say_title("Traduttore del Sistema")
+            say_title(hg_lib.get_text("lang_npc_title", nil, "System Translator"))
             say("")
-            say("Salve, Cacciatore.")
+            say(hg_lib.get_text("lang_npc_greeting", nil, "Greetings, Hunter."))
             say("")
-            say("Posso tradurre il Sistema Hunter")
-            say("nella lingua che preferisci.")
+            say(hg_lib.get_text("lang_npc_offer1", nil, "I can translate the Hunter System"))
+            say(hg_lib.get_text("lang_npc_offer2", nil, "to your preferred language."))
             say("")
-            say("Lingua attuale: " .. current_name)
+            say(hg_lib.get_text("lang_npc_current", nil, "Current language: ") .. current_name)
             say("")
 
-            local choice = select("Italiano", "English", "Deutsch", "Espanol", "Francais", "Portugues", "Chiudi")
+            local choice = select("Italiano", "English", "Deutsch", "Espanol", "Francais", "Portugues", hg_lib.get_text("UI_CLOSE", nil, "Close"))
 
             if choice == 7 then
                 return
@@ -49,10 +49,10 @@ quest hunter_language_npc begin
             local selected_lang = lang_codes[choice]
 
             if selected_lang == current_lang then
-                say_title("Traduttore del Sistema")
+                say_title(hg_lib.get_text("lang_npc_title", nil, "System Translator"))
                 say("")
-                say("Il Sistema e' gia' impostato")
-                say("in questa lingua.")
+                say(hg_lib.get_text("lang_npc_already1", nil, "The System is already set"))
+                say(hg_lib.get_text("lang_npc_already2", nil, "to this language."))
                 return
             end
 
@@ -74,17 +74,17 @@ quest hunter_language_npc begin
 
             -- Messaggio di conferma
             local new_name = lang_names[selected_lang] or selected_lang
-            say_title("Traduttore del Sistema")
+            say_title(hg_lib.get_text("lang_npc_title", nil, "System Translator"))
             say("")
-            say("Fatto!")
+            say(hg_lib.get_text("lang_npc_done", nil, "Done!"))
             say("")
-            say("Il Sistema Hunter e' stato")
-            say("tradotto in: " .. new_name)
+            say(hg_lib.get_text("lang_npc_changed1", nil, "The Hunter System has been"))
+            say(hg_lib.get_text("lang_npc_changed2", nil, "translated to: ") .. new_name)
             say("")
-            say("Riapri il Terminale per vedere")
-            say("i testi nella nuova lingua.")
+            say(hg_lib.get_text("lang_npc_reopen1", nil, "Reopen the Terminal to see"))
+            say(hg_lib.get_text("lang_npc_reopen2", nil, "texts in the new language."))
 
-            syschat("|cff00AAFF[HUNTER]|r Lingua cambiata in: " .. string.upper(selected_lang))
+            syschat("|cff00AAFF[HUNTER]|r " .. hg_lib.get_text("lang_npc_syschat", nil, "Language changed to: ") .. string.upper(selected_lang))
         end
 
     end

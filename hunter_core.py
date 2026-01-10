@@ -100,35 +100,73 @@ RANK_COLORS = {
     "N": 0xFFFF0000,  # Rosso - Monarca Nazionale
 }
 
-RANK_NAMES = {
-    "E": "Iniziato",
-    "D": "Apprendista", 
-    "C": "Cacciatore",
-    "B": "Veterano",
-    "A": "Elite",
-    "S": "Campione",
-    "N": "Nazionale",
-}
+# ═══════════════════════════════════════════════════════════════════════════════
+#  FUNZIONI DINAMICHE PER TRADUZIONI RANK
+#  I valori sono recuperati dal sistema di traduzione in tempo reale
+# ═══════════════════════════════════════════════════════════════════════════════
+def _GetTranslation(key, default=""):
+    """Helper per ottenere traduzione senza importare direttamente"""
+    try:
+        import hunter_translations
+        return hunter_translations.T(key, default)
+    except:
+        return default
 
-RANK_TITLES = {
-    "E": "Il Risvegliato",
-    "D": "Il Sopravvissuto",
-    "C": "Il Cacciatore",
-    "B": "L'Elite",
-    "A": "Il Predatore",
-    "S": "La Leggenda",
-    "N": "Il Monarca delle Ombre",
-}
+def GetRankName(rank):
+    """Ottiene il nome del rank tradotto"""
+    key = "RANK_NAME_" + str(rank).upper()
+    defaults = {"E": "Initiate", "D": "Apprentice", "C": "Hunter", "B": "Veteran", "A": "Elite", "S": "Champion", "N": "National"}
+    return _GetTranslation(key, defaults.get(rank, rank))
 
-RANK_QUOTES = {
-    "E": '"Ogni viaggio inizia con un passo."',
-    "D": '"Hai superato i più deboli."',
-    "C": '"Il tuo nome inizia a farsi conoscere."',
-    "B": '"I Gate tremano al tuo arrivo."',
-    "A": '"Solo i folli osano sfidarti."',
-    "S": '"Sei tra i più forti dell\'umanità."',
-    "N": '"IO SONO IL MONARCA."',
-}
+def GetRankTitle(rank):
+    """Ottiene il titolo del rank tradotto"""
+    key = "RANK_TITLE_" + str(rank).upper()
+    defaults = {"E": "The Awakened", "D": "The Survivor", "C": "The Hunter", "B": "The Elite", "A": "The Predator", "S": "The Legend", "N": "The Shadow Monarch"}
+    return _GetTranslation(key, defaults.get(rank, ""))
+
+def GetRankQuote(rank):
+    """Ottiene la citazione del rank tradotta"""
+    key = "RANK_QUOTE_" + str(rank).upper()
+    defaults = {"E": '"Every journey starts with a step."', "D": '"You have surpassed the weakest."', "C": '"Your name is starting to be known."', "B": '"Gates tremble at your arrival."', "A": '"Only fools dare to challenge you."', "S": '"You are among the strongest."', "N": '"I AM THE MONARCH."'}
+    return _GetTranslation(key, defaults.get(rank, ""))
+
+def GetRankThemeTitle(rank):
+    """Ottiene il titolo tema del rank tradotto"""
+    key = "RANK_THEME_" + str(rank).upper() + "_TITLE"
+    defaults = {"E": "Awakened", "D": "Apprentice", "C": "Hunter", "B": "Veteran", "A": "Master", "S": "Legend", "N": "National Monarch"}
+    return _GetTranslation(key, defaults.get(rank, rank + "-Rank"))
+
+def GetRankThemeSubtitle(rank):
+    """Ottiene il sottotitolo tema del rank tradotto"""
+    key = "RANK_THEME_" + str(rank).upper() + "_SUBTITLE"
+    defaults = {"E": "The Weakest", "D": "The Survivor", "C": "The Recognized", "B": "The Expert", "A": "The Elite", "S": "The Chosen", "N": "Shadow King"}
+    return _GetTranslation(key, defaults.get(rank, ""))
+
+# Backward compatibility - dizionari che usano getter dinamici
+class _TranslatedDict:
+    """Dizionario che ritorna traduzioni dinamiche"""
+    def __init__(self, getter_func, keys):
+        self._getter = getter_func
+        self._keys = keys
+    def get(self, key, default=None):
+        if key in self._keys:
+            return self._getter(key)
+        return default
+    def __getitem__(self, key):
+        return self._getter(key)
+    def __contains__(self, key):
+        return key in self._keys
+    def keys(self):
+        return self._keys
+    def items(self):
+        return [(k, self._getter(k)) for k in self._keys]
+    def values(self):
+        return [self._getter(k) for k in self._keys]
+
+_RANK_KEYS = ["E", "D", "C", "B", "A", "S", "N"]
+RANK_NAMES = _TranslatedDict(GetRankName, _RANK_KEYS)
+RANK_TITLES = _TranslatedDict(GetRankTitle, _RANK_KEYS)
+RANK_QUOTES = _TranslatedDict(GetRankQuote, _RANK_KEYS)
 
 # Schemi colori per Fratture e Codici Colore
 COLOR_SCHEMES = {
@@ -614,9 +652,16 @@ def GetRankKey(points):
     return "E"
 
 def GetRankTheme(points):
-    """Ritorna il tema completo per un dato punteggio"""
+    """Ritorna il tema completo per un dato punteggio con traduzioni dinamiche"""
     key = GetRankKey(points)
-    return RANK_THEMES[key]
+    base_theme = RANK_THEMES[key]
+
+    # Crea copia con traduzioni dinamiche
+    theme = dict(base_theme)
+    theme["title"] = GetRankThemeTitle(key)
+    theme["subtitle"] = GetRankThemeSubtitle(key)
+
+    return theme
 
 def GetRankProgress(points):
     """Calcola la percentuale di progresso verso il prossimo rank"""
@@ -786,5 +831,37 @@ def IsAwakeningLevel(level):
     return level in AWAKENING_CONFIG
 
 def GetAwakeningConfig(level):
-    """Ritorna la configurazione awakening per un livello"""
-    return AWAKENING_CONFIG.get(level, None)
+    """Ritorna la configurazione awakening per un livello con traduzioni dinamiche"""
+    base_config = AWAKENING_CONFIG.get(level, None)
+    if base_config is None:
+        return None
+
+    # Crea copia con traduzioni dinamiche
+    config = dict(base_config)
+
+    # Ottieni traduzioni per questo livello
+    if level in AWAKENING_CONFIG:
+        name_key = "AWAKENING_%d_NAME" % level
+        subtitle_key = "AWAKENING_%d_SUBTITLE" % level
+        quote_key = "AWAKENING_%d_QUOTE" % level
+        tip_key = "AWAKENING_%d_TIP" % level
+
+        config["name"] = _GetTranslation(name_key, base_config.get("name", "LEVEL UP"))
+        config["subtitle"] = _GetTranslation(subtitle_key, base_config.get("subtitle", ""))
+        config["quote"] = _GetTranslation(quote_key, base_config.get("quote", ""))
+        if "tip" in base_config:
+            config["tip"] = _GetTranslation(tip_key, base_config.get("tip", ""))
+
+    return config
+
+def GetAwakeningDefaultConfig():
+    """Ritorna la configurazione di default per livelli senza awakening speciale"""
+    return {
+        "name": _GetTranslation("AWAKENING_DEFAULT_NAME", "LEVEL UP"),
+        "subtitle": _GetTranslation("AWAKENING_DEFAULT_SUBTITLE", "Keep growing"),
+        "quote": _GetTranslation("AWAKENING_DEFAULT_QUOTE", '"Power has no limits."'),
+        "color": 0xFF4A90D9,
+        "duration": 4.0,
+        "effect": "default",
+        "sound_intensity": 1,
+    }
