@@ -226,6 +226,12 @@ when chat."/hunter_request_trial_data" begin
             hg_lib.assign_daily_missions()
             hg_lib.send_today_events(false)
             hg_lib.check_active_event_notify()
+
+            -- PERFORMANCE: Cleanup cache periodicamente (500+ players optimization)
+            hg_lib.cleanup_tracking_tables()
+
+            -- SYSTEM: Check expired trials e penalties
+            hg_lib.check_trial_expiration()
             
             -- Invia TUTTI i dati del terminale al client al login
             -- (player data, ranking, shop, achievements, timers, etc.)
@@ -849,45 +855,56 @@ when chat."/hunter_request_trial_data" begin
         -- GESTIONE BAULI/CASSE CLICCABILI (63000-63007)
         -- I bauli vengono spawnati nelle fratture e danno Gloria + Item
         -- La Gloria viene divisa per meritocrazia se in party
-        -- FIX RACE CONDITION: npc.purge() PRIMA di open_chest per evitare double loot
+        -- FIX RACE CONDITION: MySQL Lock + npc.purge() PRIMA di open_chest
+        -- OPTIMIZED FOR 500+ PLAYERS: Uses distributed lock
         -- ============================================================
         when 63000.click or 63001.click or 63002.click or 63003.click or 63004.click or 63005.click or 63006.click or 63007.click begin
             local chest_vnum = npc.get_race()
             local chest_vid = npc.get_vid()
             local pid = pc.get_player_id()
-            
+
+            -- Trigger cache cleanup periodically
+            hg_lib.cleanup_tracking_tables()
+
             -- ANTI-SPAM per singolo player (pc.getqf e' in RAM, veloce)
             local last_click = pc.getqf("hq_anti_spam_chest") or 0
-            if get_time() - last_click < 2 then 
+            if get_time() - last_click < 2 then
                 return -- Anti-autoclick lato client
             end
             pc.setqf("hq_anti_spam_chest", get_time())
-            
+
+            -- FIX RACE CONDITION: Use MySQL distributed lock (cluster-safe)
+            local lock_name = "chest_" .. chest_vid
+            if not hg_lib.acquire_lock(lock_name, 1) then
+                syschat("|cffFF6600[BAULE]|r " .. hg_lib.get_text("CHEST_BUSY", nil, "Qualcuno sta gia' aprendo questo baule!"))
+                return
+            end
+
             -- Verifica che il baule non sia gia' stato aperto (flag globale)
-            -- NOTA: Usiamo un timestamp invece di un flag 0/1 per evitare problemi con VID riutilizzati
             local opened_time = game.get_event_flag("hq_chest_opened_"..chest_vid) or 0
             if opened_time > 0 then
-                -- Se aperto meno di 60 secondi fa, blocca (previene double loot e considera VID riciclati)
                 local time_diff = get_time() - opened_time
                 if time_diff < 60 then
-                    syschat("|cffFF0000[BAULE]|r Questo baule e' gia' stato aperto!")
+                    hg_lib.release_lock(lock_name)
+                    syschat("|cffFF0000[BAULE]|r " .. hg_lib.get_text("CHEST_ALREADY_OPENED", nil, "Questo baule e' gia' stato aperto!"))
                     return
                 end
-                -- Altrimenti la flag e' vecchia, il VID e' stato riutilizzato - procedi
             end
-            
-            -- LOCK IMMEDIATO - Prima di qualsiasi altra cosa
+
+            -- LOCK FLAG - Marca come aperto
             game.set_event_flag("hq_chest_opened_"..chest_vid, get_time())
-            
+
             -- FIX RACE CONDITION: Rimuovi NPC PRIMA di dare il premio
-            -- Cosi' se un secondo click arriva, l'NPC non esiste piu' lato server core
             npc.purge()
-            
+
             -- Effetto visivo apertura
             cmdchat("HunterChestOpening " .. chest_vid)
-            
+
             -- Ora dai il premio (l'NPC e' gia' stato rimosso)
             hg_lib.open_chest(chest_vnum)
+
+            -- Release lock after operation
+            hg_lib.release_lock(lock_name)
         end
         -- ============================================================
         -- FINE GESTIONE BAULI

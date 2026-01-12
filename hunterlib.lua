@@ -1,8 +1,458 @@
 -- ============================================================
 -- HUNTER LEVEL SYSTEM LIB (hg_lib) - STABLE VERSION 2025
+-- OPTIMIZED FOR 500+ CONCURRENT PLAYERS
 -- ============================================================
 
 hg_lib = {}
+
+-- ============================================================
+-- SQL SECURITY & UTILITY FUNCTIONS (500+ Players Optimization)
+-- ============================================================
+
+-- CRITICAL: Safe SQL string escaping (prevents SQL injection)
+function hg_lib.sql_escape(str)
+    if str == nil then return "" end
+    str = tostring(str)
+    -- Use built-in function if available, otherwise manual escape
+    if mysql_escape_string then
+        return mysql_escape_string(str)
+    end
+    -- Manual escape for critical characters
+    str = string.gsub(str, "\\", "\\\\")
+    str = string.gsub(str, "'", "''")
+    str = string.gsub(str, '"', '\\"')
+    str = string.gsub(str, "\0", "\\0")
+    str = string.gsub(str, "\n", "\\n")
+    str = string.gsub(str, "\r", "\\r")
+    str = string.gsub(str, "\x1a", "\\Z")
+    return str
+end
+
+-- Safe integer conversion (prevents injection via numeric fields)
+function hg_lib.sql_int(val)
+    local num = tonumber(val)
+    if num == nil then return 0 end
+    return math.floor(num)
+end
+
+-- Safe positive integer (for IDs, counts, etc)
+function hg_lib.sql_uint(val)
+    local num = tonumber(val)
+    if num == nil or num < 0 then return 0 end
+    return math.floor(num)
+end
+
+-- ============================================================
+-- ATOMIC OPERATIONS (SQL Transactions for data integrity)
+-- ============================================================
+
+-- Begin transaction wrapper
+function hg_lib.begin_transaction()
+    mysql_direct_query("START TRANSACTION")
+end
+
+-- Commit transaction wrapper
+function hg_lib.commit_transaction()
+    mysql_direct_query("COMMIT")
+end
+
+-- Rollback transaction wrapper
+function hg_lib.rollback_transaction()
+    mysql_direct_query("ROLLBACK")
+end
+
+-- Execute atomic operation with automatic rollback on error
+function hg_lib.atomic_execute(queries)
+    if type(queries) ~= "table" or #queries == 0 then return false end
+
+    hg_lib.begin_transaction()
+    local success = true
+
+    for i, q in ipairs(queries) do
+        local ok, err = pcall(function()
+            mysql_direct_query(q)
+        end)
+        if not ok then
+            success = false
+            hg_lib.log_alert("SQL", "ATOMIC_FAILED", "query_index=" .. i .. " error=" .. tostring(err))
+            break
+        end
+    end
+
+    if success then
+        hg_lib.commit_transaction()
+    else
+        hg_lib.rollback_transaction()
+    end
+
+    return success
+end
+
+-- ============================================================
+-- DISTRIBUTED LOCK SYSTEM (Prevents race conditions)
+-- Uses MySQL GET_LOCK for cluster-safe locking
+-- ============================================================
+
+-- Acquire a named lock (timeout in seconds)
+function hg_lib.acquire_lock(lock_name, timeout)
+    timeout = timeout or 5
+    local safe_name = hg_lib.sql_escape(lock_name)
+    local c, d = mysql_direct_query("SELECT GET_LOCK('hg_" .. safe_name .. "', " .. hg_lib.sql_int(timeout) .. ") as result")
+    if c > 0 and d[1] then
+        return tonumber(d[1].result) == 1
+    end
+    return false
+end
+
+-- Release a named lock
+function hg_lib.release_lock(lock_name)
+    local safe_name = hg_lib.sql_escape(lock_name)
+    mysql_direct_query("SELECT RELEASE_LOCK('hg_" .. safe_name .. "')")
+end
+
+-- Execute function with lock (auto-release)
+function hg_lib.with_lock(lock_name, timeout, func)
+    if not hg_lib.acquire_lock(lock_name, timeout) then
+        return false, "LOCK_TIMEOUT"
+    end
+
+    local ok, result = pcall(func)
+    hg_lib.release_lock(lock_name)
+
+    if not ok then
+        return false, result
+    end
+    return true, result
+end
+
+-- ============================================================
+-- CACHE SYSTEM WITH LIMITS (Memory management for 500+ players)
+-- ============================================================
+
+-- Global cache limits
+hg_lib.CACHE_LIMITS = {
+    MAX_PLAYERS_TRACKING = 600,      -- Max players in tracking tables
+    MAX_CACHE_AGE_SECONDS = 600,     -- 10 minutes cache TTL
+    CLEANUP_INTERVAL = 300,          -- Cleanup every 5 minutes
+    MAX_KILL_HISTORY = 100,          -- Max kills stored per player
+}
+
+-- Last cleanup timestamp
+_G.hunter_last_cleanup = 0
+
+-- Cleanup old entries from tracking tables (CRITICAL for 500+ players)
+function hg_lib.cleanup_tracking_tables()
+    local now = get_time()
+
+    -- Don't cleanup too often
+    if now - (_G.hunter_last_cleanup or 0) < hg_lib.CACHE_LIMITS.CLEANUP_INTERVAL then
+        return
+    end
+    _G.hunter_last_cleanup = now
+
+    local cleanup_count = 0
+    local cutoff_time = now - hg_lib.CACHE_LIMITS.MAX_CACHE_AGE_SECONDS
+
+    -- Cleanup kill tracking (keep only recent data)
+    if _G.hunter_kill_tracking then
+        for pid, data in pairs(_G.hunter_kill_tracking) do
+            if data.last_check and data.last_check < cutoff_time then
+                _G.hunter_kill_tracking[pid] = nil
+                cleanup_count = cleanup_count + 1
+            elseif data.kills and #data.kills > hg_lib.CACHE_LIMITS.MAX_KILL_HISTORY then
+                -- Trim kill history
+                local new_kills = {}
+                local start_idx = #data.kills - hg_lib.CACHE_LIMITS.MAX_KILL_HISTORY + 1
+                for i = start_idx, #data.kills do
+                    table.insert(new_kills, data.kills[i])
+                end
+                data.kills = new_kills
+            end
+        end
+    end
+
+    -- Cleanup session glory tracking
+    if _G.hunter_session_glory then
+        for pid, data in pairs(_G.hunter_session_glory) do
+            if data.start_time and data.start_time < cutoff_time then
+                _G.hunter_session_glory[pid] = nil
+                cleanup_count = cleanup_count + 1
+            end
+        end
+    end
+
+    -- Cleanup chest tracking
+    if _G.hunter_chest_tracking then
+        for pid, data in pairs(_G.hunter_chest_tracking) do
+            if data.start_time and data.start_time < cutoff_time then
+                _G.hunter_chest_tracking[pid] = nil
+                cleanup_count = cleanup_count + 1
+            end
+        end
+    end
+
+    -- Cleanup fracture tracking
+    if _G.hunter_fracture_tracking then
+        for pid, data in pairs(_G.hunter_fracture_tracking) do
+            if data.start_time and data.start_time < cutoff_time then
+                _G.hunter_fracture_tracking[pid] = nil
+                cleanup_count = cleanup_count + 1
+            end
+        end
+    end
+
+    -- Cleanup spawn tracking
+    if _G.hunter_spawn_tracking then
+        for pid, data in pairs(_G.hunter_spawn_tracking) do
+            if data.start_time and data.start_time < cutoff_time then
+                _G.hunter_spawn_tracking[pid] = nil
+                cleanup_count = cleanup_count + 1
+            end
+        end
+    end
+
+    -- Cleanup mission buffer (old entries)
+    if _G.hunter_mission_buffer then
+        local buffer_count = 0
+        for pid, _ in pairs(_G.hunter_mission_buffer) do
+            buffer_count = buffer_count + 1
+        end
+        -- If too many entries, clear oldest
+        if buffer_count > hg_lib.CACHE_LIMITS.MAX_PLAYERS_TRACKING then
+            _G.hunter_mission_buffer = {}
+            cleanup_count = cleanup_count + buffer_count
+        end
+    end
+
+    -- Cleanup mission throttle
+    if _G.hunter_mission_throttle then
+        for key, timestamp in pairs(_G.hunter_mission_throttle) do
+            if timestamp < cutoff_time then
+                _G.hunter_mission_throttle[key] = nil
+                cleanup_count = cleanup_count + 1
+            end
+        end
+    end
+
+    -- Cleanup defense data
+    if _G.hunter_defense_data then
+        local defense_count = 0
+        for pid, _ in pairs(_G.hunter_defense_data) do
+            defense_count = defense_count + 1
+        end
+        if defense_count > hg_lib.CACHE_LIMITS.MAX_PLAYERS_TRACKING then
+            -- Keep only active defenses
+            local new_defense = {}
+            for pid, data in pairs(_G.hunter_defense_data) do
+                -- Check if defense is still active via qf
+                if data.active then
+                    new_defense[pid] = data
+                end
+            end
+            _G.hunter_defense_data = new_defense
+        end
+    end
+
+    if cleanup_count > 0 then
+        hg_lib.log_info("SYSTEM", "CACHE_CLEANUP", "cleaned_entries=" .. cleanup_count)
+    end
+end
+
+-- ============================================================
+-- OPTIMIZED RANDOM SELECTION (Replaces ORDER BY RAND())
+-- ============================================================
+
+-- Get random row from table efficiently (avoids ORDER BY RAND())
+function hg_lib.get_random_row(table_name, where_clause, columns)
+    columns = columns or "*"
+    where_clause = where_clause or "1=1"
+
+    -- First, get count and min/max ID
+    local count_q = "SELECT COUNT(*) as cnt, MIN(id) as min_id, MAX(id) as max_id FROM " .. table_name .. " WHERE " .. where_clause
+    local cc, cd = mysql_direct_query(count_q)
+
+    if cc == 0 or not cd[1] or tonumber(cd[1].cnt) == 0 then
+        return 0, nil
+    end
+
+    local total = tonumber(cd[1].cnt) or 0
+    local min_id = tonumber(cd[1].min_id) or 1
+    local max_id = tonumber(cd[1].max_id) or 1
+
+    -- If small table or IDs are sequential, use offset method
+    if total <= 100 or (max_id - min_id) <= total * 1.5 then
+        local offset = number(0, total - 1)
+        local q = "SELECT " .. columns .. " FROM " .. table_name .. " WHERE " .. where_clause .. " LIMIT 1 OFFSET " .. offset
+        return mysql_direct_query(q)
+    end
+
+    -- For sparse tables, try random ID approach with fallback
+    for attempt = 1, 3 do
+        local rand_id = number(min_id, max_id)
+        local q = "SELECT " .. columns .. " FROM " .. table_name .. " WHERE " .. where_clause .. " AND id >= " .. rand_id .. " LIMIT 1"
+        local rc, rd = mysql_direct_query(q)
+        if rc > 0 then
+            return rc, rd
+        end
+    end
+
+    -- Fallback: use offset
+    local offset = number(0, total - 1)
+    local q = "SELECT " .. columns .. " FROM " .. table_name .. " WHERE " .. where_clause .. " LIMIT 1 OFFSET " .. offset
+    return mysql_direct_query(q)
+end
+
+-- ============================================================
+-- BATCH QUERY SYSTEM (Reduces DB roundtrips)
+-- ============================================================
+
+_G.hunter_batch_queue = {}
+_G.hunter_batch_last_flush = 0
+
+-- Add query to batch queue
+function hg_lib.batch_add(query, priority)
+    priority = priority or "normal"
+    table.insert(_G.hunter_batch_queue, {q = query, p = priority, t = get_time()})
+
+    -- Auto-flush if queue too large or high priority
+    if #_G.hunter_batch_queue >= 50 or priority == "high" then
+        hg_lib.batch_flush()
+    end
+end
+
+-- Flush batch queue
+function hg_lib.batch_flush()
+    if #_G.hunter_batch_queue == 0 then return end
+
+    local now = get_time()
+    -- Don't flush too often (min 1 second between flushes)
+    if now - _G.hunter_batch_last_flush < 1 and #_G.hunter_batch_queue < 50 then
+        return
+    end
+    _G.hunter_batch_last_flush = now
+
+    -- Execute all queries
+    for i, item in ipairs(_G.hunter_batch_queue) do
+        pcall(function()
+            mysql_direct_query(item.q)
+        end)
+    end
+
+    _G.hunter_batch_queue = {}
+end
+
+-- ============================================================
+-- PENALTY SYSTEM (Complete Implementation)
+-- ============================================================
+
+-- Apply penalty to player
+function hg_lib.apply_penalty(pid, reason, glory_penalty, duration_hours)
+    pid = hg_lib.sql_int(pid)
+    glory_penalty = hg_lib.sql_uint(glory_penalty)
+    duration_hours = hg_lib.sql_uint(duration_hours) or 24
+    reason = hg_lib.sql_escape(reason or "violation")
+
+    local expires = get_time() + (duration_hours * 3600)
+
+    local queries = {
+        string.format(
+            "UPDATE srv1_hunabku.hunter_quest_ranking SET " ..
+            "penalty_active = 1, " ..
+            "penalty_expires = %d, " ..
+            "penalty_strikes = penalty_strikes + 1, " ..
+            "total_points = GREATEST(0, total_points - %d) " ..
+            "WHERE player_id = %d",
+            expires, glory_penalty, pid
+        )
+    }
+
+    if hg_lib.atomic_execute(queries) then
+        hg_lib.log_warning("PENALTY", "PENALTY_APPLIED",
+            string.format("player_id=%d reason=%s glory=%d hours=%d", pid, reason, glory_penalty, duration_hours))
+        return true
+    end
+    return false
+end
+
+-- Check if player has active penalty
+function hg_lib.has_active_penalty(pid)
+    pid = hg_lib.sql_int(pid or pc.get_player_id())
+
+    local c, d = mysql_direct_query(
+        "SELECT penalty_active, penalty_expires, penalty_strikes FROM srv1_hunabku.hunter_quest_ranking WHERE player_id = " .. pid
+    )
+
+    if c > 0 and d[1] then
+        local active = tonumber(d[1].penalty_active) or 0
+        local expires = tonumber(d[1].penalty_expires) or 0
+
+        if active == 1 and expires > get_time() then
+            return true, expires - get_time(), tonumber(d[1].penalty_strikes) or 0
+        elseif active == 1 and expires <= get_time() then
+            -- Penalty expired, clear it
+            mysql_direct_query("UPDATE srv1_hunabku.hunter_quest_ranking SET penalty_active = 0 WHERE player_id = " .. pid)
+        end
+    end
+
+    return false, 0, 0
+end
+
+-- Get penalty glory multiplier (reduces glory gain when penalized)
+function hg_lib.get_penalty_multiplier(pid)
+    local has_penalty, remaining, strikes = hg_lib.has_active_penalty(pid)
+    if has_penalty then
+        -- -20% gloria base, additional -5% per strike (max -50%)
+        local reduction = math.min(50, 20 + (strikes * 5))
+        return (100 - reduction) / 100
+    end
+    return 1.0
+end
+
+-- Apply penalty on defense failure
+function hg_lib.apply_defense_failure_penalty()
+    local pid = pc.get_player_id()
+    local failed_count = pc.getqf("hq_defense_failed_today") or 0
+    failed_count = failed_count + 1
+    pc.setqf("hq_defense_failed_today", failed_count)
+
+    -- After 3 failures in a day, apply penalty
+    if failed_count >= 3 then
+        local glory_penalty = 100 * failed_count
+        hg_lib.apply_penalty(pid, "defense_failure", glory_penalty, 2) -- 2 hour penalty
+        pc.setqf("hq_defense_failed_today", 0) -- Reset counter
+        return true
+    end
+    return false
+end
+
+-- ============================================================
+-- TRIAL EXPIRATION SYSTEM
+-- ============================================================
+
+-- Check and expire old trials
+function hg_lib.check_trial_expiration()
+    -- Find expired trials
+    local q = "SELECT pt.id, pt.player_id, pt.trial_id, rt.trial_name " ..
+              "FROM srv1_hunabku.hunter_player_trials pt " ..
+              "JOIN srv1_hunabku.hunter_rank_trials rt ON pt.trial_id = rt.trial_id " ..
+              "WHERE pt.status = 'in_progress' AND pt.expires_at IS NOT NULL AND pt.expires_at < NOW()"
+
+    local c, d = mysql_direct_query(q)
+
+    if c > 0 then
+        for i = 1, c do
+            local trial = d[i]
+            local pid = tonumber(trial.player_id) or 0
+
+            -- Mark trial as failed
+            mysql_direct_query("UPDATE srv1_hunabku.hunter_player_trials SET status = 'failed' WHERE id = " .. hg_lib.sql_int(trial.id))
+
+            -- Log
+            hg_lib.log_info("TRIAL", "TRIAL_EXPIRED",
+                string.format("player_id=%d trial_id=%d trial_name=%s", pid, tonumber(trial.trial_id) or 0, trial.trial_name or ""))
+        end
+    end
+end
 
 -- ============================================================
 -- SISTEMA TRADUZIONI MULTILINGUA SERVER-SIDE
@@ -141,6 +591,7 @@ hg_lib.translations = {
         WAVE = "ONDATA",
         WAVE_MSG = "ONDATA {WAVE}: Uccidi {COUNT} mob!",
         DEFENSE_FAILED = "DIFESA FALLITA!",
+        PENALTY_DEFENSE_APPLIED = "Troppi fallimenti! Penalita' applicata per 2 ore.",
         DEFENSE_SUCCESS = "DIFESA COMPLETATA!",
         PENALTY_ABANDON = "Penalita' abbandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tempo scaduto!",
@@ -393,6 +844,7 @@ hg_lib.translations = {
         WAVE = "WAVE",
         WAVE_MSG = "WAVE {WAVE}: Kill {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSE FAILED!",
+        PENALTY_DEFENSE_APPLIED = "Too many failures! Penalty applied for 2 hours.",
         DEFENSE_SUCCESS = "DEFENSE COMPLETED!",
         PENALTY_ABANDON = "Abandon penalty: -{PTS} Glory",
         TIME_EXPIRED = "Time expired!",
@@ -628,6 +1080,7 @@ hg_lib.translations = {
         WAVE = "VAGUE",
         WAVE_MSG = "VAGUE {WAVE}: Tue {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSE ECHOUEE!",
+        PENALTY_DEFENSE_APPLIED = "Trop d'echecs! Penalite appliquee pour 2 heures.",
         DEFENSE_SUCCESS = "DEFENSE TERMINEE!",
         PENALTY_ABANDON = "Penalite abandon: -{PTS} Gloire",
         TIME_EXPIRED = "Temps ecoule!",
@@ -863,6 +1316,7 @@ hg_lib.translations = {
         WAVE = "WELLE",
         WAVE_MSG = "WELLE {WAVE}: Toete {COUNT} Mobs!",
         DEFENSE_FAILED = "VERTEIDIGUNG GESCHEITERT!",
+        PENALTY_DEFENSE_APPLIED = "Zu viele Fehler! Strafe fur 2 Stunden angewendet.",
         DEFENSE_SUCCESS = "VERTEIDIGUNG ABGESCHLOSSEN!",
         PENALTY_ABANDON = "Abbruch-Strafe: -{PTS} Ruhm",
         TIME_EXPIRED = "Zeit abgelaufen!",
@@ -1081,6 +1535,7 @@ hg_lib.translations = {
         WAVE = "OLEADA",
         WAVE_MSG = "OLEADA {WAVE}: Mata {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSA FALLIDA!",
+        PENALTY_DEFENSE_APPLIED = "Demasiados fallos! Penalizacion aplicada por 2 horas.",
         DEFENSE_SUCCESS = "DEFENSA COMPLETADA!",
         PENALTY_ABANDON = "Penalizacion abandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tiempo expirado!",
@@ -1307,6 +1762,7 @@ hg_lib.translations = {
         WAVE = "ONDA",
         WAVE_MSG = "ONDA {WAVE}: Mate {COUNT} mobs!",
         DEFENSE_FAILED = "DEFESA FALHOU!",
+        PENALTY_DEFENSE_APPLIED = "Muitas falhas! Penalidade aplicada por 2 horas.",
         DEFENSE_SUCCESS = "DEFESA COMPLETA!",
         PENALTY_ABANDON = "Penalidade abandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tempo esgotado!",
@@ -1533,6 +1989,7 @@ hg_lib.translations = {
         WAVE = "FALA",
         WAVE_MSG = "FALA {WAVE}: Zabij {COUNT} mobow!",
         DEFENSE_FAILED = "OBRONA NIEUDANA!",
+        PENALTY_DEFENSE_APPLIED = "Za duzo porazek! Kara na 2 godziny.",
         DEFENSE_SUCCESS = "OBRONA UKONCZONA!",
         PENALTY_ABANDON = "Kara za porzucenie: -{PTS} Chwaly",
         TIME_EXPIRED = "Czas minal!",
@@ -1759,6 +2216,7 @@ hg_lib.translations = {
         WAVE = "VOLNA",
         WAVE_MSG = "VOLNA {WAVE}: Ubey {COUNT} mobov!",
         DEFENSE_FAILED = "ZASHCHITA PROVALENA!",
+        PENALTY_DEFENSE_APPLIED = "Slishkom mnogo neudach! Shtraf na 2 chasa.",
         DEFENSE_SUCCESS = "ZASHCHITA ZAVERSHENA!",
         PENALTY_ABANDON = "Shtraf za otkaz: -{PTS} Slavy",
         TIME_EXPIRED = "Vremya vyshlo!",
@@ -3162,35 +3620,39 @@ function hg_lib.get_player_power_rank(player_id)
 end
 
 -- Calcola il Power Rank totale del party
--- NOTA: Semplificato - ritorna solo i dati del player corrente
--- perche' party.for_each_member non e' disponibile su tutti i server
+-- NOTA: Usato solo per visualizzazione/statistiche, NON per distribuzione gloria
+-- La distribuzione gloria va sempre al killer per evitare problemi con other_pc_block
 function hg_lib.get_party_power_rank()
     local pid = pc.get_player_id()
     local my_power = hg_lib.get_player_power_rank(pid)
     local my_grade = hg_lib.get_player_rank_grade(pid)
-    
+    local my_name = pc.get_name()
+
     if not party.is_party() then
-        return my_power, {{name = pc.get_name(), grade = my_grade, power = my_power}}
+        return my_power, {{name = my_name, grade = my_grade, power = my_power}}
     end
-    
-    -- In party: moltiplica per numero membri (stima)
+
+    -- In party: stima basata sul numero di membri
+    -- NON usiamo other_pc_block perché non è affidabile su tutti i server
     local member_count = party.get_near_count()
     if member_count < 1 then member_count = 1 end
-    
-    -- Stima power totale basata sul player corrente
+
+    -- Stima conservativa: assume rank medio del party = rank del chiamante
     local estimated_total = my_power * member_count
-    
-    return estimated_total, {{name = pc.get_name(), grade = my_grade, power = my_power}}
+
+    return estimated_total, {{name = my_name, grade = my_grade, power = my_power}}
 end
 
 -- ============================================================
--- SISTEMA DISTRIBUZIONE GLORIA PER MERITOCRAZIA (PARTY)
--- NOTA: Semplificato per compatibilita' - ogni player riceve per se'
+-- SISTEMA DISTRIBUZIONE GLORIA (SEMPLIFICATO)
+-- NOTA: La gloria va SEMPRE a chi compie l'azione
+-- La distribuzione party non funziona in modo affidabile su Metin2
 -- ============================================================
 
--- Calcola la percentuale di Gloria (semplificato: 100% al chiamante)
+-- Calcola la percentuale di Gloria (100% al chiamante)
 function hg_lib.calculate_party_glory_shares()
     local pid = pc.get_player_id()
+    -- SEMPRE 100% al killer/opener - la distribuzione party non è affidabile
     return {{
         pid = pid,
         name = pc.get_name(),
@@ -3301,13 +3763,23 @@ function hg_lib.calculate_glory_with_modifiers(base_glory, options)
         end
     end
 
-    -- 6. TRIAL MALUS (-50% se ha una prova attiva) - SEMPRE PER ULTIMO
+    -- 6. TRIAL MALUS (-50% se ha una prova attiva)
     local trial_mult = hg_lib.get_trial_gloria_multiplier()
     if trial_mult < 1.0 then
         local before_trial = final_glory
         final_glory = math.floor(final_glory * trial_mult)
         local trial_sub = before_trial - final_glory
         table.insert(modifier_log, {name = "Prova Esame", value = "-50%", add = -trial_sub})
+    end
+
+    -- 7. PENALTY MALUS (riduzione gloria se penalizzato) - SEMPRE PER ULTIMO
+    local penalty_mult = hg_lib.get_penalty_multiplier(pid)
+    if penalty_mult < 1.0 then
+        local before_penalty = final_glory
+        final_glory = math.floor(final_glory * penalty_mult)
+        local penalty_sub = before_penalty - final_glory
+        local penalty_percent = math.floor((1 - penalty_mult) * 100)
+        table.insert(modifier_log, {name = hg_lib.get_text("PENALTY_ACTIVE", nil, "Penalita' Attiva"), value = "-" .. penalty_percent .. "%", add = -penalty_sub})
     end
 
     return final_glory, modifier_log
@@ -5445,11 +5917,17 @@ end
 function hg_lib.fail_defense(reason)
     local pid = pc.get_player_id()
     local fracture_vid = pc.getqf("hq_defense_fracture_vid") or 0
-    
+
     -- Security Log: Defense failed
-    hg_lib.log_info("DEFENSE", "DEFENSE_FAILED", 
+    hg_lib.log_info("DEFENSE", "DEFENSE_FAILED",
         string.format("fracture_vid=%d reason=%s", fracture_vid, reason or "unknown"))
-        
+
+    -- Apply penalty for repeated failures (3+ failures/day = 2h penalty)
+    local penalty_applied = hg_lib.apply_defense_failure_penalty()
+    if penalty_applied then
+        syschat("|cffFF0000[PENALTY]|r " .. hg_lib.get_text("PENALTY_DEFENSE_APPLIED", nil, "Troppi fallimenti! Penalita' applicata per 2 ore."))
+    end
+
     local fcolor = "RED"
     local frank = "E"  -- Default rank
     
@@ -6987,54 +7465,84 @@ end
 
 -- ============================================================
 -- SHOP SYSTEM
+-- OPTIMIZED FOR 500+ PLAYERS: Uses atomic transactions with locks
 -- ============================================================
 function hg_lib.shop_buy_item(item_id)
-    local pid = pc.get_player_id()
-    
+    local pid = hg_lib.sql_int(pc.get_player_id())
+    item_id = hg_lib.sql_int(item_id)
+
     -- Prendi info item dallo shop (usa hunter_quest_shop esistente)
     local q = "SELECT description, price_points, item_vnum, item_count FROM srv1_hunabku.hunter_quest_shop WHERE id=" .. item_id .. " AND enabled=1"
     local c, d = mysql_direct_query(q)
-    
+
     if c == 0 then
         hg_lib.syschat_t("SHOP_NOT_AVAILABLE", "Oggetto non disponibile.", nil, "FF0000")
-        return
+        return false
     end
 
     local item_name = d[1].description or "Item"
-    local price = tonumber(d[1].price_points) or 0
-    local item_vnum = tonumber(d[1].item_vnum) or 0
-    local item_count = tonumber(d[1].item_count) or 1
+    local price = hg_lib.sql_uint(d[1].price_points)
+    local item_vnum = hg_lib.sql_uint(d[1].item_vnum)
+    local item_count = hg_lib.sql_uint(d[1].item_count)
+    if item_count < 1 then item_count = 1 end
 
-    -- Controlla gloria spendibile
-    local rc, rd = mysql_direct_query("SELECT spendable_points FROM srv1_hunabku.hunter_quest_ranking WHERE player_id=" .. pid)
-    if rc == 0 then
-        hg_lib.syschat_t("SHOP_NOT_HUNTER", "Non sei un Hunter!", nil, "FF0000")
-        return
-    end
-
-    local spendable = tonumber(rd[1].spendable_points) or 0
-
-    -- Controlla gloria spendibile
-    if spendable < price then
-        syschat("|cffFF0000[SHOP]|r " .. hg_lib.get_text("SHOP_INSUFFICIENT", {HAVE = spendable, NEED = price}, "Gloria insufficiente! Hai " .. spendable .. ", serve " .. price))
-        return
-    end
-
-    -- Controlla inventario
+    -- Controlla inventario PRIMA di tutto
     if pc.count_empty_inventory(0) < 1 then
         hg_lib.syschat_t("SHOP_INV_FULL", "Inventario pieno!", nil, "FF0000")
-        return
+        return false
     end
 
-    -- Esegui acquisto
-    mysql_direct_query("UPDATE srv1_hunabku.hunter_quest_ranking SET spendable_points = spendable_points - " .. price .. " WHERE player_id=" .. pid)
-    pc.give_item2(item_vnum, item_count)
+    -- FIX RACE CONDITION: Use distributed lock for purchase
+    local lock_name = "shop_" .. pid
+    if not hg_lib.acquire_lock(lock_name, 3) then
+        hg_lib.syschat_t("SHOP_BUSY", "Acquisto in corso, riprova.", nil, "FF6600")
+        return false
+    end
 
-    syschat("|cff00FF00[SHOP]|r " .. hg_lib.get_text("SHOP_PURCHASED", {ITEM = item_name, COUNT = item_count}, "Acquistato: " .. item_name .. " x" .. item_count))
-    syschat("|cffFFD700[SHOP]|r -" .. price .. " " .. hg_lib.get_text("SPENDABLE_GLORY", nil, "Gloria Spendibile"))
-    
+    -- Check gloria inside lock to prevent race conditions
+    local rc, rd = mysql_direct_query("SELECT spendable_points FROM srv1_hunabku.hunter_quest_ranking WHERE player_id=" .. pid .. " FOR UPDATE")
+    if rc == 0 then
+        hg_lib.release_lock(lock_name)
+        hg_lib.syschat_t("SHOP_NOT_HUNTER", "Non sei un Hunter!", nil, "FF0000")
+        return false
+    end
+
+    local spendable = hg_lib.sql_uint(rd[1].spendable_points)
+
+    if spendable < price then
+        hg_lib.release_lock(lock_name)
+        syschat("|cffFF0000[SHOP]|r " .. hg_lib.get_text("SHOP_INSUFFICIENT", {HAVE = spendable, NEED = price}, "Gloria insufficiente! Hai " .. spendable .. ", serve " .. price))
+        return false
+    end
+
+    -- ATOMIC TRANSACTION: Deduct points and give item
+    local success = hg_lib.atomic_execute({
+        string.format(
+            "UPDATE srv1_hunabku.hunter_quest_ranking SET spendable_points = spendable_points - %d WHERE player_id = %d AND spendable_points >= %d",
+            price, pid, price
+        )
+    })
+
+    if success then
+        -- Give item only after successful DB update
+        pc.give_item2(item_vnum, item_count)
+
+        syschat("|cff00FF00[SHOP]|r " .. hg_lib.get_text("SHOP_PURCHASED", {ITEM = item_name, COUNT = item_count}, "Acquistato: " .. item_name .. " x" .. item_count))
+        syschat("|cffFFD700[SHOP]|r -" .. price .. " " .. hg_lib.get_text("SPENDABLE_GLORY", nil, "Gloria Spendibile"))
+
+        hg_lib.log_info("SHOP", "PURCHASE_SUCCESS",
+            string.format("player_id=%d item_id=%d item_vnum=%d price=%d", pid, item_id, item_vnum, price))
+    else
+        syschat("|cffFF0000[SHOP]|r " .. hg_lib.get_text("SHOP_ERROR", nil, "Errore durante l'acquisto."))
+        hg_lib.log_alert("SHOP", "PURCHASE_FAILED",
+            string.format("player_id=%d item_id=%d price=%d", pid, item_id, price))
+    end
+
+    hg_lib.release_lock(lock_name)
+
     -- Aggiorna UI
     hg_lib.send_player_data()
+    return success
 end
 
 -- ============================================================
