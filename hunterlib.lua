@@ -591,6 +591,7 @@ hg_lib.translations = {
         WAVE = "ONDATA",
         WAVE_MSG = "ONDATA {WAVE}: Uccidi {COUNT} mob!",
         DEFENSE_FAILED = "DIFESA FALLITA!",
+        PENALTY_DEFENSE_APPLIED = "Troppi fallimenti! Penalita' applicata per 2 ore.",
         DEFENSE_SUCCESS = "DIFESA COMPLETATA!",
         PENALTY_ABANDON = "Penalita' abbandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tempo scaduto!",
@@ -843,6 +844,7 @@ hg_lib.translations = {
         WAVE = "WAVE",
         WAVE_MSG = "WAVE {WAVE}: Kill {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSE FAILED!",
+        PENALTY_DEFENSE_APPLIED = "Too many failures! Penalty applied for 2 hours.",
         DEFENSE_SUCCESS = "DEFENSE COMPLETED!",
         PENALTY_ABANDON = "Abandon penalty: -{PTS} Glory",
         TIME_EXPIRED = "Time expired!",
@@ -1078,6 +1080,7 @@ hg_lib.translations = {
         WAVE = "VAGUE",
         WAVE_MSG = "VAGUE {WAVE}: Tue {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSE ECHOUEE!",
+        PENALTY_DEFENSE_APPLIED = "Trop d'echecs! Penalite appliquee pour 2 heures.",
         DEFENSE_SUCCESS = "DEFENSE TERMINEE!",
         PENALTY_ABANDON = "Penalite abandon: -{PTS} Gloire",
         TIME_EXPIRED = "Temps ecoule!",
@@ -1313,6 +1316,7 @@ hg_lib.translations = {
         WAVE = "WELLE",
         WAVE_MSG = "WELLE {WAVE}: Toete {COUNT} Mobs!",
         DEFENSE_FAILED = "VERTEIDIGUNG GESCHEITERT!",
+        PENALTY_DEFENSE_APPLIED = "Zu viele Fehler! Strafe fur 2 Stunden angewendet.",
         DEFENSE_SUCCESS = "VERTEIDIGUNG ABGESCHLOSSEN!",
         PENALTY_ABANDON = "Abbruch-Strafe: -{PTS} Ruhm",
         TIME_EXPIRED = "Zeit abgelaufen!",
@@ -1531,6 +1535,7 @@ hg_lib.translations = {
         WAVE = "OLEADA",
         WAVE_MSG = "OLEADA {WAVE}: Mata {COUNT} mobs!",
         DEFENSE_FAILED = "DEFENSA FALLIDA!",
+        PENALTY_DEFENSE_APPLIED = "Demasiados fallos! Penalizacion aplicada por 2 horas.",
         DEFENSE_SUCCESS = "DEFENSA COMPLETADA!",
         PENALTY_ABANDON = "Penalizacion abandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tiempo expirado!",
@@ -1757,6 +1762,7 @@ hg_lib.translations = {
         WAVE = "ONDA",
         WAVE_MSG = "ONDA {WAVE}: Mate {COUNT} mobs!",
         DEFENSE_FAILED = "DEFESA FALHOU!",
+        PENALTY_DEFENSE_APPLIED = "Muitas falhas! Penalidade aplicada por 2 horas.",
         DEFENSE_SUCCESS = "DEFESA COMPLETA!",
         PENALTY_ABANDON = "Penalidade abandono: -{PTS} Gloria",
         TIME_EXPIRED = "Tempo esgotado!",
@@ -1983,6 +1989,7 @@ hg_lib.translations = {
         WAVE = "FALA",
         WAVE_MSG = "FALA {WAVE}: Zabij {COUNT} mobow!",
         DEFENSE_FAILED = "OBRONA NIEUDANA!",
+        PENALTY_DEFENSE_APPLIED = "Za duzo porazek! Kara na 2 godziny.",
         DEFENSE_SUCCESS = "OBRONA UKONCZONA!",
         PENALTY_ABANDON = "Kara za porzucenie: -{PTS} Chwaly",
         TIME_EXPIRED = "Czas minal!",
@@ -2209,6 +2216,7 @@ hg_lib.translations = {
         WAVE = "VOLNA",
         WAVE_MSG = "VOLNA {WAVE}: Ubey {COUNT} mobov!",
         DEFENSE_FAILED = "ZASHCHITA PROVALENA!",
+        PENALTY_DEFENSE_APPLIED = "Slishkom mnogo neudach! Shtraf na 2 chasa.",
         DEFENSE_SUCCESS = "ZASHCHITA ZAVERSHENA!",
         PENALTY_ABANDON = "Shtraf za otkaz: -{PTS} Slavy",
         TIME_EXPIRED = "Vremya vyshlo!",
@@ -3612,8 +3620,8 @@ function hg_lib.get_player_power_rank(player_id)
 end
 
 -- Calcola il Power Rank totale del party
--- FIXED: Now properly queries each party member's rank from database
--- OPTIMIZED FOR 500+ PLAYERS: Uses cached rank data when available
+-- NOTA: Usato solo per visualizzazione/statistiche, NON per distribuzione gloria
+-- La distribuzione gloria va sempre al killer per evitare problemi con other_pc_block
 function hg_lib.get_party_power_rank()
     local pid = pc.get_player_id()
     local my_power = hg_lib.get_player_power_rank(pid)
@@ -3624,86 +3632,34 @@ function hg_lib.get_party_power_rank()
         return my_power, {{name = my_name, grade = my_grade, power = my_power}}
     end
 
-    -- Get all party member PIDs
-    local pids = {party.get_member_pids()}
-    local total_power = 0
-    local members_data = {}
+    -- In party: stima basata sul numero di membri
+    -- NON usiamo other_pc_block perché non è affidabile su tutti i server
+    local member_count = party.get_near_count()
+    if member_count < 1 then member_count = 1 end
 
-    for i, member_pid in ipairs(pids) do
-        -- Query each member's rank from database (cached in hunterlib)
-        local member_grade = hg_lib.get_player_rank_grade(member_pid)
-        local member_power = hg_lib.POWER_RANK_VALUES[member_grade] or 1
+    -- Stima conservativa: assume rank medio del party = rank del chiamante
+    local estimated_total = my_power * member_count
 
-        -- Get member name via other_pc_block if possible
-        local member_name = "Member_" .. member_pid
-        local ok = pcall(function()
-            q.begin_other_pc_block(member_pid)
-            member_name = pc.get_name()
-            q.end_other_pc_block()
-        end)
-
-        total_power = total_power + member_power
-        table.insert(members_data, {
-            pid = member_pid,
-            name = member_name,
-            grade = member_grade,
-            power = member_power
-        })
-    end
-
-    return total_power, members_data
+    return estimated_total, {{name = my_name, grade = my_grade, power = my_power}}
 end
 
 -- ============================================================
--- SISTEMA DISTRIBUZIONE GLORIA PER MERITOCRAZIA (PARTY)
--- FIXED: Proper merit-based distribution using Power Rank
--- OPTIMIZED FOR 500+ PLAYERS: Batch DB updates
+-- SISTEMA DISTRIBUZIONE GLORIA (SEMPLIFICATO)
+-- NOTA: La gloria va SEMPRE a chi compie l'azione
+-- La distribuzione party non funziona in modo affidabile su Metin2
 -- ============================================================
 
--- Calcola la percentuale di Gloria per ogni membro del party
--- Basato su Power Rank: membri con rank piu' alto ricevono piu' gloria
+-- Calcola la percentuale di Gloria (100% al chiamante)
 function hg_lib.calculate_party_glory_shares()
     local pid = pc.get_player_id()
-
-    if not party.is_party() then
-        -- Solo player - 100%
-        return {{
-            pid = pid,
-            name = pc.get_name(),
-            grade = hg_lib.get_player_rank_grade(pid),
-            power = hg_lib.get_player_power_rank(pid),
-            share = 100
-        }}
-    end
-
-    -- Get party power data
-    local total_power, members_data = hg_lib.get_party_power_rank()
-    local shares = {}
-
-    -- Calculate merit-based shares
-    for i, member in ipairs(members_data) do
-        local share_percent = 0
-        if total_power > 0 then
-            -- Merit-based: higher power = higher share
-            share_percent = math.floor((member.power / total_power) * 100)
-        else
-            -- Fallback: equal share
-            share_percent = math.floor(100 / #members_data)
-        end
-
-        -- Minimum 5% share for participation
-        if share_percent < 5 then share_percent = 5 end
-
-        table.insert(shares, {
-            pid = member.pid,
-            name = member.name,
-            grade = member.grade,
-            power = member.power,
-            share = share_percent
-        })
-    end
-
-    return shares
+    -- SEMPRE 100% al killer/opener - la distribuzione party non è affidabile
+    return {{
+        pid = pid,
+        name = pc.get_name(),
+        grade = hg_lib.get_player_rank_grade(pid),
+        power = hg_lib.get_player_power_rank(pid),
+        share = 100
+    }}
 end
 
 -- Distribuisce la Gloria a tutti i membri del party secondo la meritocrazia
@@ -5961,11 +5917,17 @@ end
 function hg_lib.fail_defense(reason)
     local pid = pc.get_player_id()
     local fracture_vid = pc.getqf("hq_defense_fracture_vid") or 0
-    
+
     -- Security Log: Defense failed
-    hg_lib.log_info("DEFENSE", "DEFENSE_FAILED", 
+    hg_lib.log_info("DEFENSE", "DEFENSE_FAILED",
         string.format("fracture_vid=%d reason=%s", fracture_vid, reason or "unknown"))
-        
+
+    -- Apply penalty for repeated failures (3+ failures/day = 2h penalty)
+    local penalty_applied = hg_lib.apply_defense_failure_penalty()
+    if penalty_applied then
+        syschat("|cffFF0000[PENALTY]|r " .. hg_lib.get_text("PENALTY_DEFENSE_APPLIED", nil, "Troppi fallimenti! Penalita' applicata per 2 ore."))
+    end
+
     local fcolor = "RED"
     local frank = "E"  -- Default rank
     

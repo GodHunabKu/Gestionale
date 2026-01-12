@@ -226,6 +226,12 @@ when chat."/hunter_request_trial_data" begin
             hg_lib.assign_daily_missions()
             hg_lib.send_today_events(false)
             hg_lib.check_active_event_notify()
+
+            -- PERFORMANCE: Cleanup cache periodicamente (500+ players optimization)
+            hg_lib.cleanup_tracking_tables()
+
+            -- SYSTEM: Check expired trials e penalties
+            hg_lib.check_trial_expiration()
             
             -- Invia TUTTI i dati del terminale al client al login
             -- (player data, ranking, shop, achievements, timers, etc.)
